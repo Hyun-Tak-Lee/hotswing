@@ -17,17 +17,17 @@ class LeftSideMenu extends StatelessWidget {
     return Drawer(
       width: isMobileSize
           ? MediaQuery.of(context).size.width * 0.75
-          : MediaQuery.of(context).size.width * 0.5, // Drawer 너비 설정
+          : MediaQuery.of(context).size.width * 0.5,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           SizedBox(
             height: isMobileSize
                 ? MediaQuery.of(context).size.height * 0.075
-                : 150, // DrawerHeader 높이 조절
+                : 150,
             child: const DrawerHeader(
               decoration: BoxDecoration(color: Colors.lightBlue),
-              child: Text('플레이어 목록'), // 헤더 텍스트 변경
+              child: Text('플레이어 목록'),
             ),
           ),
           ...players
@@ -40,6 +40,7 @@ class LeftSideMenu extends StatelessWidget {
                       IconButton(
                         icon: const Icon(Icons.edit),
                         onPressed: () {
+                          // TODO: Implement edit functionality
                         },
                       ),
                       IconButton(

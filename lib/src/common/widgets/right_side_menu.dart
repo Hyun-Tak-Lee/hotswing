@@ -8,16 +8,18 @@ class RightSideMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      width: isMobileSize ? MediaQuery.of(context).size.width * 0.75 : MediaQuery.of(context).size.width * 0.5, // Drawer 너비 설정
+      width: isMobileSize
+          ? MediaQuery.of(context).size.width * 0.75
+          : MediaQuery.of(context).size.width * 0.5,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           SizedBox(
-            height: isMobileSize ? MediaQuery.of(context).size.height * 0.075 : 150, // DrawerHeader 높이 조절
+            height: isMobileSize
+                ? MediaQuery.of(context).size.height * 0.075
+                : 150,
             child: const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.lightBlue,
-              ),
+              decoration: BoxDecoration(color: Colors.lightBlue),
               child: Text('오른쪽 메뉴'),
             ),
           ),
