@@ -2,9 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/widgets/left_side_menu.dart';
 import 'package:hotswing/src/common/widgets/right_side_menu.dart';
 import 'package:hotswing/src/common/widgets/main_content.dart';
+import 'package:provider/provider.dart';
+import 'package:hotswing/src/providers/players_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => PlayersProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
