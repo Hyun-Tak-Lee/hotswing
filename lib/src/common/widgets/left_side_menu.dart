@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class LeftDrawer extends StatelessWidget {
-  const LeftDrawer({super.key, required this.isMobileSize});
+class LeftSideMenu extends StatelessWidget {
+  const LeftSideMenu({super.key, required this.isMobileSize});
 
   final bool isMobileSize;
 

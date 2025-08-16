@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hotswing/src/common/widgets/left_drawer.dart';
-import 'package:hotswing/src/common/widgets/right_drawer.dart';
+import 'package:hotswing/src/common/widgets/left_side_menu.dart';
+import 'package:hotswing/src/common/widgets/right_side_menu.dart';
 import 'package:hotswing/src/common/widgets/main_content.dart';
 
 void main() {
@@ -55,8 +55,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      drawer: LeftDrawer(isMobileSize: isMobileSize),
-      endDrawer: RightDrawer(isMobileSize: isMobileSize),
+      drawer: LeftSideMenu(isMobileSize: isMobileSize),
+      endDrawer: RightSideMenu(isMobileSize: isMobileSize),
       body: MainContent(isMobileSize: isMobileSize),
     );
   }
