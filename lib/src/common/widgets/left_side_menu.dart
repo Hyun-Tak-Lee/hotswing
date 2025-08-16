@@ -2,12 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/players_provider.dart';
-import './confirmation_dialog.dart'; // ConfirmationDialog import 추가
+import './confirmation_dialog.dart';
 
-class LeftSideMenu extends StatelessWidget {
+class LeftSideMenu extends StatefulWidget {
   const LeftSideMenu({super.key, required this.isMobileSize});
 
   final bool isMobileSize;
+
+  @override
+  State<LeftSideMenu> createState() => _LeftSideMenuState();
+}
+
+class _LeftSideMenuState extends State<LeftSideMenu> {
+  Player? _editingPlayer;
+  final TextEditingController _textController = TextEditingController();
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,44 +29,83 @@ class LeftSideMenu extends StatelessWidget {
     final players = playersProvider.getPlayers();
 
     return Drawer(
-      width: isMobileSize
+      width: widget.isMobileSize
           ? MediaQuery.of(context).size.width * 0.75
           : MediaQuery.of(context).size.width * 0.5,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           SizedBox(
-            height: isMobileSize
+            height: widget.isMobileSize
                 ? MediaQuery.of(context).size.height * 0.075
                 : 150,
             child: const DrawerHeader(
               decoration: BoxDecoration(color: Colors.lightBlue),
-              child: Text('플레이어 목록'),
+              child: Text('참여자 목록'),
             ),
           ),
           ...players
               .map(
                 (player) => ListTile(
-                  title: Text(player, style: const TextStyle(fontSize: 24)),
+                  title: _editingPlayer == player
+                      ? TextField(
+                          controller: _textController,
+                          autofocus: true,
+                          onSubmitted: (newName) {
+                            if (newName.isNotEmpty && newName != player.name) {
+                              playersProvider.updatePlayerName(player.name, newName);
+                            }
+                            setState(() {
+                              _editingPlayer = null;
+                            });
+                          },
+                          onTapOutside: (PointerDownEvent event) {
+                            if (_editingPlayer == player) {
+                               FocusScope.of(context).unfocus();
+                            }
+                          },
+                        )
+                      : Text('${player.name} (${player.gender})', style: const TextStyle(fontSize: 24)),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.edit),
+                        icon: Icon(
+                          _editingPlayer == player ? Icons.check : Icons.edit,
+                        ),
                         onPressed: () {
-                          // TODO: Implement edit functionality
+                          if (_editingPlayer == player) {
+                            final newName = _textController.text;
+                            if (newName.isNotEmpty && newName != player.name) {
+                              playersProvider.updatePlayerName(player.name, newName);
+                            }
+                            setState(() {
+                              _editingPlayer = null;
+                            });
+                          } else {
+                            setState(() {
+                              _editingPlayer = player;
+                              _textController.text = player.name;
+                            });
+                          }
                         },
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete),
                         onPressed: () {
+                          if (_editingPlayer == player) {
+                            setState(() {
+                              _editingPlayer = null;
+                            });
+                          }
                           showDialog(
                             context: context,
                             builder: (BuildContext dialogContext) {
                               return ConfirmationDialog(
-                                message: '"$player" 님을 삭제하시겠습니까?',
+                                // player.name을 메시지에 사용
+                                message: '"${player.name}" 님을 삭제하시겠습니까?',
                                 onConfirm: () {
-                                  playersProvider.removePlayer(player);
+                                  playersProvider.removePlayer(player.name);
                                 },
                               );
                             },
