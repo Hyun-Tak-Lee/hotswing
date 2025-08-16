@@ -30,6 +30,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    const double tabletThreshold = 600.0;
+
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -49,12 +52,12 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       drawer: Drawer(
-        width: MediaQuery.of(context).size.width * 0.75, // Drawer 너비 설정
+        width: screenWidth < tabletThreshold ? MediaQuery.of(context).size.width * 0.75 : MediaQuery.of(context).size.width * 0.5, // Drawer 너비 설정
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
             SizedBox(
-              height: MediaQuery.of(context).size.height * 0.10, // DrawerHeader 높이 조절
+              height: screenWidth < tabletThreshold ? MediaQuery.of(context).size.height * 0.10 : 150, // DrawerHeader 높이 조절
               child: const DrawerHeader(
                 decoration: BoxDecoration(
                   color: Colors.lightBlue,
@@ -80,12 +83,12 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       endDrawer: Drawer(
-        width: MediaQuery.of(context).size.width * 0.75, // Drawer 너비 설정
+        width: screenWidth < tabletThreshold ? MediaQuery.of(context).size.width * 0.75 : MediaQuery.of(context).size.width * 0.5, // Drawer 너비 설정
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
             SizedBox(
-              height: MediaQuery.of(context).size.height * 0.10, // DrawerHeader 높이 조절
+              height: screenWidth < tabletThreshold ? MediaQuery.of(context).size.height * 0.10 : 150, // DrawerHeader 높이 조절
               child: const DrawerHeader(
                 decoration: BoxDecoration(
                   color: Colors.lightBlue,
