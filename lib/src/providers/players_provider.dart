@@ -7,12 +7,14 @@ class Player {
   int rate;
   String gender;
   int played;
+  int waited;
 
   Player({
     required this.rate,
     required this.name,
     required this.gender,
     required this.played,
+    required this.waited,
   });
 }
 
@@ -25,12 +27,14 @@ class PlayersProvider with ChangeNotifier {
       String playerName = 'Player $i';
       int playerRate = 1000 + ((i - 1) * 50);
       String gender = _random.nextBool() ? '남' : '여';
-      int attempts = 0;
+      int played = 0;
+      int waited = 0;
       _players[playerName] = Player(
         name: playerName,
         rate: playerRate,
         gender: gender,
-        played: attempts,
+        played: played,
+        waited: waited,
       );
     }
   }
@@ -43,9 +47,10 @@ class PlayersProvider with ChangeNotifier {
     required int rate,
     required String gender,
     required int played,
+    required int waited,
   }) {
     if (!_players.containsKey(name)) {
-      Player newPlayer = Player(name: name, rate: rate, gender: gender, played: played);
+      Player newPlayer = Player(name: name, rate: rate, gender: gender, played: played, waited: waited);
       _players[name] = newPlayer;
       notifyListeners();
     }
