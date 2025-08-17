@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/players_provider.dart';
+import 'dialogs/add_player_dialog.dart'; // AddPlayerDialog import 추가
 import 'dialogs/confirmation_dialog.dart';
 
 class LeftSideMenu extends StatefulWidget {
@@ -21,6 +22,29 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
   void dispose() {
     _textController.dispose();
     super.dispose();
+  }
+
+  // AddPlayerDialog를 보여주는 함수
+  Future<void> _showAddPlayerDialog(PlayersProvider playersProvider) async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return const AddPlayerDialog();
+      },
+    );
+
+    if (result != null &&
+        result['name'] != null &&
+        result['rate'] != null &&
+        result['gender'] != null) {
+      playersProvider.addPlayer(
+        name: result['name'] as String,
+        rate: result['rate'] as int,
+        gender: result['gender'] as String,
+        played: 0,
+        waited: 0,
+      );
+    }
   }
 
   @override
@@ -51,7 +75,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                   IconButton(
                     icon: const Icon(Icons.add),
                     onPressed: () {
-                      // TODO: Implement add player functionality
+                      _showAddPlayerDialog(playersProvider);
                     },
                   ),
                 ],
