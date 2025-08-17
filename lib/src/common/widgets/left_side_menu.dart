@@ -37,11 +37,25 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
         children: <Widget>[
           SizedBox(
             height: widget.isMobileSize
-                ? MediaQuery.of(context).size.height * 0.075
+                ? MediaQuery.of(context).size.height * 0.1
                 : 150,
-            child: const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.lightBlue),
-              child: Text('참여자 목록'),
+            child: DrawerHeader(
+              decoration: const BoxDecoration(color: Colors.lightBlue),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '참여자 (${players.length}명)',
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      // TODO: Implement add player functionality
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
           ...players
@@ -53,7 +67,10 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                           autofocus: true,
                           onSubmitted: (newName) {
                             if (newName.isNotEmpty && newName != player.name) {
-                              playersProvider.updatePlayerName(player.name, newName);
+                              playersProvider.updatePlayerName(
+                                player.name,
+                                newName,
+                              );
                             }
                             setState(() {
                               _editingPlayer = null;
@@ -61,11 +78,14 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                           },
                           onTapOutside: (PointerDownEvent event) {
                             if (_editingPlayer == player) {
-                               FocusScope.of(context).unfocus();
+                              FocusScope.of(context).unfocus();
                             }
                           },
                         )
-                      : Text('${player.name} (${player.gender})', style: const TextStyle(fontSize: 24)),
+                      : Text(
+                          '${player.name} (${player.gender})',
+                          style: const TextStyle(fontSize: 24),
+                        ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -77,7 +97,10 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                           if (_editingPlayer == player) {
                             final newName = _textController.text;
                             if (newName.isNotEmpty && newName != player.name) {
-                              playersProvider.updatePlayerName(player.name, newName);
+                              playersProvider.updatePlayerName(
+                                player.name,
+                                newName,
+                              );
                             }
                             setState(() {
                               _editingPlayer = null;
@@ -102,7 +125,6 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                             context: context,
                             builder: (BuildContext dialogContext) {
                               return ConfirmationDialog(
-                                // player.name을 메시지에 사용
                                 message: '"${player.name}" 님을 삭제하시겠습니까?',
                                 onConfirm: () {
                                   playersProvider.removePlayer(player.name);
