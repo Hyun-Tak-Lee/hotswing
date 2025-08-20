@@ -43,6 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
 
