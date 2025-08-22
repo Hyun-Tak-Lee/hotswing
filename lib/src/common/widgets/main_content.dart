@@ -13,6 +13,7 @@ class MainContent extends StatelessWidget {
     final isMobileSize = screenWidth < tabletThreshold;
 
     final Color pastelBlue = Colors.lightBlue.shade100;
+    final Color pastelYellow = Colors.lightBlue.shade50; // 더 밝은 파스텔톤 색상
 
     // 각 내부 리스트는 이제 4개의 문자열을 가집니다.
     final List<List<String>> sectionData = [
@@ -31,13 +32,14 @@ class MainContent extends StatelessWidget {
             flex: 2,
             child: Center( // 95% 너비의 컨텐츠를 중앙 정렬
               child: FractionallySizedBox(
-                widthFactor: 0.95,
+                widthFactor: 0.90,
                 child: SingleChildScrollView(
                   scrollDirection: Axis.vertical, // 세로 스크롤
                   child: Column( // 세로로 배열
                     children: sectionData.map((item) {
                       return Container(
                         margin: const EdgeInsets.all(5.0), // 구역 간 간격
+                        padding: const EdgeInsets.all(10.0), // Added padding here
                         decoration: BoxDecoration( // 둥근 모서리를 위한 BoxDecoration 추가
                           color: pastelBlue,
                           borderRadius: BorderRadius.circular(20.0), // 둥근 모서리 반경 설정
@@ -49,10 +51,26 @@ class MainContent extends StatelessWidget {
                               child: Row(
                                 children: [
                                   Expanded(
-                                    child: Center(child: Text(item[0])),
+                                    child: Container(
+                                      margin: const EdgeInsets.all(4.0),
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: BoxDecoration(
+                                        color: pastelYellow,
+                                        borderRadius: BorderRadius.circular(20.0),
+                                      ),
+                                      child: Center(child: Text(item[0], style: TextStyle(fontSize: 36.0))), // Updated text style
+                                    ),
                                   ),
                                   Expanded(
-                                    child: Center(child: Text(item[1])),
+                                    child: Container(
+                                      margin: const EdgeInsets.all(4.0),
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: BoxDecoration(
+                                        color: pastelYellow,
+                                        borderRadius: BorderRadius.circular(20.0),
+                                      ),
+                                      child: Center(child: Text(item[1], style: TextStyle(fontSize: 36.0))), // Updated text style
+                                    ),
                                   ),
                                 ],
                               ),
@@ -61,10 +79,26 @@ class MainContent extends StatelessWidget {
                               child: Row(
                                 children: [
                                   Expanded(
-                                    child: Center(child: Text(item[2])),
+                                    child: Container(
+                                      margin: const EdgeInsets.all(4.0),
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: BoxDecoration(
+                                        color: pastelYellow,
+                                        borderRadius: BorderRadius.circular(20.0),
+                                      ),
+                                      child: Center(child: Text(item[2], style: TextStyle(fontSize: 36.0))), // Updated text style
+                                    ),
                                   ),
                                   Expanded(
-                                    child: Center(child: Text(item[3])),
+                                    child: Container(
+                                      margin: const EdgeInsets.all(4.0),
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: BoxDecoration(
+                                        color: pastelYellow,
+                                        borderRadius: BorderRadius.circular(20.0),
+                                      ),
+                                      child: Center(child: Text(item[3], style: TextStyle(fontSize: 36.0))), // Updated text style
+                                    ),
                                   ),
                                 ],
                               ),
