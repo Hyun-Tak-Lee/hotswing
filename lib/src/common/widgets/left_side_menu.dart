@@ -36,11 +36,13 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
     if (result != null &&
         result['name'] != null &&
         result['rate'] != null &&
-        result['gender'] != null) {
+        result['gender'] != null &&
+        result['manager'] != null) { // manager 추가
       playersProvider.addPlayer(
         name: result['name'] as String,
         rate: result['rate'] as int,
         gender: result['gender'] as String,
+        manager: result['manager'] as bool, // manager 추가
         played: 0,
         waited: 0,
       );
@@ -107,7 +109,8 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                           },
                         )
                       : Text(
-                          '${player.name} (${player.gender})',
+                          // 운영진 여부 표시
+                          '${player.name} (${player.gender})${player.manager ? " (운영진)" : ""}',
                           style: const TextStyle(fontSize: 24),
                         ),
                   trailing: Row(

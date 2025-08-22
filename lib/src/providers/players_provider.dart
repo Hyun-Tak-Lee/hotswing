@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 class Player {
   String name;
+  bool manager;
   int rate;
   String gender;
   int played;
@@ -11,6 +12,7 @@ class Player {
 
   Player({
     required this.rate,
+    required this.manager,
     required this.name,
     required this.gender,
     required this.played,
@@ -25,12 +27,14 @@ class PlayersProvider with ChangeNotifier {
   PlayersProvider() {
     for (int i = 1; i <= 24; i++) {
       String playerName = 'Player $i';
+      bool manager = _random.nextBool();
       int playerRate = 1000 + ((i - 1) * 50);
       String gender = _random.nextBool() ? '남' : '여';
       int played = 0;
       int waited = 0;
       _players[playerName] = Player(
         name: playerName,
+        manager: manager,
         rate: playerRate,
         gender: gender,
         played: played,
@@ -44,13 +48,21 @@ class PlayersProvider with ChangeNotifier {
   // 새로운 플레이어 추가
   void addPlayer({
     required String name,
+    required bool manager, // Bool -> bool
     required int rate,
     required String gender,
     required int played,
     required int waited,
   }) {
     if (!_players.containsKey(name)) {
-      Player newPlayer = Player(name: name, rate: rate, gender: gender, played: played, waited: waited);
+      Player newPlayer = Player(
+        name: name,
+        manager: manager,
+        rate: rate,
+        gender: gender,
+        played: played,
+        waited: waited,
+      );
       _players[name] = newPlayer;
       notifyListeners();
     }
