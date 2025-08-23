@@ -22,6 +22,8 @@ class Player {
 
 class PlayersProvider with ChangeNotifier {
   final Map<String, Player> _players = {};
+  List<List<Player?>> _assignedPlayers = [];
+  List<Player> _unassignedPlayers = [];
   final Random _random = Random();
 
   PlayersProvider() {
@@ -32,7 +34,7 @@ class PlayersProvider with ChangeNotifier {
       String gender = _random.nextBool() ? '남' : '여';
       int played = 0;
       int waited = 0;
-      _players[playerName] = Player(
+      Player newPlayer = Player(
         name: playerName,
         manager: manager,
         rate: playerRate,
@@ -40,6 +42,8 @@ class PlayersProvider with ChangeNotifier {
         played: played,
         waited: waited,
       );
+      _players[playerName] = newPlayer;
+      _unassignedPlayers.add(newPlayer);
     }
   }
 
@@ -64,6 +68,7 @@ class PlayersProvider with ChangeNotifier {
         waited: waited,
       );
       _players[name] = newPlayer;
+      _unassignedPlayers.add(newPlayer);
       notifyListeners();
     }
   }
@@ -71,6 +76,15 @@ class PlayersProvider with ChangeNotifier {
   // 지정된 이름의 플레이어 제거
   void removePlayer(String name) {
     if (_players.containsKey(name)) {
+      Player playerToRemove = _players[name]!;
+      for (int i = 0; i < _assignedPlayers.length; i++) {
+        for (int j = 0; j < _assignedPlayers[i].length; j++) {
+          if (_assignedPlayers[i][j] == playerToRemove) {
+            _assignedPlayers[i][j] = null;
+          }
+        }
+      }
+      _unassignedPlayers.remove(playerToRemove);
       _players.remove(name);
       notifyListeners();
     }
@@ -91,6 +105,8 @@ class PlayersProvider with ChangeNotifier {
   // 모든 플레이어 제거
   void clearPlayers() {
     _players.clear();
+    _unassignedPlayers.clear();
+    _assignedPlayers.clear();
     notifyListeners();
   }
 
@@ -100,4 +116,7 @@ class PlayersProvider with ChangeNotifier {
     playerList.sort((a, b) => a.name.compareTo(b.name));
     return playerList;
   }
+
+  // 할당되지 않은 플레이어 목록 반환 (읽기 전용)
+  List<Player> get unassignedPlayers => List.unmodifiable(_unassignedPlayers);
 }

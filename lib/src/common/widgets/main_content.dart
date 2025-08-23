@@ -29,7 +29,7 @@ class MainContent extends StatelessWidget {
 
     final optionsProvider = Provider.of<OptionsProvider>(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
-    final playerList = playersProvider.getPlayers();
+    final playerList = playersProvider.unassignedPlayers;
     final bool shouldShowDivider = optionsProvider.divideTeam;
 
     return Center(
