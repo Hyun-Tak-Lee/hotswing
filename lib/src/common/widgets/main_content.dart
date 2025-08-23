@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:hotswing/src/providers/options_provider.dart';
 
 class MainContent extends StatelessWidget {
   const MainContent({super.key, required this.isMobileSize});
@@ -43,8 +45,8 @@ class MainContent extends StatelessWidget {
       "O",
     ];
 
-    // TODO: Define the condition for showing the divider
-    const bool shouldShowDivider = true; 
+    final optionsProvider = Provider.of<OptionsProvider>(context);
+    final bool shouldShowDivider = optionsProvider.divideTeam; 
 
     return Center(
       child: Row(
@@ -53,7 +55,6 @@ class MainContent extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Center(
-              // 95% 너비의 컨텐츠를 중앙 정렬
               child: FractionallySizedBox(
                 widthFactor: 0.90,
                 child: SingleChildScrollView(

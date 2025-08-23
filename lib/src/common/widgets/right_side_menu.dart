@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:hotswing/src/providers/options_provider.dart';
 
 class RightSideMenu extends StatelessWidget {
   const RightSideMenu({super.key, required this.isMobileSize});
@@ -7,35 +9,34 @@ class RightSideMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final optionsProvider = Provider.of<OptionsProvider>(context);
     return Drawer(
       width: isMobileSize
-          ? MediaQuery.of(context).size.width * 0.75
-          : MediaQuery.of(context).size.width * 0.5,
+          ? MediaQuery.of(context).size.width * 0.5
+          : MediaQuery.of(context).size.width * 0.25,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           SizedBox(
             height: isMobileSize
-                ? MediaQuery.of(context).size.height * 0.075
+                ? MediaQuery.of(context).size.height * 0.1
                 : 150,
             child: const DrawerHeader(
               decoration: BoxDecoration(color: Colors.lightBlue),
-              child: Text('오른쪽 메뉴'),
+              child: Text('옵션', style: TextStyle(fontSize: 24)),
             ),
           ),
-          ListTile(
-            title: const Text('옵션 A'),
-            onTap: () {
-              // 옵션 A 클릭 시 동작
-              Navigator.pop(context); // Drawer 닫기
+          SwitchListTile(
+            title: Text(
+              '팀 나누기',
+              style: const TextStyle(fontSize: 24),
+            ),
+            value: optionsProvider.divideTeam,
+            onChanged: (bool value) {
+              optionsProvider.toggleDivideTeam();
             },
-          ),
-          ListTile(
-            title: const Text('옵션 B'),
-            onTap: () {
-              // 옵션 B 클릭 시 동작
-              Navigator.pop(context); // Drawer 닫기
-            },
+            activeColor: Colors.blueAccent,
+            tileColor: Colors.black.withAlpha(13),
           ),
         ],
       ),

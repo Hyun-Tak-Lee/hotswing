@@ -4,12 +4,14 @@ import 'package:hotswing/src/common/widgets/right_side_menu.dart';
 import 'package:hotswing/src/common/widgets/main_content.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
+import 'package:hotswing/src/providers/options_provider.dart'; // Added import
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => PlayersProvider()),
+        ChangeNotifierProvider(create: (_) => OptionsProvider()),
       ],
       child: const MyApp(),
     ),
