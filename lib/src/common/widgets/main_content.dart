@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
+import 'package:hotswing/src/providers/players_provider.dart'; // Added import
 
 class MainContent extends StatelessWidget {
   const MainContent({super.key, required this.isMobileSize});
@@ -26,27 +27,10 @@ class MainContent extends StatelessWidget {
       ["5-1", "5-2", "5-3", "5-4"],
     ];
 
-    // Data for the second scrollable area
-    final List<String> sectionData2 = [
-      "A",
-      "B",
-      "C",
-      "D",
-      "E",
-      "F",
-      "G",
-      "H",
-      "I",
-      "J",
-      "K",
-      "L",
-      "M",
-      "N",
-      "O",
-    ];
-
     final optionsProvider = Provider.of<OptionsProvider>(context);
-    final bool shouldShowDivider = optionsProvider.divideTeam; 
+    final playersProvider = Provider.of<PlayersProvider>(context);
+    final playerList = playersProvider.getPlayers();
+    final bool shouldShowDivider = optionsProvider.divideTeam;
 
     return Center(
       child: Row(
@@ -126,10 +110,7 @@ class MainContent extends StatelessWidget {
                             ),
                             Visibility(
                               visible: shouldShowDivider,
-                              child: Divider(
-                                color: Colors.grey,
-                                thickness: 1,
-                              ),
+                              child: Divider(color: Colors.grey, thickness: 1),
                             ),
                             Expanded(
                               // 두 번째 가로 줄 (2칸)
@@ -191,7 +172,7 @@ class MainContent extends StatelessWidget {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.vertical,
                   child: Column(
-                    children: sectionData2.map((item) {
+                    children: playerList.map((player) {
                       return Container(
                         margin: const EdgeInsets.all(5.0),
                         padding: const EdgeInsets.all(10.0),
@@ -204,7 +185,10 @@ class MainContent extends StatelessWidget {
                             : screenHeight * 0.05,
                         // Adjusted height
                         child: Center(
-                          child: Text(item, style: TextStyle(fontSize: 24.0)),
+                          child: Text(
+                            player.name,
+                            style: TextStyle(fontSize: 24.0),
+                          ), // Assuming Player has a 'name' property
                         ),
                       );
                     }).toList(),
