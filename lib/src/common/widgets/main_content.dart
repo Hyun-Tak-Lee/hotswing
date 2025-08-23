@@ -12,8 +12,8 @@ class MainContent extends StatelessWidget {
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
 
-    final Color pastelBlue = Colors.lightBlue.shade100;
-    final Color pastelYellow = Colors.lightBlue.shade50; // 더 밝은 파스텔톤 색상
+    final Color pastelBlue = Colors.lightBlue.shade50;
+    final Color pastelLightBlue = Color(0xFFFAFFFF);
 
     // 각 내부 리스트는 이제 4개의 문자열을 가집니다.
     final List<List<String>> sectionData = [
@@ -21,8 +21,30 @@ class MainContent extends StatelessWidget {
       ["2-1", "2-2", "2-3", "2-4"],
       ["3-1", "3-2", "3-3", "3-4"],
       ["4-1", "4-2", "4-3", "4-4"],
-      ["5-1", "5-2", "5-3", "5-4"] // 스크롤을 확인하기 위한 추가 데이터
+      ["5-1", "5-2", "5-3", "5-4"],
     ];
+
+    // Data for the second scrollable area
+    final List<String> sectionData2 = [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+    ];
+
+    // TODO: Define the condition for showing the divider
+    const bool shouldShowDivider = true; 
 
     return Center(
       child: Row(
@@ -30,24 +52,36 @@ class MainContent extends StatelessWidget {
         children: <Widget>[
           Expanded(
             flex: 2,
-            child: Center( // 95% 너비의 컨텐츠를 중앙 정렬
+            child: Center(
+              // 95% 너비의 컨텐츠를 중앙 정렬
               child: FractionallySizedBox(
                 widthFactor: 0.90,
                 child: SingleChildScrollView(
                   scrollDirection: Axis.vertical, // 세로 스크롤
-                  child: Column( // 세로로 배열
+                  child: Column(
+                    // 세로로 배열
                     children: sectionData.map((item) {
                       return Container(
-                        margin: const EdgeInsets.all(5.0), // 구역 간 간격
-                        padding: const EdgeInsets.all(10.0), // Added padding here
-                        decoration: BoxDecoration( // 둥근 모서리를 위한 BoxDecoration 추가
+                        margin: const EdgeInsets.all(5.0),
+                        // 구역 간 간격
+                        padding: const EdgeInsets.all(10.0),
+                        // Added padding here
+                        decoration: BoxDecoration(
+                          // 둥근 모서리를 위한 BoxDecoration 추가
                           color: pastelBlue,
-                          borderRadius: BorderRadius.circular(20.0), // 둥근 모서리 반경 설정
+                          borderRadius: BorderRadius.circular(
+                            20.0,
+                          ), // 둥근 모서리 반경 설정
                         ),
-                        height: isMobileSize ? screenHeight * 0.25 : screenHeight * 0.2, // 높이 지정
-                        child: Column( // 세로로 2분할
+                        height: isMobileSize
+                            ? screenHeight * 0.25
+                            : screenHeight * 0.2,
+                        // 높이 지정
+                        child: Column(
+                          // 세로로 2분할
                           children: [
-                            Expanded( // 첫 번째 가로 줄 (2칸)
+                            Expanded(
+                              // 첫 번째 가로 줄 (2칸)
                               child: Row(
                                 children: [
                                   Expanded(
@@ -55,10 +89,17 @@ class MainContent extends StatelessWidget {
                                       margin: const EdgeInsets.all(4.0),
                                       padding: const EdgeInsets.all(8.0),
                                       decoration: BoxDecoration(
-                                        color: pastelYellow,
-                                        borderRadius: BorderRadius.circular(20.0),
+                                        color: pastelLightBlue,
+                                        borderRadius: BorderRadius.circular(
+                                          20.0,
+                                        ),
                                       ),
-                                      child: Center(child: Text(item[0], style: TextStyle(fontSize: 36.0))), // Updated text style
+                                      child: Center(
+                                        child: Text(
+                                          item[0],
+                                          style: TextStyle(fontSize: 36.0),
+                                        ),
+                                      ), // Updated text style
                                     ),
                                   ),
                                   Expanded(
@@ -66,16 +107,31 @@ class MainContent extends StatelessWidget {
                                       margin: const EdgeInsets.all(4.0),
                                       padding: const EdgeInsets.all(8.0),
                                       decoration: BoxDecoration(
-                                        color: pastelYellow,
-                                        borderRadius: BorderRadius.circular(20.0),
+                                        color: pastelLightBlue,
+                                        borderRadius: BorderRadius.circular(
+                                          20.0,
+                                        ),
                                       ),
-                                      child: Center(child: Text(item[1], style: TextStyle(fontSize: 36.0))), // Updated text style
+                                      child: Center(
+                                        child: Text(
+                                          item[1],
+                                          style: TextStyle(fontSize: 36.0),
+                                        ),
+                                      ), // Updated text style
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            Expanded( // 두 번째 가로 줄 (2칸)
+                            Visibility(
+                              visible: shouldShowDivider,
+                              child: Divider(
+                                color: Colors.grey,
+                                thickness: 1,
+                              ),
+                            ),
+                            Expanded(
+                              // 두 번째 가로 줄 (2칸)
                               child: Row(
                                 children: [
                                   Expanded(
@@ -83,10 +139,17 @@ class MainContent extends StatelessWidget {
                                       margin: const EdgeInsets.all(4.0),
                                       padding: const EdgeInsets.all(8.0),
                                       decoration: BoxDecoration(
-                                        color: pastelYellow,
-                                        borderRadius: BorderRadius.circular(20.0),
+                                        color: pastelLightBlue,
+                                        borderRadius: BorderRadius.circular(
+                                          20.0,
+                                        ),
                                       ),
-                                      child: Center(child: Text(item[2], style: TextStyle(fontSize: 36.0))), // Updated text style
+                                      child: Center(
+                                        child: Text(
+                                          item[2],
+                                          style: TextStyle(fontSize: 36.0),
+                                        ),
+                                      ), // Updated text style
                                     ),
                                   ),
                                   Expanded(
@@ -94,10 +157,17 @@ class MainContent extends StatelessWidget {
                                       margin: const EdgeInsets.all(4.0),
                                       padding: const EdgeInsets.all(8.0),
                                       decoration: BoxDecoration(
-                                        color: pastelYellow,
-                                        borderRadius: BorderRadius.circular(20.0),
+                                        color: pastelLightBlue,
+                                        borderRadius: BorderRadius.circular(
+                                          20.0,
+                                        ),
                                       ),
-                                      child: Center(child: Text(item[3], style: TextStyle(fontSize: 36.0))), // Updated text style
+                                      child: Center(
+                                        child: Text(
+                                          item[3],
+                                          style: TextStyle(fontSize: 36.0),
+                                        ),
+                                      ), // Updated text style
                                     ),
                                   ),
                                 ],
@@ -114,7 +184,33 @@ class MainContent extends StatelessWidget {
           ),
           Expanded(
             flex: 1,
-            child: const Center(child: Text('Content Area 2 (1/3)')),
+            child: Center(
+              child: FractionallySizedBox(
+                widthFactor: 0.90,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    children: sectionData2.map((item) {
+                      return Container(
+                        margin: const EdgeInsets.all(5.0),
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          color: pastelLightBlue,
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        height: isMobileSize
+                            ? screenHeight * 0.08
+                            : screenHeight * 0.05,
+                        // Adjusted height
+                        child: Center(
+                          child: Text(item, style: TextStyle(fontSize: 24.0)),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

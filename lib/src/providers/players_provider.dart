@@ -76,7 +76,7 @@ class PlayersProvider with ChangeNotifier {
     }
   }
 
-  // 플레이어 이름 변경 (성별은 이름 변경과 직접적인 관련이 없으므로 이 함수는 수정할 필요가 없습니다)
+  // 플레이어 이름 변경
   void updatePlayerName(String oldName, String newName) {
     if (_players.containsKey(oldName)) {
       Player? player = _players.remove(oldName);
