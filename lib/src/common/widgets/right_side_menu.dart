@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
+import 'package:hotswing/src/providers/players_provider.dart';
 
 class RightSideMenu extends StatelessWidget {
   const RightSideMenu({super.key, required this.isMobileSize});
@@ -10,6 +11,8 @@ class RightSideMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final optionsProvider = Provider.of<OptionsProvider>(context);
+    final playersProvider = Provider.of<PlayersProvider>(context, listen: false);
+
     return Drawer(
       width: isMobileSize
           ? MediaQuery.of(context).size.width * 0.5
@@ -27,9 +30,9 @@ class RightSideMenu extends StatelessWidget {
             ),
           ),
           SwitchListTile(
-            title: Text(
+            title: const Text(
               '팀 나누기',
-              style: const TextStyle(fontSize: 24),
+              style: TextStyle(fontSize: 24),
             ),
             value: optionsProvider.divideTeam,
             onChanged: (bool value) {
@@ -37,6 +40,32 @@ class RightSideMenu extends StatelessWidget {
             },
             activeColor: Colors.blueAccent,
             tileColor: Colors.black.withAlpha(13),
+          ),
+          const SizedBox(height: 10), // 옵션 간 간격 추가
+          ListTile(
+            tileColor: Colors.black.withAlpha(13),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '코트 수: ${optionsProvider.numberOfSections}',
+                  style: const TextStyle(fontSize: 24),
+                ),
+                Slider(
+                  value: optionsProvider.numberOfSections.toDouble(),
+                  min: 1,
+                  max: 8,
+                  divisions: 7,
+                  label: optionsProvider.numberOfSections.round().toString(),
+                  onChanged: (double value) {
+                    int newNumberOfSections = value.round();
+                    optionsProvider.setNumberOfSections(newNumberOfSections);
+                    playersProvider.updateAssignedPlayersListCount(newNumberOfSections);
+                  },
+                  activeColor: Colors.blueAccent,
+                ),
+              ],
+            ),
           ),
         ],
       ),

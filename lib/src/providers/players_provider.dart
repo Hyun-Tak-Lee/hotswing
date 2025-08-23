@@ -1,6 +1,6 @@
 import 'dart:math';
-
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Player {
   String name;
@@ -45,14 +45,20 @@ class PlayersProvider with ChangeNotifier {
       _players[playerName] = newPlayer;
       _unassignedPlayers.add(newPlayer);
     }
+    _loadInitialAssignedPlayersCount();
+  }
+
+  Future<void> _loadInitialAssignedPlayersCount() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int initialCount = prefs.getInt("numberOfSections") ?? 3;
+    updateAssignedPlayersListCount(initialCount);
   }
 
   Map<String, Player> get players => Map.unmodifiable(_players);
 
-  // 새로운 플레이어 추가
   void addPlayer({
     required String name,
-    required bool manager, // Bool -> bool
+    required bool manager,
     required int rate,
     required String gender,
     required int played,
@@ -73,7 +79,6 @@ class PlayersProvider with ChangeNotifier {
     }
   }
 
-  // 지정된 이름의 플레이어 제거
   void removePlayer(String name) {
     if (_players.containsKey(name)) {
       Player playerToRemove = _players[name]!;
@@ -90,7 +95,6 @@ class PlayersProvider with ChangeNotifier {
     }
   }
 
-  // 플레이어 이름 변경
   void updatePlayerName(String oldName, String newName) {
     if (_players.containsKey(oldName)) {
       Player? player = _players.remove(oldName);
@@ -102,21 +106,48 @@ class PlayersProvider with ChangeNotifier {
     }
   }
 
-  // 모든 플레이어 제거
   void clearPlayers() {
     _players.clear();
     _unassignedPlayers.clear();
-    _assignedPlayers.clear();
+    for (final list in _assignedPlayers) {
+      list.clear();
+    }
     notifyListeners();
   }
 
-  // 플레이어 리스트 반환 (이름으로 정렬)
   List<Player> getPlayers() {
     var playerList = _players.values.toList();
     playerList.sort((a, b) => a.name.compareTo(b.name));
     return playerList;
   }
 
-  // 할당되지 않은 플레이어 목록 반환 (읽기 전용)
+  void updateAssignedPlayersListCount(int newCount) {
+    if (newCount < 0) {
+      return;
+    }
+
+    int currentCount = _assignedPlayers.length;
+
+    if (newCount < currentCount) {
+      for (int i = newCount; i < currentCount; i++) {
+        List<Player?> playersInList = _assignedPlayers[i];
+        for (Player? player in playersInList) {
+          if (player != null) {
+            _unassignedPlayers.add(player);
+          }
+        }
+      }
+      _assignedPlayers.removeRange(newCount, currentCount);
+    } else if (newCount > currentCount) {
+      for (int i = 0; i < newCount - currentCount; i++) {
+        _assignedPlayers.add([]);
+      }
+    }
+    notifyListeners();
+  }
+
   List<Player> get unassignedPlayers => List.unmodifiable(_unassignedPlayers);
+
+  List<List<Player?>> get assignedPlayers =>
+      List.unmodifiable(_assignedPlayers);
 }

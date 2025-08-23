@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/players_provider.dart';
-import 'dialogs/add_player_dialog.dart'; // AddPlayerDialog import 추가
+import 'dialogs/add_player_dialog.dart';
 import 'dialogs/confirmation_dialog.dart';
 
 class LeftSideMenu extends StatefulWidget {
