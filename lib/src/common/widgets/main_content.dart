@@ -162,7 +162,8 @@ class MainContent extends StatelessWidget {
                       children: playerList.asMap().entries.map<Widget>((entry) {
                         int playerIndex = entry.key; // 플레이어 리스트에서의 인덱스
                         Player player = entry.value; // 플레이어 객체
-                        final String playerSectionId = 'unassigned_$playerIndex';
+                        final String playerSectionId =
+                            'unassigned_$playerIndex';
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4.0),
                           child: PlayerDropZone(
