@@ -5,20 +5,26 @@ import 'package:hotswing/src/providers/players_provider.dart'; // Player 모델 
 class PlayerDragData {
   final Player player;
   final dynamic sourceSectionId; // 플레이어가 어느 섹션에서 왔는지 식별
+  final int section_index;
+  final int sub_index;
 
-  PlayerDragData({required this.player, required this.sourceSectionId});
+  PlayerDragData({required this.player, required this.sourceSectionId, required this.section_index, required this.sub_index});
 }
 
 // 개별 플레이어를 나타내는 드래그 가능한 위젯
 class DraggablePlayerItem extends StatelessWidget {
   final Player player;
   final dynamic sourceSectionId; // 이 플레이어가 현재 속한 섹션의 ID
+  final int section_index;
+  final int sub_index;
   final bool isDragEnabled; // 특정 플레이어의 드래그를 비활성화할 때 사용
 
   const DraggablePlayerItem({
     Key? key,
     required this.player,
     required this.sourceSectionId,
+    required this.section_index,
+    required this.sub_index,
     this.isDragEnabled = true,
   }) : super(key: key);
 
@@ -26,8 +32,8 @@ class DraggablePlayerItem extends StatelessWidget {
   Widget build(BuildContext context) {
     // 플레이어 아이템의 기본 UI
     Widget playerContent = Container(
-      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
-      margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 12.0),
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer.withAlpha(153),
         borderRadius: BorderRadius.circular(8.0),
@@ -55,7 +61,7 @@ class DraggablePlayerItem extends StatelessWidget {
     }
 
     return Draggable<PlayerDragData>(
-      data: PlayerDragData(player: player, sourceSectionId: sourceSectionId),
+      data: PlayerDragData(player: player, sourceSectionId: sourceSectionId, section_index: section_index, sub_index: sub_index),
       // 드래그 중 손가락을 따라다니는 위젯
       feedback: Material(
         elevation: 4.0,
@@ -97,7 +103,9 @@ class DraggablePlayerItem extends StatelessWidget {
 class PlayerDropZone extends StatelessWidget {
   final dynamic sectionId; // 이 드롭 존의 고유 ID
   final Player? player; // 이 존에 표시될 플레이어 (단일 플레이어)
-  final Function(PlayerDragData data, dynamic targetSectionId) onPlayerDropped;
+  final int section_index;
+  final int sub_index;
+  final Function(PlayerDragData data, dynamic targetSectionId, int section_index, int sub_index) onPlayerDropped;
   final bool isDropEnabled; // 이 존에 드롭을 허용할지 여부
   final Color? backgroundColor; // 존 배경색 (호버링 시 변경 위함)
 
@@ -105,6 +113,8 @@ class PlayerDropZone extends StatelessWidget {
     Key? key,
     required this.sectionId,
     this.player,
+    required this.section_index,
+    required this.sub_index,
     required this.onPlayerDropped,
     this.isDropEnabled = true,
     this.backgroundColor,
@@ -118,7 +128,7 @@ class PlayerDropZone extends StatelessWidget {
       },
       onAcceptWithDetails: (details) {
         if (isDropEnabled) {
-          onPlayerDropped(details.data, sectionId);
+          onPlayerDropped(details.data, sectionId, section_index, sub_index);
         }
       },
       builder: (context, candidateData, rejectedData) {
@@ -159,6 +169,8 @@ class PlayerDropZone extends StatelessWidget {
                 : DraggablePlayerItem(
                     player: player!,
                     sourceSectionId: sectionId,
+                    section_index: section_index,
+                    sub_index: sub_index,
                   ),
           ),
         );

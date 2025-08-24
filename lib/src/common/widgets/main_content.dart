@@ -13,9 +13,11 @@ class MainContent extends StatelessWidget {
     BuildContext context,
     PlayerDragData data,
     dynamic targetSectionId,
+    int targetSectionIndex,
+    int targetSubIndex,
   ) {
     print(
-      "Player ${data.player.name} (from ${data.sourceSectionId}) dropped on $targetSectionId. (Action not yet implemented)",
+      "Player ${data.player.name} (from ${data.sourceSectionId} [${data.section_index}, ${data.sub_index}]) dropped on $targetSectionId [$targetSectionIndex, $targetSubIndex]. (Action not yet implemented)",
     );
   }
 
@@ -72,11 +74,15 @@ class MainContent extends StatelessWidget {
                                       player: item.asMap().containsKey(0)
                                           ? item[0]
                                           : null,
-                                      onPlayerDropped: (data, targetId) =>
+                                      section_index: sectionIndex,
+                                      sub_index: 0,
+                                      onPlayerDropped: (data, targetId, targetSectionIdx, targetSubIdx) =>
                                           _handlePlayerDrop(
                                             context,
                                             data,
                                             targetId,
+                                            targetSectionIdx,
+                                            targetSubIdx,
                                           ),
                                       backgroundColor: pastelLightBlue,
                                     ),
@@ -87,11 +93,15 @@ class MainContent extends StatelessWidget {
                                       player: item.asMap().containsKey(1)
                                           ? item[1]
                                           : null,
-                                      onPlayerDropped: (data, targetId) =>
+                                      section_index: sectionIndex,
+                                      sub_index: 1,
+                                      onPlayerDropped: (data, targetId, targetSectionIdx, targetSubIdx) =>
                                           _handlePlayerDrop(
                                             context,
                                             data,
                                             targetId,
+                                            targetSectionIdx,
+                                            targetSubIdx,
                                           ),
                                       backgroundColor: pastelLightBlue,
                                     ),
@@ -112,11 +122,15 @@ class MainContent extends StatelessWidget {
                                       player: item.asMap().containsKey(2)
                                           ? item[2]
                                           : null,
-                                      onPlayerDropped: (data, targetId) =>
+                                      section_index: sectionIndex,
+                                      sub_index: 2,
+                                      onPlayerDropped: (data, targetId, targetSectionIdx, targetSubIdx) =>
                                           _handlePlayerDrop(
                                             context,
                                             data,
                                             targetId,
+                                            targetSectionIdx,
+                                            targetSubIdx,
                                           ),
                                       backgroundColor: pastelLightBlue,
                                     ),
@@ -127,11 +141,15 @@ class MainContent extends StatelessWidget {
                                       player: item.asMap().containsKey(3)
                                           ? item[3]
                                           : null,
-                                      onPlayerDropped: (data, targetId) =>
+                                      section_index: sectionIndex,
+                                      sub_index: 3,
+                                      onPlayerDropped: (data, targetId, targetSectionIdx, targetSubIdx) =>
                                           _handlePlayerDrop(
                                             context,
                                             data,
                                             targetId,
+                                            targetSectionIdx,
+                                            targetSubIdx,
                                           ),
                                       backgroundColor: pastelLightBlue,
                                     ),
@@ -169,9 +187,11 @@ class MainContent extends StatelessWidget {
                           child: PlayerDropZone(
                             sectionId: playerSectionId,
                             player: player,
+                            section_index: -1, // Unassigned section
+                            sub_index: playerIndex,
                             // PlayerDropZone이 이 플레이어를 DraggablePlayerItem으로 표시할 것으로 예상
-                            onPlayerDropped: (data, targetId) =>
-                                _handlePlayerDrop(context, data, targetId),
+                            onPlayerDropped: (data, targetId, targetSectionIdx, targetSubIdx) =>
+                                _handlePlayerDrop(context, data, targetId, targetSectionIdx, targetSubIdx),
                             backgroundColor: Colors.grey[200], // 각 드롭존 배경색
                           ),
                         );
