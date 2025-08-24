@@ -66,7 +66,16 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                 ? MediaQuery.of(context).size.height * 0.1
                 : 150,
             child: DrawerHeader(
-              decoration: const BoxDecoration(color: Colors.lightBlue),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFFA0E9FF),
+                    Color(0xFFFFFFFF),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

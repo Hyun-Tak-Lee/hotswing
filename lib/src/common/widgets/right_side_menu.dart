@@ -25,7 +25,16 @@ class RightSideMenu extends StatelessWidget {
                 ? MediaQuery.of(context).size.height * 0.1
                 : 150,
             child: const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.lightBlue),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFFA0E9FF),
+                    Color(0xFFFFFFFF),
+                  ],
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                ),
+              ),
               child: Text('옵션', style: TextStyle(fontSize: 24)),
             ),
           ),
