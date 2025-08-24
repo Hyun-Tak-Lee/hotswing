@@ -20,7 +20,6 @@ class MainContent extends StatelessWidget {
 
     final optionsProvider = Provider.of<OptionsProvider>(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
-    final int numberOfSections = optionsProvider.numberOfSections;
     final playerList = playersProvider.unassignedPlayers;
     final List<List<Player?>> sectionData = playersProvider.assignedPlayers;
     final bool shouldShowDivider = optionsProvider.divideTeam;
