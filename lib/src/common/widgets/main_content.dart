@@ -12,13 +12,50 @@ class MainContent extends StatelessWidget {
   void _handlePlayerDrop(
     BuildContext context,
     PlayerDragData data,
+    Player? targetPlayer, // 대상 플레이어 추가
     dynamic targetSectionId,
     int targetSectionIndex,
     int targetSubIndex,
   ) {
-    print(
-      "Player ${data.player.name} (from ${data.sourceSectionId} [${data.section_index}, ${data.sub_index}]) dropped on $targetSectionId [$targetSectionIndex, $targetSubIndex]. (Action not yet implemented)",
-    );
+    final playersProvider = Provider.of<PlayersProvider>(context, listen: false);
+    final Player draggedPlayer = data.player;
+    final int sourceSectionIndex = data.section_index;
+    final int sourceSubIndex = data.sub_index;
+
+    print("${data.player.name}, ${data.sourceSectionId}, [${data.section_index}, ${data.sub_index}] | ${targetPlayer?.name ?? 'none'}, $targetSectionId, [$targetSectionIndex, $targetSubIndex] (Action not yet implemented)");
+
+    // 사례 1: 할당되지 않은 목록에서 드래그한 경우
+    if (sourceSectionIndex == -1) {
+      if (targetSectionIndex != -1) {
+        playersProvider.exchangeUnassignedPlayerWithCourtPlayer(
+          unassignedPlayerToAssign: draggedPlayer,
+          targetCourtSectionIndex: targetSectionIndex,
+          targetCourtPlayerIndex: targetSubIndex,
+        );
+      }
+    }
+    // 사례 2: 코트 슬롯에서 드래그한 경우
+    else {
+      // 사례 2a: 다른 코트 슬롯에 놓은 경우
+      if (targetSectionIndex != -1) {
+        if (sourceSectionIndex == targetSectionIndex && sourceSubIndex == targetSubIndex) {
+          return;
+        }
+        playersProvider.exchangePlayersInCourts(
+          sectionIndex1: sourceSectionIndex,
+          playerIndexInSection1: sourceSubIndex,
+          sectionIndex2: targetSectionIndex,
+          playerIndexInSection2: targetSubIndex,
+        );
+      }
+      // 사례 2b: 할당되지 않은 목록에 놓은 경우
+      else {
+        playersProvider.removePlayerFromCourt(
+          sectionIndex: sourceSectionIndex,
+          playerIndexInSection: sourceSubIndex,
+        );
+      }
+    }
   }
 
   @override
@@ -76,10 +113,11 @@ class MainContent extends StatelessWidget {
                                           : null,
                                       section_index: sectionIndex,
                                       sub_index: 0,
-                                      onPlayerDropped: (data, targetId, targetSectionIdx, targetSubIdx) =>
+                                      onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
                                           _handlePlayerDrop(
                                             context,
                                             data,
+                                            droppedOnPlayer,
                                             targetId,
                                             targetSectionIdx,
                                             targetSubIdx,
@@ -95,10 +133,11 @@ class MainContent extends StatelessWidget {
                                           : null,
                                       section_index: sectionIndex,
                                       sub_index: 1,
-                                      onPlayerDropped: (data, targetId, targetSectionIdx, targetSubIdx) =>
+                                      onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
                                           _handlePlayerDrop(
                                             context,
                                             data,
+                                            droppedOnPlayer,
                                             targetId,
                                             targetSectionIdx,
                                             targetSubIdx,
@@ -124,10 +163,11 @@ class MainContent extends StatelessWidget {
                                           : null,
                                       section_index: sectionIndex,
                                       sub_index: 2,
-                                      onPlayerDropped: (data, targetId, targetSectionIdx, targetSubIdx) =>
+                                      onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
                                           _handlePlayerDrop(
                                             context,
                                             data,
+                                            droppedOnPlayer,
                                             targetId,
                                             targetSectionIdx,
                                             targetSubIdx,
@@ -143,10 +183,11 @@ class MainContent extends StatelessWidget {
                                           : null,
                                       section_index: sectionIndex,
                                       sub_index: 3,
-                                      onPlayerDropped: (data, targetId, targetSectionIdx, targetSubIdx) =>
+                                      onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
                                           _handlePlayerDrop(
                                             context,
                                             data,
+                                            droppedOnPlayer,
                                             targetId,
                                             targetSectionIdx,
                                             targetSubIdx,
@@ -172,14 +213,13 @@ class MainContent extends StatelessWidget {
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Center(
-                // Center 위젯으로 감싸 중앙 정렬 유지
                 child: FractionallySizedBox(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: Column(
                       children: playerList.asMap().entries.map<Widget>((entry) {
-                        int playerIndex = entry.key; // 플레이어 리스트에서의 인덱스
-                        Player player = entry.value; // 플레이어 객체
+                        int playerIndex = entry.key;
+                        Player player = entry.value;
                         final String playerSectionId =
                             'unassigned_$playerIndex';
                         return Padding(
@@ -187,12 +227,11 @@ class MainContent extends StatelessWidget {
                           child: PlayerDropZone(
                             sectionId: playerSectionId,
                             player: player,
-                            section_index: -1, // Unassigned section
+                            section_index: -1,
                             sub_index: playerIndex,
-                            // PlayerDropZone이 이 플레이어를 DraggablePlayerItem으로 표시할 것으로 예상
-                            onPlayerDropped: (data, targetId, targetSectionIdx, targetSubIdx) =>
-                                _handlePlayerDrop(context, data, targetId, targetSectionIdx, targetSubIdx),
-                            backgroundColor: Colors.grey[200], // 각 드롭존 배경색
+                            onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
+                                _handlePlayerDrop(context, data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx),
+                            backgroundColor: Colors.grey[200],
                           ),
                         );
                       }).toList(),

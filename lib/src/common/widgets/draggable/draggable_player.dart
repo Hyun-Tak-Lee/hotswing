@@ -60,7 +60,8 @@ class DraggablePlayerItem extends StatelessWidget {
       return playerContent;
     }
 
-    return Draggable<PlayerDragData>(
+    // Draggable 대신 LongPressDraggable 사용
+    return LongPressDraggable<PlayerDragData>( 
       data: PlayerDragData(player: player, sourceSectionId: sourceSectionId, section_index: section_index, sub_index: sub_index),
       // 드래그 중 손가락을 따라다니는 위젯
       feedback: Material(
@@ -105,7 +106,7 @@ class PlayerDropZone extends StatelessWidget {
   final Player? player; // 이 존에 표시될 플레이어 (단일 플레이어)
   final int section_index;
   final int sub_index;
-  final Function(PlayerDragData data, dynamic targetSectionId, int section_index, int sub_index) onPlayerDropped;
+  final Function(PlayerDragData data, Player? targetPlayer, dynamic targetSectionId, int section_index, int sub_index) onPlayerDropped;
   final bool isDropEnabled; // 이 존에 드롭을 허용할지 여부
   final Color? backgroundColor; // 존 배경색 (호버링 시 변경 위함)
 
@@ -128,7 +129,7 @@ class PlayerDropZone extends StatelessWidget {
       },
       onAcceptWithDetails: (details) {
         if (isDropEnabled) {
-          onPlayerDropped(details.data, sectionId, section_index, sub_index);
+          onPlayerDropped(details.data, player, sectionId, section_index, sub_index);
         }
       },
       builder: (context, candidateData, rejectedData) {
