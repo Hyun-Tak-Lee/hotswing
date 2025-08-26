@@ -7,9 +7,11 @@ class OptionsProvider with ChangeNotifier {
   int _numberOfSections = 3; // 기본값으로 5 설정
 
   static const String _divideTeamKey = 'divideTeam'; // SharedPreferences 키
-  static const String _numberOfSectionsKey = 'numberOfSections'; // SharedPreferences 키
+  static const String _numberOfSectionsKey =
+      'numberOfSections'; // SharedPreferences 키
 
   bool get divideTeam => _divideTeam;
+
   int get numberOfSections => _numberOfSections;
 
   // 생성자: OptionsProvider 객체가 생성될 때 _loadPreferences 호출
@@ -19,7 +21,8 @@ class OptionsProvider with ChangeNotifier {
 
   // SharedPreferences에서 마지막으로 저장된 값들을 불러오는 메소드
   Future<void> _loadPreferences() async {
-    _prefs = await SharedPreferences.getInstance(); // SharedPreferences 인스턴스 가져오기 (비동기)
+    _prefs =
+        await SharedPreferences.getInstance(); // SharedPreferences 인스턴스 가져오기 (비동기)
     _divideTeam = _prefs?.getBool(_divideTeamKey) ?? false;
     _numberOfSections = _prefs?.getInt(_numberOfSectionsKey) ?? 3;
     notifyListeners();

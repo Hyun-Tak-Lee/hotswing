@@ -37,12 +37,14 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
         result['name'] != null &&
         result['rate'] != null &&
         result['gender'] != null &&
-        result['manager'] != null) { // manager 추가
+        result['manager'] != null) {
+      // manager 추가
       playersProvider.addPlayer(
         name: result['name'] as String,
         rate: result['rate'] as int,
         gender: result['gender'] as String,
-        manager: result['manager'] as bool, // manager 추가
+        manager: result['manager'] as bool,
+        // manager 추가
         played: 0,
         waited: 0,
       );
@@ -68,10 +70,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
             child: DrawerHeader(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Color(0xFFA0E9FF),
-                    Color(0xFFFFFFFF),
-                  ],
+                  colors: [Color(0xFFA0E9FF), Color(0xFFFFFFFF)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

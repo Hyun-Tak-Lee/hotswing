@@ -8,7 +8,12 @@ class PlayerDragData {
   final int section_index;
   final int sub_index;
 
-  PlayerDragData({required this.player, required this.sourceSectionId, required this.section_index, required this.sub_index});
+  PlayerDragData({
+    required this.player,
+    required this.sourceSectionId,
+    required this.section_index,
+    required this.sub_index,
+  });
 }
 
 // 개별 플레이어를 나타내는 드래그 가능한 위젯
@@ -38,16 +43,8 @@ class DraggablePlayerItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 12.0),
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withAlpha(153),
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(8.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(26),
-            spreadRadius: 1,
-            blurRadius: 2,
-            offset: const Offset(0, 1),
-          ),
-        ],
       ),
       child: Text(
         player.name,
@@ -64,9 +61,13 @@ class DraggablePlayerItem extends StatelessWidget {
     }
 
     return LongPressDraggable<PlayerDragData>(
-      data: PlayerDragData(player: player, sourceSectionId: sourceSectionId, section_index: section_index, sub_index: sub_index),
+      data: PlayerDragData(
+        player: player,
+        sourceSectionId: sourceSectionId,
+        section_index: section_index,
+        sub_index: sub_index,
+      ),
       feedback: Material(
-        elevation: 4.0,
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(8.0),
         child: ConstrainedBox(
@@ -79,7 +80,7 @@ class DraggablePlayerItem extends StatelessWidget {
               horizontal: 12.0,
             ),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withAlpha(204),
+              color: const Color(0xAA007FFF),
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Text(
@@ -121,7 +122,14 @@ class PlayerDropZone extends StatelessWidget {
   final Player? player;
   final int section_index;
   final int sub_index;
-  final Function(PlayerDragData data, Player? targetPlayer, dynamic targetSectionId, int section_index, int sub_index) onPlayerDropped;
+  final Function(
+    PlayerDragData data,
+    Player? targetPlayer,
+    dynamic targetSectionId,
+    int section_index,
+    int sub_index,
+  )
+  onPlayerDropped;
   final bool isDropEnabled;
   final Color? backgroundColor;
   final VoidCallback? onDragStartedFromZone;
@@ -148,17 +156,19 @@ class PlayerDropZone extends StatelessWidget {
       },
       onAcceptWithDetails: (details) {
         if (isDropEnabled) {
-          onPlayerDropped(details.data, player, sectionId, section_index, sub_index);
+          onPlayerDropped(
+            details.data,
+            player,
+            sectionId,
+            section_index,
+            sub_index,
+          );
         }
       },
       builder: (context, candidateData, rejectedData) {
         bool isHovering = candidateData.isNotEmpty && isDropEnabled;
-        Color defaultBgColor =
-            backgroundColor ??
-            Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(77);
-        Color hoveringBgColor = Theme.of(
-          context,
-        ).colorScheme.primaryContainer.withAlpha(128);
+        Color defaultBgColor = backgroundColor ?? const Color(0x20F0FFFF);
+        Color hoveringBgColor = const Color(0x20F0FFFF);
 
         return Container(
           padding: const EdgeInsets.all(8.0),
@@ -168,15 +178,15 @@ class PlayerDropZone extends StatelessWidget {
             borderRadius: BorderRadius.circular(12.0),
             border: Border.all(
               color: isHovering
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.outline.withAlpha(128),
+                  ? const Color(0xFFFFD1DC)
+                  : Theme.of(context).colorScheme.outline.withAlpha(64),
               width: isHovering ? 2.0 : 1.0,
             ),
           ),
           child: Center(
             child: player == null
                 ? Text(
-                    isDropEnabled ? '비어있음' : 'X',
+                    isDropEnabled ? '' : 'X',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 24.0,

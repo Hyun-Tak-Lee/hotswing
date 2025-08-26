@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue.shade100),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFB0E0E6)),
       ),
       home: const MyHomePage(),
     );
@@ -49,13 +49,11 @@ class _MyHomePageState extends State<MyHomePage> {
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
 
-    return Container( // 전체 배경을 위한 Container
+    return Container(
+      // 전체 배경을 위한 Container
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            const Color(0xFFFFD1DC),
-            const Color(0xFFE6E6FA),
-          ],
+          colors: [const Color(0xFFFFD1DC), const Color(0xFFE6E6FA)],
           begin: Alignment.centerLeft, // 그라데이션 시작 위치
           end: Alignment.centerRight, // 그라데이션 끝 위치
         ),
@@ -83,7 +81,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         drawer: LeftSideMenu(isMobileSize: isMobileSize),
         endDrawer: RightSideMenu(isMobileSize: isMobileSize),
-        body: MainContent(isMobileSize: isMobileSize), // AppBar 아래 내용만 MainContent
+        body: MainContent(
+          isMobileSize: isMobileSize,
+        ), // AppBar 아래 내용만 MainContent
       ),
     );
   }

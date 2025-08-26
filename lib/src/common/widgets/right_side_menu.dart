@@ -11,7 +11,10 @@ class RightSideMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final optionsProvider = Provider.of<OptionsProvider>(context);
-    final playersProvider = Provider.of<PlayersProvider>(context, listen: false);
+    final playersProvider = Provider.of<PlayersProvider>(
+      context,
+      listen: false,
+    );
 
     return Drawer(
       width: isMobileSize
@@ -27,10 +30,7 @@ class RightSideMenu extends StatelessWidget {
             child: const DrawerHeader(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Color(0xFFA0E9FF),
-                    Color(0xFFFFFFFF),
-                  ],
+                  colors: [Color(0xFFA0E9FF), Color(0xFFFFFFFF)],
                   begin: Alignment.topRight,
                   end: Alignment.bottomLeft,
                 ),
@@ -39,10 +39,7 @@ class RightSideMenu extends StatelessWidget {
             ),
           ),
           SwitchListTile(
-            title: const Text(
-              '팀 나누기',
-              style: TextStyle(fontSize: 24),
-            ),
+            title: const Text('팀 나누기', style: TextStyle(fontSize: 24)),
             value: optionsProvider.divideTeam,
             onChanged: (bool value) {
               optionsProvider.toggleDivideTeam();
@@ -69,7 +66,9 @@ class RightSideMenu extends StatelessWidget {
                   onChanged: (double value) {
                     int newNumberOfSections = value.round();
                     optionsProvider.setNumberOfSections(newNumberOfSections);
-                    playersProvider.updateAssignedPlayersListCount(newNumberOfSections);
+                    playersProvider.updateAssignedPlayersListCount(
+                      newNumberOfSections,
+                    );
                   },
                   activeColor: Colors.blueAccent,
                 ),
