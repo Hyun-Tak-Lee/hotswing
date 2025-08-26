@@ -12,7 +12,7 @@ class MainContent extends StatelessWidget {
   void _handlePlayerDrop(
     BuildContext context,
     PlayerDragData data,
-    Player? targetPlayer, // 대상 플레이어 추가
+    Player? targetPlayer,
     dynamic targetSectionId,
     int targetSectionIndex,
     int targetSubIndex,
@@ -210,35 +210,53 @@ class MainContent extends StatelessWidget {
           const VerticalDivider(width: 1.0, color: Colors.grey),
           Expanded(
             flex: 1,
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 10.0),
-              child: Center(
-                child: FractionallySizedBox(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      children: playerList.asMap().entries.map<Widget>((entry) {
-                        int playerIndex = entry.key;
-                        Player player = entry.value;
-                        final String playerSectionId =
-                            'unassigned_$playerIndex';
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: PlayerDropZone(
-                            sectionId: playerSectionId,
-                            player: player,
-                            section_index: -1,
-                            sub_index: playerIndex,
-                            onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                _handlePlayerDrop(context, data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx),
-                            backgroundColor: Colors.grey[200],
-                          ),
-                        );
-                      }).toList(),
+            child: DragTarget<PlayerDragData>(
+              onWillAcceptWithDetails: (details) {
+                final data = details.data;
+                return data.section_index != -1;
+              },
+              onAcceptWithDetails: (details) {
+                final data = details.data;
+                _handlePlayerDrop(
+                  context,
+                  data,
+                  null,
+                  'unassigned_area_target',
+                  -1,
+                  -1,
+                );
+              },
+              builder: (BuildContext context, List<PlayerDragData?> candidateData, List<dynamic> rejectedData) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Center(
+                    child: FractionallySizedBox(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: Column(
+                          children: playerList.asMap().entries.map<Widget>((entry) {
+                            int playerIndex = entry.key;
+                            Player player = entry.value;
+                            final String playerSectionId = 'unassigned_$playerIndex';
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4.0),
+                              child: PlayerDropZone(
+                                sectionId: playerSectionId,
+                                player: player,
+                                section_index: -1,
+                                sub_index: playerIndex,
+                                onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
+                                    _handlePlayerDrop(context, data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx),
+                                backgroundColor: Colors.grey[200],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
         ],
