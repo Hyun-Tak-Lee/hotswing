@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hotswing/src/common/utils/skill_utils.dart'; // 공통 skill_utils.dart 파일 import
 
 /// 플레이어 정보를 나타내는 클래스입니다.
 class Player {
@@ -41,10 +42,12 @@ class PlayersProvider with ChangeNotifier {
 
   /// PlayersProvider 객체를 생성하고 초기 플레이어 데이터를 로드합니다.
   PlayersProvider() {
+    final List<int> skillRates = skillLevelToRate.values.toList();
+
     for (int i = 1; i <= 24; i++) {
       String playerName = 'Player $i';
       bool manager = _random.nextBool();
-      int playerRate = 1000 + ((i - 1) * 50);
+      int playerRate = skillRates[_random.nextInt(skillRates.length)];
       String gender = _random.nextBool() ? '남' : '여';
       int played = 0;
       int waited = 0;
@@ -138,10 +141,16 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// 모든 플레이어의 목록을 이름순으로 정렬하여 반환합니다.
+  /// 모든 플레이어의 목록을 played, waited 순으로 정렬하여 반환합니다.
   List<Player> getPlayers() {
     var playerList = _players.values.toList();
-    playerList.sort((a, b) => a.name.compareTo(b.name));
+    playerList.sort((a, b) {
+      int playedCompare = a.played.compareTo(b.played);
+      if (playedCompare != 0) {
+        return playedCompare;
+      }
+      return a.waited.compareTo(b.waited);
+    });
     return playerList;
   }
 

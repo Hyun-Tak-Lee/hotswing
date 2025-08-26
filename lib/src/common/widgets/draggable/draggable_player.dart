@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
+import 'package:hotswing/src/common/utils/skill_utils.dart'; // 공통 유틸리티 파일 import
 
 // 드래그되는 플레이어의 데이터와 원래 소속 섹션 정보를 전달하기 위한 클래스
 class PlayerDragData {
@@ -37,22 +38,70 @@ class DraggablePlayerItem extends StatelessWidget {
     this.onDragEnded,
   }) : super(key: key);
 
+  String _getSkillLevelString(int rate) {
+    return rateToSkillLevel[rate] ?? rate.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobileSize = screenWidth < 600;
+
+    final double nameFontSize = isMobileSize ? 20.0 : 32.0;
+    final double skillFontSize = isMobileSize ? 14.0 : 28.0;
+    final double detailFontSize = isMobileSize ? 14.0 : 28.0;
+
+    String skillLevelDisplay = _getSkillLevelString(player.rate);
+    final onPrimaryContainer = Theme.of(context).colorScheme.onPrimaryContainer;
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
+
     Widget playerContent = Container(
-      padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 12.0),
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
+      margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 0.0),
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(8.0),
       ),
-      child: Text(
-        player.name,
-        style: TextStyle(
-          fontSize: 24.0,
-          color: Theme.of(context).colorScheme.onPrimaryContainer,
-        ),
-        overflow: TextOverflow.ellipsis,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '${player.name} (${player.gender})',
+            style: TextStyle(
+              fontSize: nameFontSize,
+              fontWeight: FontWeight.bold,
+              color: onPrimaryContainer,
+            ),
+          ),
+          SizedBox(height: 2.0),
+          Text(
+            'Skill: $skillLevelDisplay',
+            style: TextStyle(
+              fontSize: skillFontSize,
+              color: onPrimaryContainer.withAlpha(230),
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 4.0),
+          Text(
+            'P: ${player.played}',
+            style: TextStyle(
+              fontSize: detailFontSize,
+              color: onPrimaryContainer.withAlpha(204),
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 2.0),
+          Text(
+            'W: ${player.waited}',
+            style: TextStyle(
+              fontSize: detailFontSize,
+              color: onPrimaryContainer.withAlpha(204),
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
 
@@ -72,31 +121,68 @@ class DraggablePlayerItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.0),
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.5,
+            maxWidth: MediaQuery.of(context).size.width * 0.7,
           ),
           child: Container(
             padding: const EdgeInsets.symmetric(
-              vertical: 10.0,
+              vertical: 8.0,
               horizontal: 12.0,
             ),
             decoration: BoxDecoration(
               color: const Color(0xAA007FFF),
               borderRadius: BorderRadius.circular(8.0),
             ),
-            child: Text(
-              player.name,
-              style: TextStyle(
-                fontSize: 24.0,
-                color: Theme.of(context).colorScheme.onPrimary,
-                decoration: TextDecoration.none,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${player.name} (${player.gender})',
+                  style: TextStyle(
+                    fontSize: nameFontSize,
+                    fontWeight: FontWeight.bold,
+                    color: onPrimary,
+                    decoration: TextDecoration.none,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 2.0),
+                Text(
+                  'Skill: $skillLevelDisplay',
+                  style: TextStyle(
+                    fontSize: skillFontSize,
+                    color: onPrimary.withAlpha(230),
+                    decoration: TextDecoration.none,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4.0),
+                Text(
+                  'P: ${player.played}',
+                  style: TextStyle(
+                    fontSize: detailFontSize,
+                    color: onPrimary.withAlpha(204),
+                    decoration: TextDecoration.none,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 2.0),
+                Text(
+                  'W: ${player.waited}',
+                  style: TextStyle(
+                    fontSize: detailFontSize,
+                    color: onPrimary.withAlpha(204),
+                    decoration: TextDecoration.none,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
         ),
       ),
       childWhenDragging: Opacity(opacity: 0.5, child: playerContent),
       onDragStarted: () {
-        // section_index가 -1이 아닌 경우 (즉, 코트 구역의 플레이어인 경우) 콜백 호출
         if (section_index != -1 && onDragStarted != null) {
           onDragStarted!();
         }
@@ -150,6 +236,10 @@ class PlayerDropZone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobileSize = screenWidth < 600;
+    final double currentMinHeight = isMobileSize ? 120.0 : 160.0;
+
     return DragTarget<PlayerDragData>(
       onWillAcceptWithDetails: (details) {
         return isDropEnabled;
@@ -170,39 +260,42 @@ class PlayerDropZone extends StatelessWidget {
         Color defaultBgColor = backgroundColor ?? const Color(0x20F0FFFF);
         Color hoveringBgColor = const Color(0x20F0FFFF);
 
-        return Container(
-          padding: const EdgeInsets.all(8.0),
-          margin: const EdgeInsets.all(4.0),
-          decoration: BoxDecoration(
-            color: isHovering ? hoveringBgColor : defaultBgColor,
-            borderRadius: BorderRadius.circular(12.0),
-            border: Border.all(
-              color: isHovering
-                  ? const Color(0xFFFFD1DC)
-                  : Theme.of(context).colorScheme.outline.withAlpha(64),
-              width: isHovering ? 2.0 : 1.0,
+        return ConstrainedBox(
+          constraints: BoxConstraints(minHeight: currentMinHeight),
+          child: Container(
+            padding: const EdgeInsets.all(4.0),
+            margin: const EdgeInsets.all(4.0),
+            decoration: BoxDecoration(
+              color: isHovering ? hoveringBgColor : defaultBgColor,
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(
+                color: isHovering
+                    ? const Color(0xFFFFD1DC)
+                    : Theme.of(context).colorScheme.outline.withAlpha(64),
+                width: isHovering ? 2.0 : 1.0,
+              ),
             ),
-          ),
-          child: Center(
-            child: player == null
-                ? Text(
-                    isDropEnabled ? '' : 'X',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24.0,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant.withAlpha(179),
+            child: Center(
+              child: player == null
+                  ? Text(
+                      isDropEnabled ? '' : 'X',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24.0,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant.withAlpha(179),
+                      ),
+                    )
+                  : DraggablePlayerItem(
+                      player: player!,
+                      sourceSectionId: sectionId,
+                      section_index: section_index,
+                      sub_index: sub_index,
+                      onDragStarted: onDragStartedFromZone,
+                      onDragEnded: onDragEndedFromZone,
                     ),
-                  )
-                : DraggablePlayerItem(
-                    player: player!,
-                    sourceSectionId: sectionId,
-                    section_index: section_index,
-                    sub_index: sub_index,
-                    onDragStarted: onDragStartedFromZone,
-                    onDragEnded: onDragEndedFromZone,
-                  ),
+            ),
           ),
         );
       },

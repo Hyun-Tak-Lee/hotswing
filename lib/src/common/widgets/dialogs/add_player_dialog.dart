@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/utils/skill_utils.dart'; // 공통 유틸리티 파일 import
 
 class AddPlayerDialog extends StatefulWidget {
   const AddPlayerDialog({super.key});
@@ -15,14 +16,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   final List<String> _genders = ['남', '여'];
   bool _isManager = false;
   String? _selectedSkillLevel;
-  final Map<String, int> _skillLevelToRate = {
-    '초심': 0,
-    'D': 100,
-    'C': 200,
-    'B': 300,
-    'A': 400,
-    'S': 500,
-  };
+  // _skillLevelToRate 맵 정의 삭제
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +47,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Flexible(
-                      flex: isMobileSize ? 4 : 2,
+                      flex: isMobileSize ? 3 : 2,
                       child: TextFormField(
                         decoration: InputDecoration(
                           labelText: '이름',
@@ -71,7 +65,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       ),
                     ),
                     Flexible(
-                      flex: isMobileSize ? 1 : 1,
+                      flex: isMobileSize ? 2 : 1,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -101,8 +95,8 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     labelStyle: TextStyle(fontSize: labelFontSize),
                   ),
                   value: _selectedSkillLevel,
-                  itemHeight: isMobileSize ? 64.0 : 80.0,
-                  items: _skillLevelToRate.keys.map((String level) {
+                  itemHeight: isMobileSize ? 48.0 : 80.0,
+                  items: skillLevelToRate.keys.map((String level) { // 공통 skillLevelToRate 사용
                     return DropdownMenuItem<String>(
                       value: level,
                       child: Text(level, style: TextStyle(fontSize: labelFontSize)),
@@ -116,7 +110,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   validator: (value) => value == null ? '급수를 선택하세요.' : null,
                   onSaved: (value) {
                     if (value != null) {
-                      _rate = _skillLevelToRate[value];
+                      _rate = skillLevelToRate[value]; // 공통 skillLevelToRate 사용
                     }
                   },
                 ),
@@ -127,7 +121,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     labelStyle: TextStyle(fontSize: labelFontSize),
                   ),
                   value: _selectedGender,
-                  itemHeight: isMobileSize ? 64.0 : 80.0,
+                  itemHeight: isMobileSize ? 48.0 : 80.0,
                   items: _genders.map((String gender) {
                     return DropdownMenuItem<String>(
                       value: gender,
