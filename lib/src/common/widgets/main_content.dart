@@ -118,7 +118,7 @@ class _MainContentState extends State<MainContent> {
                           _courtGameStartedState[sectionIndex] ?? false;
                       return Container(
                         margin: const EdgeInsets.all(5.0),
-                        padding: const EdgeInsets.all(10.0),
+                        padding: const EdgeInsets.all(5.0),
                         decoration: BoxDecoration(
                           color: pastelBlue,
                           borderRadius: BorderRadius.circular(20.0),

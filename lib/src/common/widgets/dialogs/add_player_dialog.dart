@@ -57,6 +57,9 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                           if (value == null || value.isEmpty) {
                             return '이름을 입력하세요.';
                           }
+                          if (value.length > 7) {
+                            return '이름은 7자 이하로 입력해주세요.';
+                          }
                           return null;
                         },
                         onSaved: (value) {

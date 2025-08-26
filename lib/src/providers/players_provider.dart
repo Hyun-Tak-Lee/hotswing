@@ -1,9 +1,8 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:hotswing/src/common/utils/skill_utils.dart'; // 공통 skill_utils.dart 파일 import
+import 'package:hotswing/src/common/utils/skill_utils.dart';
 
-/// 플레이어 정보를 나타내는 클래스입니다.
 class Player {
   String name;
   bool manager;
@@ -16,11 +15,11 @@ class Player {
   Player({
     required this.rate,
     required this.manager,
-    required this.name,
+    required String name,
     required this.gender,
     required this.played,
     required this.waited,
-  });
+  }) : this.name = name.length > 7 ? name.substring(0, 7) : name;
 
   /// 두 Player 객체가 동일한지 비교합니다. 이름이 같으면 동일한 것으로 간주합니다.
   @override
@@ -45,7 +44,7 @@ class PlayersProvider with ChangeNotifier {
     final List<int> skillRates = skillLevelToRate.values.toList();
 
     for (int i = 1; i <= 24; i++) {
-      String playerName = 'Player $i';
+      String playerName = '플레이어 $i';
       bool manager = _random.nextBool();
       int playerRate = skillRates[_random.nextInt(skillRates.length)];
       String gender = _random.nextBool() ? '남' : '여';
@@ -84,6 +83,7 @@ class PlayersProvider with ChangeNotifier {
     required int played,
     required int waited,
   }) {
+    if (name.length > 7) return;
     if (!_players.containsKey(name)) {
       Player newPlayer = Player(
         name: name,
@@ -120,7 +120,8 @@ class PlayersProvider with ChangeNotifier {
   /// 플레이어의 이름을 변경합니다. 기존 이름과 새 이름이 같거나 새 이름이 이미 존재하면 변경하지 않습니다.
   void updatePlayerName(String oldName, String newName) {
     if (oldName == newName) return;
-    if (_players.containsKey(newName)) return;
+    if (newName.length > 7) return;
+    if (_players.containsKey(newName)) return;ㅁ
     if (_players.containsKey(oldName)) {
       Player? player = _players.remove(oldName);
       if (player != null) {

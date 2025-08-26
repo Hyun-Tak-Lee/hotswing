@@ -238,7 +238,7 @@ class PlayerDropZone extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobileSize = screenWidth < 600;
-    final double currentMinHeight = isMobileSize ? 120.0 : 160.0;
+    final double currentMinHeight = isMobileSize ? 160.0 : 240.0;
 
     return DragTarget<PlayerDragData>(
       onWillAcceptWithDetails: (details) {
