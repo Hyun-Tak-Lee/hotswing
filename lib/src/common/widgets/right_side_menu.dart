@@ -15,19 +15,21 @@ class RightSideMenu extends StatelessWidget {
       context,
       listen: false,
     );
+    final iconAndFontSize = isMobileSize ? 24.0 : 48.0;
+    final switchScale = isMobileSize ? 1.0 : 1.5;
 
     return Drawer(
       width: isMobileSize
           ? MediaQuery.of(context).size.width * 0.5
-          : MediaQuery.of(context).size.width * 0.25,
+          : MediaQuery.of(context).size.width * 0.3,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           SizedBox(
             height: isMobileSize
                 ? MediaQuery.of(context).size.height * 0.1
-                : 150,
-            child: const DrawerHeader(
+                : 180,
+            child: DrawerHeader(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Color(0xFFA0E9FF), Color(0xFFFFFFFF)],
@@ -35,17 +37,25 @@ class RightSideMenu extends StatelessWidget {
                   end: Alignment.bottomLeft,
                 ),
               ),
-              child: Text('옵션', style: TextStyle(fontSize: 24)),
+              child: Text('옵션', style: TextStyle(fontSize: iconAndFontSize)),
             ),
           ),
-          SwitchListTile(
-            title: const Text('팀 나누기', style: TextStyle(fontSize: 24)),
-            value: optionsProvider.divideTeam,
-            onChanged: (bool value) {
+          ListTile( // SwitchListTile 대신 ListTile 사용
+            title: Text('팀 나누기', style: TextStyle(fontSize: iconAndFontSize)),
+            trailing: Transform.scale( // Switch를 Transform.scale로 감싸기
+              scale: switchScale,
+              child: Switch(
+                value: optionsProvider.divideTeam,
+                onChanged: (bool value) {
+                  optionsProvider.toggleDivideTeam();
+                },
+                activeColor: Colors.blueAccent,
+              ),
+            ),
+            tileColor: Colors.black.withAlpha(13),
+            onTap: () { // ListTile을 탭했을 때도 토글되도록
               optionsProvider.toggleDivideTeam();
             },
-            activeColor: Colors.blueAccent,
-            tileColor: Colors.black.withAlpha(13),
           ),
           const SizedBox(height: 10), // 옵션 간 간격 추가
           ListTile(
@@ -55,7 +65,7 @@ class RightSideMenu extends StatelessWidget {
               children: [
                 Text(
                   '코트 수: ${optionsProvider.numberOfSections}',
-                  style: const TextStyle(fontSize: 24),
+                  style: TextStyle(fontSize: iconAndFontSize),
                 ),
                 Slider(
                   value: optionsProvider.numberOfSections.toDouble(),

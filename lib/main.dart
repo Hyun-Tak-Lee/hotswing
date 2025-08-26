@@ -45,17 +45,17 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
+    final double iconSize = isMobileSize ? 24.0 : 76.0;
+    final double appBarHeight = isMobileSize ? kToolbarHeight : 88.0; // 조건부 AppBar 높이 (태블릿에서 72.0)
 
     return Container(
-      // 전체 배경을 위한 Container
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [const Color(0xFFFFD1DC), const Color(0xFFE6E6FA)],
-          begin: Alignment.centerLeft, // 그라데이션 시작 위치
-          end: Alignment.centerRight, // 그라데이션 끝 위치
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
       ),
       child: Scaffold(
@@ -63,9 +63,11 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
-          elevation: 0, // AppBar 그림자 제거
+          elevation: 0,
+          toolbarHeight: appBarHeight, // 수정된 AppBar 높이 적용
           leading: IconButton(
             icon: const Icon(Icons.menu),
+            iconSize: iconSize,
             onPressed: () {
               _scaffoldKey.currentState?.openDrawer();
             },
@@ -73,6 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
           actions: <Widget>[
             IconButton(
               icon: const Icon(Icons.menu),
+              iconSize: iconSize,
               onPressed: () {
                 _scaffoldKey.currentState?.openEndDrawer();
               },
@@ -83,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
         endDrawer: RightSideMenu(isMobileSize: isMobileSize),
         body: MainContent(
           isMobileSize: isMobileSize,
-        ), // AppBar 아래 내용만 MainContent
+        ),
       ),
     );
   }

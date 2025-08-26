@@ -38,13 +38,11 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
         result['rate'] != null &&
         result['gender'] != null &&
         result['manager'] != null) {
-      // manager 추가
       playersProvider.addPlayer(
         name: result['name'] as String,
         rate: result['rate'] as int,
         gender: result['gender'] as String,
         manager: result['manager'] as bool,
-        // manager 추가
         played: 0,
         waited: 0,
       );
@@ -55,18 +53,17 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
   Widget build(BuildContext context) {
     final playersProvider = Provider.of<PlayersProvider>(context);
     final players = playersProvider.getPlayers();
+    final iconAndFontSize = widget.isMobileSize ? 24.0 : 48.0;
 
     return Drawer(
-      width: widget.isMobileSize
-          ? MediaQuery.of(context).size.width * 0.75
-          : MediaQuery.of(context).size.width * 0.5,
+      width: MediaQuery.of(context).size.width * 0.75,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           SizedBox(
             height: widget.isMobileSize
                 ? MediaQuery.of(context).size.height * 0.1
-                : 150,
+                : 180,
             child: DrawerHeader(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -80,10 +77,11 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                 children: [
                   Text(
                     '참여자 (${players.length}명)',
-                    style: const TextStyle(fontSize: 24),
+                    style: TextStyle(fontSize: iconAndFontSize),
                   ),
                   IconButton(
                     icon: const Icon(Icons.add),
+                    iconSize: iconAndFontSize,
                     onPressed: () {
                       _showAddPlayerDialog(playersProvider);
                     },
@@ -119,7 +117,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                       : Text(
                           // 운영진 여부 표시
                           '${player.name} (${player.gender})${player.manager ? " (운영진)" : ""}',
-                          style: const TextStyle(fontSize: 24),
+                          style: TextStyle(fontSize: iconAndFontSize),
                         ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -128,6 +126,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                         icon: Icon(
                           _editingPlayer == player ? Icons.check : Icons.edit,
                         ),
+                        iconSize: iconAndFontSize,
                         onPressed: () {
                           if (_editingPlayer == player) {
                             final newName = _textController.text;
@@ -150,6 +149,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete),
+                        iconSize: iconAndFontSize,
                         onPressed: () {
                           if (_editingPlayer == player) {
                             setState(() {
