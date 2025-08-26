@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:hotswing/src/providers/players_provider.dart'; // Player 모델 임포트
+import 'package:hotswing/src/providers/players_provider.dart';
 
 // 드래그되는 플레이어의 데이터와 원래 소속 섹션 정보를 전달하기 위한 클래스
 class PlayerDragData {
   final Player player;
-  final dynamic sourceSectionId; // 플레이어가 어느 섹션에서 왔는지 식별
+  final dynamic sourceSectionId;
   final int section_index;
   final int sub_index;
 
@@ -14,10 +14,12 @@ class PlayerDragData {
 // 개별 플레이어를 나타내는 드래그 가능한 위젯
 class DraggablePlayerItem extends StatelessWidget {
   final Player player;
-  final dynamic sourceSectionId; // 이 플레이어가 현재 속한 섹션의 ID
+  final dynamic sourceSectionId;
   final int section_index;
   final int sub_index;
-  final bool isDragEnabled; // 특정 플레이어의 드래그를 비활성화할 때 사용
+  final bool isDragEnabled;
+  final VoidCallback? onDragStarted;
+  final VoidCallback? onDragEnded;
 
   const DraggablePlayerItem({
     Key? key,
@@ -26,11 +28,12 @@ class DraggablePlayerItem extends StatelessWidget {
     required this.section_index,
     required this.sub_index,
     this.isDragEnabled = true,
+    this.onDragStarted,
+    this.onDragEnded,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // 플레이어 아이템의 기본 UI
     Widget playerContent = Container(
       padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 12.0),
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
@@ -60,10 +63,8 @@ class DraggablePlayerItem extends StatelessWidget {
       return playerContent;
     }
 
-    // Draggable 대신 LongPressDraggable 사용
-    return LongPressDraggable<PlayerDragData>( 
+    return LongPressDraggable<PlayerDragData>(
       data: PlayerDragData(player: player, sourceSectionId: sourceSectionId, section_index: section_index, sub_index: sub_index),
-      // 드래그 중 손가락을 따라다니는 위젯
       feedback: Material(
         elevation: 4.0,
         color: Colors.transparent,
@@ -92,9 +93,23 @@ class DraggablePlayerItem extends StatelessWidget {
           ),
         ),
       ),
-      // 드래그가 시작된 후 원래 위치에 표시될 위젯
       childWhenDragging: Opacity(opacity: 0.5, child: playerContent),
-      // 드래그되지 않을 때 기본적으로 표시될 위젯
+      onDragStarted: () {
+        // section_index가 -1이 아닌 경우 (즉, 코트 구역의 플레이어인 경우) 콜백 호출
+        if (section_index != -1 && onDragStarted != null) {
+          onDragStarted!();
+        }
+      },
+      onDraggableCanceled: (velocity, offset) {
+        if (section_index != -1 && onDragEnded != null) {
+          onDragEnded!();
+        }
+      },
+      onDragCompleted: () {
+        if (section_index != -1 && onDragEnded != null) {
+          onDragEnded!();
+        }
+      },
       child: playerContent,
     );
   }
@@ -102,13 +117,15 @@ class DraggablePlayerItem extends StatelessWidget {
 
 // 플레이어를 담고, 다른 플레이어를 드롭할 수 있는 영역 위젯
 class PlayerDropZone extends StatelessWidget {
-  final dynamic sectionId; // 이 드롭 존의 고유 ID
-  final Player? player; // 이 존에 표시될 플레이어 (단일 플레이어)
+  final dynamic sectionId;
+  final Player? player;
   final int section_index;
   final int sub_index;
   final Function(PlayerDragData data, Player? targetPlayer, dynamic targetSectionId, int section_index, int sub_index) onPlayerDropped;
-  final bool isDropEnabled; // 이 존에 드롭을 허용할지 여부
-  final Color? backgroundColor; // 존 배경색 (호버링 시 변경 위함)
+  final bool isDropEnabled;
+  final Color? backgroundColor;
+  final VoidCallback? onDragStartedFromZone;
+  final VoidCallback? onDragEndedFromZone;
 
   const PlayerDropZone({
     Key? key,
@@ -119,6 +136,8 @@ class PlayerDropZone extends StatelessWidget {
     required this.onPlayerDropped,
     this.isDropEnabled = true,
     this.backgroundColor,
+    this.onDragStartedFromZone,
+    this.onDragEndedFromZone,
   }) : super(key: key);
 
   @override
@@ -133,7 +152,6 @@ class PlayerDropZone extends StatelessWidget {
         }
       },
       builder: (context, candidateData, rejectedData) {
-        // 플레이어 존재 여부와 관계없이 드롭 가능하면 호버링 효과 표시
         bool isHovering = candidateData.isNotEmpty && isDropEnabled;
         Color defaultBgColor =
             backgroundColor ??
@@ -172,6 +190,8 @@ class PlayerDropZone extends StatelessWidget {
                     sourceSectionId: sectionId,
                     section_index: section_index,
                     sub_index: sub_index,
+                    onDragStarted: onDragStartedFromZone,
+                    onDragEnded: onDragEndedFromZone,
                   ),
           ),
         );
