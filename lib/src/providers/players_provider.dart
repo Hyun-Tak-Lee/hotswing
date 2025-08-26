@@ -121,7 +121,7 @@ class PlayersProvider with ChangeNotifier {
   void updatePlayerName(String oldName, String newName) {
     if (oldName == newName) return;
     if (newName.length > 7) return;
-    if (_players.containsKey(newName)) return;ㅁ
+    if (_players.containsKey(newName)) return;
     if (_players.containsKey(oldName)) {
       Player? player = _players.remove(oldName);
       if (player != null) {
