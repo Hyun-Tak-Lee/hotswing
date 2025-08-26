@@ -20,8 +20,8 @@ class RightSideMenu extends StatelessWidget {
 
     return Drawer(
       width: isMobileSize
-          ? MediaQuery.of(context).size.width * 0.5
-          : MediaQuery.of(context).size.width * 0.3,
+          ? MediaQuery.of(context).size.width * 0.55
+          : MediaQuery.of(context).size.width * 0.35,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
@@ -40,9 +40,9 @@ class RightSideMenu extends StatelessWidget {
               child: Text('옵션', style: TextStyle(fontSize: iconAndFontSize)),
             ),
           ),
-          ListTile( // SwitchListTile 대신 ListTile 사용
+          ListTile(
             title: Text('팀 나누기', style: TextStyle(fontSize: iconAndFontSize)),
-            trailing: Transform.scale( // Switch를 Transform.scale로 감싸기
+            trailing: Transform.scale(
               scale: switchScale,
               child: Switch(
                 value: optionsProvider.divideTeam,
@@ -53,11 +53,11 @@ class RightSideMenu extends StatelessWidget {
               ),
             ),
             tileColor: Colors.black.withAlpha(13),
-            onTap: () { // ListTile을 탭했을 때도 토글되도록
+            onTap: () {
               optionsProvider.toggleDivideTeam();
             },
           ),
-          const SizedBox(height: 10), // 옵션 간 간격 추가
+          const SizedBox(height: 10),
           ListTile(
             tileColor: Colors.black.withAlpha(13),
             title: Column(

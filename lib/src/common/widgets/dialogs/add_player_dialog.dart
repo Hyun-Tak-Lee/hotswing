@@ -14,31 +14,50 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   String? _selectedGender;
   final List<String> _genders = ['남', '여'];
   bool _isManager = false;
+  String? _selectedSkillLevel;
+  final Map<String, int> _skillLevelToRate = {
+    '초심': 0,
+    'D': 100,
+    'C': 200,
+    'B': 300,
+    'A': 400,
+    'S': 500,
+  };
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
-    
+
+    // Dynamic font sizes and padding
+    final double titleFontSize = isMobileSize ? 24 : 40;
+    final double labelFontSize = isMobileSize ? 20 : 32;
+    final double switchLabelFontSize = isMobileSize ? 16 : 24;
+    final double contentPadding = isMobileSize ? 8.0 : 24.0;
+    final double fieldSpacing = isMobileSize ? 16.0 : 32.0;
+    final double dialogWidth = isMobileSize ? screenWidth * 0.8 : screenWidth * 0.5;
+
     return AlertDialog(
-      title: const Text('플레이어 추가', style: TextStyle(fontSize: 24)),
+      title: Text('플레이어 추가', style: TextStyle(fontSize: titleFontSize)),
       content: Form(
         key: _formKey,
-        child: Padding(  // Added Padding widget here
-          padding: const EdgeInsets.all(8.0), // Added padding
+        child: Padding(
+          padding: EdgeInsets.all(contentPadding),
           child: SizedBox(
-            width: isMobileSize ? screenWidth * 0.7 : screenWidth * 0.25,
+            width: dialogWidth,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(
+                    Flexible(
+                      flex: isMobileSize ? 4 : 2,
                       child: TextFormField(
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: '이름',
-                          labelStyle: TextStyle(fontSize: 24),
+                          labelStyle: TextStyle(fontSize: labelFontSize),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -51,49 +70,68 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                         },
                       ),
                     ),
-                    const SizedBox(width: 8), 
-                    const Text('운영진', style: TextStyle(fontSize: 16)),
-                    Switch(
-                      value: _isManager,
-                      onChanged: (bool value) {
-                        setState(() {
-                          _isManager = value;
-                        });
-                      },
+                    Flexible(
+                      flex: isMobileSize ? 1 : 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text('운영진', style: TextStyle(fontSize: switchLabelFontSize)),
+                          SizedBox(width: isMobileSize ? 4 : 20),
+                          Transform.scale(
+                            scale: isMobileSize ? 1.0 : 1.5,
+                            child: Switch(
+                              value: _isManager,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  _isManager = value;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16), // Added spacing
-                TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Rate (숫자)',
-                    labelStyle: TextStyle(fontSize: 24),
+                SizedBox(height: fieldSpacing),
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: '급수',
+                    labelStyle: TextStyle(fontSize: labelFontSize),
                   ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '수치를 입력하세요.';
-                    }
-                    if (int.tryParse(value) == null) {
-                      return '숫자만 입력하세요.';
-                    }
-                    return null;
+                  value: _selectedSkillLevel,
+                  itemHeight: isMobileSize ? 64.0 : 80.0,
+                  items: _skillLevelToRate.keys.map((String level) {
+                    return DropdownMenuItem<String>(
+                      value: level,
+                      child: Text(level, style: TextStyle(fontSize: labelFontSize)),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedSkillLevel = newValue;
+                    });
                   },
+                  validator: (value) => value == null ? '급수를 선택하세요.' : null,
                   onSaved: (value) {
-                    _rate = int.tryParse(value!);
+                    if (value != null) {
+                      _rate = _skillLevelToRate[value];
+                    }
                   },
                 ),
-                const SizedBox(height: 16), // Added spacing
+                SizedBox(height: fieldSpacing),
                 DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: '성별',
-                    labelStyle: TextStyle(fontSize: 24),
+                    labelStyle: TextStyle(fontSize: labelFontSize),
                   ),
                   value: _selectedGender,
+                  itemHeight: isMobileSize ? 64.0 : 80.0,
                   items: _genders.map((String gender) {
                     return DropdownMenuItem<String>(
                       value: gender,
-                      child: Text(gender),
+                      child: Text(gender, style: TextStyle(fontSize: labelFontSize)),
                     );
                   }).toList(),
                   onChanged: (String? newValue) {
