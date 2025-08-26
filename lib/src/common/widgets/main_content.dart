@@ -66,14 +66,12 @@ class _MainContentState extends State<MainContent> {
   }
 
   void _onCourtPlayerDragStarted() {
-    print('drag_start');
     setState(() {
       _showCourtHighlight = true;
     });
   }
 
   void _onCourtPlayerDragEnded() {
-    print('drag_end');
     setState(() {
       _showCourtHighlight = false;
     });
@@ -101,185 +99,147 @@ class _MainContentState extends State<MainContent> {
         children: <Widget>[
           Expanded(
             flex: 2,
-            child: Stack(
-              children: [
-                Center(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 10.0),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: Column(
-                        children: sectionData.asMap().entries.map((entry) {
-                          int sectionIndex = entry.key;
-                          List<Player?> item = entry.value;
-
-                          return Container(
-                            margin: const EdgeInsets.all(5.0),
-                            padding: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              color: pastelBlue,
-                              borderRadius: BorderRadius.circular(20.0),
-                            ),
-                            height: widget.isMobileSize
-                                ? screenHeight * 0.25
-                                : screenHeight * 0.2,
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: PlayerDropZone(
-                                          sectionId: '${sectionIndex}_0',
-                                          player: item.asMap().containsKey(0)
-                                              ? item[0]
-                                              : null,
-                                          section_index: sectionIndex,
-                                          sub_index: 0,
-                                          onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                              _handlePlayerDrop(
-                                                context,
-                                                data,
-                                                droppedOnPlayer,
-                                                targetId,
-                                                targetSectionIdx,
-                                                targetSubIdx,
-                                              ),
-                                          backgroundColor: pastelLightBlue,
-                                          onDragStartedFromZone: _onCourtPlayerDragStarted,
-                                          onDragEndedFromZone: _onCourtPlayerDragEnded,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: PlayerDropZone(
-                                          sectionId: '${sectionIndex}_1',
-                                          player: item.asMap().containsKey(1)
-                                              ? item[1]
-                                              : null,
-                                          section_index: sectionIndex,
-                                          sub_index: 1,
-                                          onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                              _handlePlayerDrop(
-                                                context,
-                                                data,
-                                                droppedOnPlayer,
-                                                targetId,
-                                                targetSectionIdx,
-                                                targetSubIdx,
-                                              ),
-                                          backgroundColor: pastelLightBlue,
-                                          onDragStartedFromZone: _onCourtPlayerDragStarted,
-                                          onDragEndedFromZone: _onCourtPlayerDragEnded,
-                                        ),
-                                      ),
-                                    ],
+            child: Center(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    children: sectionData.asMap().entries.map((entry) {
+                      int sectionIndex = entry.key;
+                      List<Player?> item = entry.value;
+                      return Container(
+                        margin: const EdgeInsets.all(5.0),
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          color: pastelBlue,
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        height: widget.isMobileSize
+                            ? screenHeight * 0.25
+                            : screenHeight * 0.2,
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: PlayerDropZone(
+                                      sectionId: '${sectionIndex}_0',
+                                      player: item.asMap().containsKey(0)
+                                          ? item[0]
+                                          : null,
+                                      section_index: sectionIndex,
+                                      sub_index: 0,
+                                      onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
+                                          _handlePlayerDrop(
+                                            context,
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ),
+                                      backgroundColor: pastelLightBlue,
+                                      onDragStartedFromZone: _onCourtPlayerDragStarted,
+                                      onDragEndedFromZone: _onCourtPlayerDragEnded,
+                                    ),
                                   ),
-                                ),
-                                Visibility(
-                                  visible: shouldShowDivider,
-                                  child: Divider(color: Colors.grey, thickness: 1),
-                                ),
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: PlayerDropZone(
-                                          sectionId: '${sectionIndex}_2',
-                                          player: item.asMap().containsKey(2)
-                                              ? item[2]
-                                              : null,
-                                          section_index: sectionIndex,
-                                          sub_index: 2,
-                                          onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                              _handlePlayerDrop(
-                                                context,
-                                                data,
-                                                droppedOnPlayer,
-                                                targetId,
-                                                targetSectionIdx,
-                                                targetSubIdx,
-                                              ),
-                                          backgroundColor: pastelLightBlue,
-                                          onDragStartedFromZone: _onCourtPlayerDragStarted,
-                                          onDragEndedFromZone: _onCourtPlayerDragEnded,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: PlayerDropZone(
-                                          sectionId: '${sectionIndex}_3',
-                                          player: item.asMap().containsKey(3)
-                                              ? item[3]
-                                              : null,
-                                          section_index: sectionIndex,
-                                          sub_index: 3,
-                                          onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                              _handlePlayerDrop(
-                                                context,
-                                                data,
-                                                droppedOnPlayer,
-                                                targetId,
-                                                targetSectionIdx,
-                                                targetSubIdx,
-                                              ),
-                                          backgroundColor: pastelLightBlue,
-                                          onDragStartedFromZone: _onCourtPlayerDragStarted,
-                                          onDragEndedFromZone: _onCourtPlayerDragEnded,
-                                        ),
-                                      ),
-                                    ],
+                                  Expanded(
+                                    child: PlayerDropZone(
+                                      sectionId: '${sectionIndex}_1',
+                                      player: item.asMap().containsKey(1)
+                                          ? item[1]
+                                          : null,
+                                      section_index: sectionIndex,
+                                      sub_index: 1,
+                                      onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
+                                          _handlePlayerDrop(
+                                            context,
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ),
+                                      backgroundColor: pastelLightBlue,
+                                      onDragStartedFromZone: _onCourtPlayerDragStarted,
+                                      onDragEndedFromZone: _onCourtPlayerDragEnded,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
+                            Visibility(
+                              visible: shouldShowDivider,
+                              child: Divider(color: Colors.grey, thickness: 1),
+                            ),
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: PlayerDropZone(
+                                      sectionId: '${sectionIndex}_2',
+                                      player: item.asMap().containsKey(2)
+                                          ? item[2]
+                                          : null,
+                                      section_index: sectionIndex,
+                                      sub_index: 2,
+                                      onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
+                                          _handlePlayerDrop(
+                                            context,
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ),
+                                      backgroundColor: pastelLightBlue,
+                                      onDragStartedFromZone: _onCourtPlayerDragStarted,
+                                      onDragEndedFromZone: _onCourtPlayerDragEnded,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: PlayerDropZone(
+                                      sectionId: '${sectionIndex}_3',
+                                      player: item.asMap().containsKey(3)
+                                          ? item[3]
+                                          : null,
+                                      section_index: sectionIndex,
+                                      sub_index: 3,
+                                      onPlayerDropped: (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
+                                          _handlePlayerDrop(
+                                            context,
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ),
+                                      backgroundColor: pastelLightBlue,
+                                      onDragStartedFromZone: _onCourtPlayerDragStarted,
+                                      onDragEndedFromZone: _onCourtPlayerDragEnded,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
-                if (_showCourtHighlight)
-                  Positioned.fill(
-                    child: Container(
-                      color: Colors.black.withOpacity(0.3),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '코트 구역 고정',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
+              ),
             ),
           ),
           const VerticalDivider(width: 1.0, color: Colors.grey),
           Expanded(
             flex: 1,
-            child: DragTarget<PlayerDragData>(
-              onWillAcceptWithDetails: (details) {
-                final data = details.data;
-                return data.section_index != -1;
-              },
-              onAcceptWithDetails: (details) {
-                final data = details.data;
-                _handlePlayerDrop(
-                  context,
-                  data,
-                  null,
-                  'unassigned_area_target',
-                  -1,
-                  -1,
-                );
-              },
-              builder: (BuildContext context, List<PlayerDragData?> candidateData, List<dynamic> rejectedData) {
-                return Container(
+            child: Stack(
+              children: [
+                Container(
                   margin: const EdgeInsets.symmetric(horizontal: 10.0),
-                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
                   child: Center(
                     child: FractionallySizedBox(
                       child: SingleChildScrollView(
@@ -306,8 +266,46 @@ class _MainContentState extends State<MainContent> {
                       ),
                     ),
                   ),
-                );
-              },
+                ),
+                if (_showCourtHighlight)
+                  Positioned.fill(
+                    child: DragTarget<PlayerDragData>(
+                      onWillAcceptWithDetails: (details) {
+                        final data = details.data;
+                        return data.section_index != -1;
+                      },
+                      onAcceptWithDetails: (details) {
+                        final data = details.data;
+                        _handlePlayerDrop(
+                          context,
+                          data,
+                          null,
+                          'unassigned_area_delete_overlay',
+                          -1, 
+                          -1, 
+                        );
+                      },
+                      builder: (BuildContext context, List<PlayerDragData?> candidateData, List<dynamic> rejectedData) {
+                        final bool isHovering = candidateData.isNotEmpty;
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10.0),
+                          decoration: BoxDecoration(
+                             color: isHovering 
+                                    ? Colors.black.withAlpha(50)
+                                    : Colors.black.withAlpha(25),
+                             borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                            size: widget.isMobileSize ? 30.0 : 50.0,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
