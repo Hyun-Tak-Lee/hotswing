@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class OptionsProvider with ChangeNotifier {
   SharedPreferences? _prefs;
   bool _divideTeam = false;
-  int _numberOfSections = 3; // 기본값으로 5 설정
+  int _numberOfSections = 3;
 
   static const String _divideTeamKey = 'divideTeam'; // SharedPreferences 키
   static const String _numberOfSectionsKey =

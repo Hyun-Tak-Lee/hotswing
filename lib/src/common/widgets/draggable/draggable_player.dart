@@ -56,14 +56,14 @@ class DraggablePlayerItem extends StatelessWidget {
     final onPrimary = Theme.of(context).colorScheme.onPrimary;
 
     Widget playerContent = Container(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0),
+      padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 0.0),
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        color: player.manager ? const Color(0xFFFFFFE0) : Colors.transparent,
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch, // 변경됨
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
@@ -73,33 +73,42 @@ class DraggablePlayerItem extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: onPrimaryContainer,
             ),
+            textAlign: TextAlign.center, // 추가됨
           ),
           SizedBox(height: 2.0),
-          Text(
-            'Skill: $skillLevelDisplay',
-            style: TextStyle(
-              fontSize: skillFontSize,
-              color: onPrimaryContainer.withAlpha(230),
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: 4.0),
-          Text(
-            'P: ${player.played}',
-            style: TextStyle(
-              fontSize: detailFontSize,
-              color: onPrimaryContainer.withAlpha(204),
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: 2.0),
-          Text(
-            'W: ${player.waited}',
-            style: TextStyle(
-              fontSize: detailFontSize,
-              color: onPrimaryContainer.withAlpha(204),
-            ),
-            overflow: TextOverflow.ellipsis,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '급수: $skillLevelDisplay',
+                style: TextStyle(
+                  fontSize: skillFontSize,
+                  color: onPrimaryContainer.withAlpha(230),
+                ),
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center, // Center text
+              ),
+              SizedBox(height: 4.0),
+              Text(
+                '플레이: ${player.played}',
+                style: TextStyle(
+                  fontSize: detailFontSize,
+                  color: onPrimaryContainer.withAlpha(204),
+                ),
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center, // Center text
+              ),
+              SizedBox(height: 2.0),
+              Text(
+                '대기: ${player.waited}',
+                style: TextStyle(
+                  fontSize: detailFontSize,
+                  color: onPrimaryContainer.withAlpha(204),
+                ),
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center, // Center text
+              ),
+            ],
           ),
         ],
       ),
@@ -142,36 +151,6 @@ class DraggablePlayerItem extends StatelessWidget {
                     fontSize: nameFontSize,
                     fontWeight: FontWeight.bold,
                     color: onPrimary,
-                    decoration: TextDecoration.none,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 2.0),
-                Text(
-                  'Skill: $skillLevelDisplay',
-                  style: TextStyle(
-                    fontSize: skillFontSize,
-                    color: onPrimary.withAlpha(230),
-                    decoration: TextDecoration.none,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 4.0),
-                Text(
-                  'P: ${player.played}',
-                  style: TextStyle(
-                    fontSize: detailFontSize,
-                    color: onPrimary.withAlpha(204),
-                    decoration: TextDecoration.none,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 2.0),
-                Text(
-                  'W: ${player.waited}',
-                  style: TextStyle(
-                    fontSize: detailFontSize,
-                    color: onPrimary.withAlpha(204),
                     decoration: TextDecoration.none,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -258,21 +237,20 @@ class PlayerDropZone extends StatelessWidget {
       builder: (context, candidateData, rejectedData) {
         bool isHovering = candidateData.isNotEmpty && isDropEnabled;
         Color defaultBgColor = backgroundColor ?? const Color(0x20F0FFFF);
-        Color hoveringBgColor = const Color(0x20F0FFFF);
+        Color hoveringBgColor = const Color(0x88F0FFFF);
 
         return ConstrainedBox(
           constraints: BoxConstraints(minHeight: currentMinHeight),
-          child: Container(
-            padding: const EdgeInsets.all(4.0),
+            child: Container(
+            padding: const EdgeInsets.all(0.0),
             margin: const EdgeInsets.all(4.0),
             decoration: BoxDecoration(
               color: isHovering ? hoveringBgColor : defaultBgColor,
               borderRadius: BorderRadius.circular(12.0),
+              // Use a static border to prevent layout shifts
               border: Border.all(
-                color: isHovering
-                    ? const Color(0xFFFFD1DC)
-                    : Theme.of(context).colorScheme.outline.withAlpha(64),
-                width: isHovering ? 2.0 : 1.0,
+                color: Theme.of(context).colorScheme.outline.withAlpha(64),
+                width: 1.0,
               ),
             ),
             child: Center(

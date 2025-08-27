@@ -264,6 +264,7 @@ class _MainContentState extends State<MainContent> {
                             if (!isGameStarted)
                               FloatingActionButton(
                                 onPressed: () {
+                                  playersProvider.assignPlayersToCourt(sectionIndex);
                                   setState(() {
                                     _courtGameStartedState[sectionIndex] = true;
                                   });
@@ -275,6 +276,8 @@ class _MainContentState extends State<MainContent> {
                             if (isGameStarted)
                               FloatingActionButton(
                                 onPressed: () {
+                                  playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
+                                  playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
                                   setState(() {
                                     _courtGameStartedState[sectionIndex] =
                                         false;
