@@ -289,39 +289,139 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 특정 코트에 4명의 플레이어를 할당합니다.
+  // 특정 코트에 4명의 플레이어를 할당합니다. (점수 기반 시스템)
   void assignPlayersToCourt(int sectionIndex) {
-    if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) {
-      return;
-    }
+    if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) return;
 
-    // 현재 코트에 있는 플레이어를 미할당 목록으로 이동
-    for (int i = 0; i < _assignedPlayers[sectionIndex].length; i++) {
-      if (_assignedPlayers[sectionIndex][i] != null) {
-        _unassignedPlayers.add(_assignedPlayers[sectionIndex][i]!);
-        _assignedPlayers[sectionIndex][i] = null;
-      }
-    }
-
-    // 미할당 목록에서 4명의 플레이어를 코트에 할당
     for (int i = 0; i < 4; i++) {
-      if (_unassignedPlayers.isNotEmpty) {
-        // 우선순위가 높은 플레이어 (played가 낮고, waited가 높은)를 선택하도록 정렬
-        _unassignedPlayers.sort((a, b) {
-          int playedCompare = a.played.compareTo(b.played);
-          if (playedCompare != 0) {
-            return playedCompare;
-          }
-          return b.waited.compareTo(a.waited); // waited는 내림차순
-        });
-        Player playerToAssign = _unassignedPlayers.removeAt(0);
-        _assignedPlayers[sectionIndex][i] = playerToAssign;
-      } else {
-        // 할당할 플레이어가 더 이상 없으면 중단
-        break;
+      if (_unassignedPlayers.isEmpty) break;
+
+      if (_assignedPlayers[sectionIndex][i] == null) {
+        Player? playerToAssign = _findBestPlayerForCourt(sectionIndex);
+
+        if (playerToAssign != null) {
+          _assignedPlayers[sectionIndex][i] = playerToAssign;
+          _unassignedPlayers.remove(playerToAssign);
+        }
       }
     }
+
     notifyListeners();
+  }
+
+  Player? _findBestPlayerForCourt(int sectionIndex) {
+    if (_unassignedPlayers.isEmpty) return null;
+
+    // 현재 코트 정보를 가져옵니다.
+    final currentPlayersOnCourt = _assignedPlayers[sectionIndex]
+        .where((p) => p != null)
+        .cast<Player>()
+        .toList();
+
+
+    // 예외 조건 확인: 미할당 구역에 남은 운영진이 1명 뿐인지 확인
+    final int unassignedManagersCount = _unassignedPlayers.where((p) => p.manager).length;
+    final bool isLastManagerCondition =
+        unassignedManagersCount == 1 && _unassignedPlayers.length > 1;
+
+    if (currentPlayersOnCourt.isEmpty) {
+      List<Player> candidatePlayers = _unassignedPlayers;
+      if (isLastManagerCondition) {
+        final nonManagers = _unassignedPlayers.where((p) => !p.manager).toList();
+        if (nonManagers.isNotEmpty) {
+          candidatePlayers = nonManagers;
+        }
+      }
+      candidatePlayers.sort((a, b) {
+        int playedCompare = a.played.compareTo(b.played);
+        if (playedCompare != 0) return playedCompare;
+        return b.waited.compareTo(a.waited);
+      });
+      final topPlayer = candidatePlayers.first;
+      final topTierPlayers = candidatePlayers
+          .where(
+            (p) => p.played == topPlayer.played && p.waited == topPlayer.waited,
+          )
+          .toList();
+      if (topTierPlayers.length == 1) {
+        return topPlayer;
+      } else {
+        final randomIndex = _random.nextInt(topTierPlayers.length);
+        return topTierPlayers[randomIndex];
+      }
+    }
+
+    _unassignedPlayers.sort((a, b) {
+      double scoreA = _calculatePlayerScoreForCourt(a, currentPlayersOnCourt);
+      double scoreB = _calculatePlayerScoreForCourt(b, currentPlayersOnCourt);
+      return scoreB.compareTo(scoreA);
+    });
+
+    final Player bestPlayer = _unassignedPlayers.first;
+    if (unassignedManagersCount == 1 && isLastManagerCondition) {
+      return _unassignedPlayers[1];
+    } else {
+      return bestPlayer;
+    }
+  }
+
+  // 플레이어의 최종 점수를 계산하는 함수
+  double _calculatePlayerScoreForCourt(
+    Player player,
+    List<Player> currentPlayersOnCourt,
+  ) {
+    const double skillWeight = 2.0; // 실력 균형의 중요도
+    const double genderWeight = 2.5; // 성비 균형의 중요도
+    const double waitedWeight = 1.0; // 대기 시간의 중요도
+    const double playedWeight = 1.0; // 플레이 횟수 균등 분배의 중요도
+
+    // 1. 실력 점수 계산
+    double avgRate = currentPlayersOnCourt.isEmpty
+        ? player.rate.toDouble()
+        : currentPlayersOnCourt.map((p) => p.rate).reduce((a, b) => a + b) /
+              currentPlayersOnCourt.length;
+    double rateDiff = (player.rate - avgRate).abs();
+    double skillScore = 2.0 - rateDiff / 500.0;
+
+    // 2. 성별 점수 계산
+    int menCount = currentPlayersOnCourt.where((p) => p.gender == '남').length;
+    int womenCount = currentPlayersOnCourt.where((p) => p.gender == '여').length;
+
+    double genderScore = 0.5;
+    if (player.gender == '여') {
+      if (womenCount == 1 && menCount == 2) {
+        genderScore = 1.0;
+      } else if (womenCount > 0 && menCount == 0) {
+        genderScore = 1.5;
+      } else if (womenCount > 2) {
+        genderScore = 2.0;
+      }
+    } else {
+      if (menCount == 1 && womenCount == 2) {
+        genderScore = 1.0;
+      } else if (menCount > 0 && womenCount == 0) {
+        genderScore = 1.5;
+      } else if (menCount > 2) {
+        genderScore = 2.0;
+      }
+    }
+
+    // 순차적으로 배치 했다고 가정 할 때 (대기인원 / 4) 만큼은 반드시 기다려야 하므로 해당 waited 를 1.0 으로 기준
+    double waitedScore =
+        player.waited.toDouble() / _unassignedPlayers.length * 4;
+
+    // 4. 플레이 점수 계산 (수정 필요)
+    final double avgPlayed = _unassignedPlayers.isEmpty
+        ? 0.0
+        : _unassignedPlayers.map((p) => p.played).reduce((a, b) => a + b) /
+              _unassignedPlayers.length;
+    double playedScore = (avgPlayed - player.played).abs();
+
+    // 최종 점수 = 각 점수 * 가중치의 합
+    return (skillScore * skillWeight) +
+        (genderScore * genderWeight) +
+        (waitedScore * waitedWeight) +
+        (playedScore * playedWeight);
   }
 
   // 미할당된 플레이어의 수정 불가능한 목록을 반환합니다.

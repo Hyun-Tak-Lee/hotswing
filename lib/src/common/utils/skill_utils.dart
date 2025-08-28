@@ -1,6 +1,7 @@
 const Map<String, int> skillLevelToRate = {
   '초심': 500,
   'D': 1000,
+  'D+': 1500,
   'C': 2000,
   'B': 3000,
   'A': 5000,
