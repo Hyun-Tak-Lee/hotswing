@@ -59,11 +59,11 @@ class DraggablePlayerItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 0.0),
       decoration: BoxDecoration(
-        color: player.manager ? const Color(0xFFFFFFE0) : Colors.transparent,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch, // 변경됨
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
@@ -73,7 +73,7 @@ class DraggablePlayerItem extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: onPrimaryContainer,
             ),
-            textAlign: TextAlign.center, // 추가됨
+            textAlign: TextAlign.center,
           ),
           SizedBox(height: 2.0),
           Column(
@@ -86,7 +86,7 @@ class DraggablePlayerItem extends StatelessWidget {
                   color: onPrimaryContainer.withAlpha(230),
                 ),
                 overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center, // Center text
+                textAlign: TextAlign.center,
               ),
               SizedBox(height: 4.0),
               Text(
@@ -96,7 +96,7 @@ class DraggablePlayerItem extends StatelessWidget {
                   color: onPrimaryContainer.withAlpha(204),
                 ),
                 overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center, // Center text
+                textAlign: TextAlign.center,
               ),
               SizedBox(height: 2.0),
               Text(
@@ -106,7 +106,7 @@ class DraggablePlayerItem extends StatelessWidget {
                   color: onPrimaryContainer.withAlpha(204),
                 ),
                 overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center, // Center text
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -217,7 +217,7 @@ class PlayerDropZone extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobileSize = screenWidth < 600;
-    final double currentMinHeight = isMobileSize ? 160.0 : 240.0;
+    final double currentMinHeight = isMobileSize ? 140.0 : 240.0;
 
     return DragTarget<PlayerDragData>(
       onWillAcceptWithDetails: (details) {
@@ -236,18 +236,20 @@ class PlayerDropZone extends StatelessWidget {
       },
       builder: (context, candidateData, rejectedData) {
         bool isHovering = candidateData.isNotEmpty && isDropEnabled;
-        Color defaultBgColor = backgroundColor ?? const Color(0x20F0FFFF);
+
+        Color determinedDefaultBgColor = player != null && player!.manager
+            ? const Color(0x77FFF700)
+            : const Color(0x66FFFFFF);
         Color hoveringBgColor = const Color(0x88F0FFFF);
 
         return ConstrainedBox(
           constraints: BoxConstraints(minHeight: currentMinHeight),
-            child: Container(
+          child: Container(
             padding: const EdgeInsets.all(0.0),
             margin: const EdgeInsets.all(4.0),
             decoration: BoxDecoration(
-              color: isHovering ? hoveringBgColor : defaultBgColor,
+              color: isHovering ? hoveringBgColor : determinedDefaultBgColor,
               borderRadius: BorderRadius.circular(12.0),
-              // Use a static border to prevent layout shifts
               border: Border.all(
                 color: Theme.of(context).colorScheme.outline.withAlpha(64),
                 width: 1.0,
