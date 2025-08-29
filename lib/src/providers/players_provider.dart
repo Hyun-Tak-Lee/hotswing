@@ -342,14 +342,26 @@ class PlayersProvider with ChangeNotifier {
   }
 
   // 특정 코트에 4명의 플레이어를 할당합니다. (점수 기반 시스템)
-  void assignPlayersToCourt(int sectionIndex) {
+  void assignPlayersToCourt(
+    int sectionIndex, {
+    required double skillWeight,
+    required double genderWeight,
+    required double waitedWeight,
+    required double playedWeight,
+  }) {
     if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) return;
 
     for (int i = 0; i < 4; i++) {
       if (_unassignedPlayers.isEmpty) break;
 
       if (_assignedPlayers[sectionIndex][i] == null) {
-        Player? playerToAssign = _findBestPlayerForCourt(sectionIndex);
+        Player? playerToAssign = _findBestPlayerForCourt(
+          sectionIndex,
+          skillWeight: skillWeight,
+          genderWeight: genderWeight,
+          waitedWeight: waitedWeight,
+          playedWeight: playedWeight,
+        );
 
         if (playerToAssign != null) {
           _assignedPlayers[sectionIndex][i] = playerToAssign;
@@ -361,18 +373,22 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Player? _findBestPlayerForCourt(int sectionIndex) {
+  Player? _findBestPlayerForCourt(
+      int sectionIndex, {
+        required double skillWeight,
+        required double genderWeight,
+        required double waitedWeight,
+        required double playedWeight,
+      }) {
     if (_unassignedPlayers.isEmpty) return null;
 
-    // 현재 코트 정보를 가져옵니다.
     final currentPlayersOnCourt = _assignedPlayers[sectionIndex]
         .where((p) => p != null)
         .cast<Player>()
         .toList();
 
-
-    // 예외 조건 확인: 미할당 구역에 남은 운영진이 1명 뿐인지 확인
-    final int unassignedManagersCount = _unassignedPlayers.where((p) => p.manager).length;
+    final int unassignedManagersCount =
+        _unassignedPlayers.where((p) => p.manager).length;
     final bool isLastManagerCondition =
         unassignedManagersCount == 1 && _unassignedPlayers.length > 1;
 
@@ -384,17 +400,23 @@ class PlayersProvider with ChangeNotifier {
           candidatePlayers = nonManagers;
         }
       }
-      candidatePlayers.sort((a, b) {
-        int playedCompare = a.played.compareTo(b.played);
-        if (playedCompare != 0) return playedCompare;
-        return b.waited.compareTo(a.waited);
-      });
-      final topPlayer = candidatePlayers.first;
-      final topTierPlayers = candidatePlayers
+
+      final sortedCandidates = List.of(candidatePlayers)
+        ..sort((a, b) {
+          int playedCompare = a.played.compareTo(b.played);
+          if (playedCompare != 0) return playedCompare;
+          return b.waited.compareTo(a.waited);
+        });
+
+      if (sortedCandidates.isEmpty) return null;
+
+      final topPlayer = sortedCandidates.first;
+      final topTierPlayers = sortedCandidates
           .where(
             (p) => p.played == topPlayer.played && p.waited == topPlayer.waited,
-          )
+      )
           .toList();
+
       if (topTierPlayers.length == 1) {
         return topPlayer;
       } else {
@@ -403,30 +425,46 @@ class PlayersProvider with ChangeNotifier {
       }
     }
 
-    _unassignedPlayers.sort((a, b) {
-      double scoreA = _calculatePlayerScoreForCourt(a, currentPlayersOnCourt);
-      double scoreB = _calculatePlayerScoreForCourt(b, currentPlayersOnCourt);
-      return scoreB.compareTo(scoreA);
-    });
+    final sortedUnassignedPlayers = List.of(_unassignedPlayers)
+      ..sort((a, b) {
+        double scoreA = _calculatePlayerScoreForCourt(
+          a,
+          currentPlayersOnCourt,
+          skillWeight: skillWeight,
+          genderWeight: genderWeight,
+          waitedWeight: waitedWeight,
+          playedWeight: playedWeight,
+        );
+        double scoreB = _calculatePlayerScoreForCourt(
+          b,
+          currentPlayersOnCourt,
+          skillWeight: skillWeight,
+          genderWeight: genderWeight,
+          waitedWeight: waitedWeight,
+          playedWeight: playedWeight,
+        );
+        return scoreB.compareTo(scoreA);
+      });
 
-    final Player bestPlayer = _unassignedPlayers.first;
-    if (unassignedManagersCount == 1 && isLastManagerCondition) {
-      return _unassignedPlayers[1];
-    } else {
-      return bestPlayer;
+    final Player bestPlayer = sortedUnassignedPlayers.first;
+
+    if (isLastManagerCondition && bestPlayer.manager) {
+      if (sortedUnassignedPlayers.length > 1) {
+        return sortedUnassignedPlayers[1];
+      }
     }
+    return bestPlayer;
   }
 
   // 플레이어의 최종 점수를 계산하는 함수
   double _calculatePlayerScoreForCourt(
     Player player,
-    List<Player> currentPlayersOnCourt,
-  ) {
-    const double skillWeight = 2.0; // 실력 균형의 중요도
-    const double genderWeight = 2.5; // 성비 균형의 중요도
-    const double waitedWeight = 1.0; // 대기 시간의 중요도
-    const double playedWeight = 1.0; // 플레이 횟수 균등 분배의 중요도
-
+    List<Player> currentPlayersOnCourt, {
+    required double skillWeight,
+    required double genderWeight,
+    required double waitedWeight,
+    required double playedWeight,
+  }) {
     // 1. 실력 점수 계산
     double avgRate = currentPlayersOnCourt.isEmpty
         ? player.rate.toDouble()
@@ -460,14 +498,15 @@ class PlayersProvider with ChangeNotifier {
 
     // 순차적으로 배치 했다고 가정 할 때 (대기인원 / 4) 만큼은 반드시 기다려야 하므로 해당 waited 를 1.0 으로 기준
     double waitedScore =
-        player.waited.toDouble() / _unassignedPlayers.length * 4;
+        player.waited.toDouble() / (_unassignedPlayers.length == 0 ? 1 : _unassignedPlayers.length) * 4;
 
-    // 4. 플레이 점수 계산 (수정 필요)
+
+    // 4. 플레이 점수 계산
     final double avgPlayed = _unassignedPlayers.isEmpty
         ? 0.0
         : _unassignedPlayers.map((p) => p.played).reduce((a, b) => a + b) /
               _unassignedPlayers.length;
-    double playedScore = (avgPlayed - player.played).abs();
+    double playedScore = avgPlayed - player.played;
 
     // 최종 점수 = 각 점수 * 가중치의 합
     return (skillScore * skillWeight) +

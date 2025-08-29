@@ -8,6 +8,36 @@ class RightSideMenu extends StatelessWidget {
 
   final bool isMobileSize;
 
+  Widget _buildSliderListItem({
+    required BuildContext context,
+    required String title,
+    required double value,
+    required ValueChanged<double> onChanged,
+    required double iconAndFontSize,
+  }) {
+    return ListTile(
+      tileColor: Colors.black.withAlpha(13),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$title: ${value.toStringAsFixed(1)}',
+            style: TextStyle(fontSize: iconAndFontSize),
+          ),
+          Slider(
+            value: value,
+            min: 0,
+            max: 4,
+            divisions: 8, // (4 - 0) / 0.5 = 8
+            label: value.toStringAsFixed(1),
+            onChanged: onChanged,
+            activeColor: Colors.blueAccent,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final optionsProvider = Provider.of<OptionsProvider>(context);
@@ -84,6 +114,46 @@ class RightSideMenu extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 10),
+          _buildSliderListItem(
+            context: context,
+            title: '실력 가중치',
+            value: optionsProvider.skillWeight,
+            onChanged: (double value) {
+              optionsProvider.setSkillWeight(value);
+            },
+            iconAndFontSize: iconAndFontSize,
+          ),
+          const SizedBox(height: 10),
+          _buildSliderListItem(
+            context: context,
+            title: '성별 가중치',
+            value: optionsProvider.genderWeight,
+            onChanged: (double value) {
+              optionsProvider.setGenderWeight(value);
+            },
+            iconAndFontSize: iconAndFontSize,
+          ),
+          const SizedBox(height: 10),
+          _buildSliderListItem(
+            context: context,
+            title: '대기 가중치',
+            value: optionsProvider.waitedWeight,
+            onChanged: (double value) {
+              optionsProvider.setWaitedWeight(value);
+            },
+            iconAndFontSize: iconAndFontSize,
+          ),
+          const SizedBox(height: 10),
+          _buildSliderListItem(
+            context: context,
+            title: '플레이 수 가중치',
+            value: optionsProvider.playedWeight,
+            onChanged: (double value) {
+              optionsProvider.setPlayedWeight(value);
+            },
+            iconAndFontSize: iconAndFontSize,
           ),
         ],
       ),

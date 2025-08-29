@@ -260,7 +260,13 @@ class _MainContentState extends State<MainContent> {
                             if (!isGameStarted)
                               FloatingActionButton(
                                 onPressed: () {
-                                  playersProvider.assignPlayersToCourt(sectionIndex);
+                                  playersProvider.assignPlayersToCourt(
+                                    sectionIndex,
+                                    skillWeight: optionsProvider.skillWeight,
+                                    genderWeight: optionsProvider.genderWeight,
+                                    waitedWeight: optionsProvider.waitedWeight,
+                                    playedWeight: optionsProvider.playedWeight,
+                                  );
                                   setState(() {
                                     _courtGameStartedState[sectionIndex] = true;
                                   });
