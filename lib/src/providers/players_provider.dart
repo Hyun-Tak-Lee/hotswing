@@ -41,26 +41,26 @@ class PlayersProvider with ChangeNotifier {
 
   // PlayersProvider 객체를 생성하고 초기 플레이어 데이터를 로드합니다.
   PlayersProvider() {
-    final List<int> skillRates = skillLevelToRate.values.toList();
-
-    for (int i = 1; i <= 24; i++) {
-      String playerName = '플레이어 $i';
-      bool manager = _random.nextBool();
-      int playerRate = skillRates[_random.nextInt(skillRates.length)];
-      String gender = _random.nextBool() ? '남' : '여';
-      int played = 0;
-      int waited = 0;
-      Player newPlayer = Player(
-        name: playerName,
-        manager: manager,
-        rate: playerRate,
-        gender: gender,
-        played: played,
-        waited: waited,
-      );
-      _players[playerName] = newPlayer;
-      _unassignedPlayers.add(newPlayer);
-    }
+    // final List<int> skillRates = skillLevelToRate.values.toList();
+    //
+    // for (int i = 1; i <= 24; i++) {
+    //   String playerName = '플레이어 $i';
+    //   bool manager = _random.nextBool();
+    //   int playerRate = skillRates[_random.nextInt(skillRates.length)];
+    //   String gender = _random.nextBool() ? '남' : '여';
+    //   int played = 0;
+    //   int waited = 0;
+    //   Player newPlayer = Player(
+    //     name: playerName,
+    //     manager: manager,
+    //     rate: playerRate,
+    //     gender: gender,
+    //     played: played,
+    //     waited: waited,
+    //   );
+    //   _players[playerName] = newPlayer;
+    //   _unassignedPlayers.add(newPlayer);
+    // }
     _loadInitialAssignedPlayersCount();
   }
 

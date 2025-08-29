@@ -49,6 +49,23 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
     }
   }
 
+  // 모든 플레이어를 삭제하기 전에 확인 대화 상자를 표시하는 함수
+  Future<void> _showClearAllPlayersConfirmationDialog(
+    PlayersProvider playersProvider,
+  ) async {
+    await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return ConfirmationDialog(
+          message: '모든 참여자를 삭제하시겠습니까?',
+          onConfirm: () {
+            playersProvider.clearPlayers();
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final playersProvider = Provider.of<PlayersProvider>(context);
@@ -79,12 +96,25 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                     '참여자 (${players.length}명)',
                     style: TextStyle(fontSize: iconAndFontSize),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    iconSize: iconAndFontSize,
-                    onPressed: () {
-                      _showAddPlayerDialog(playersProvider);
-                    },
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.delete_sweep),
+                        iconSize: iconAndFontSize,
+                        onPressed: () {
+                          _showClearAllPlayersConfirmationDialog(
+                            playersProvider,
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        iconSize: iconAndFontSize,
+                        onPressed: () {
+                          _showAddPlayerDialog(playersProvider);
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -93,6 +123,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           ...players
               .map(
                 (player) => ListTile(
+                  tileColor: player.manager ? const Color(0x55FFF700) : null,
                   title: _editingPlayer == player
                       ? TextField(
                           controller: _textController,
@@ -115,8 +146,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                           },
                         )
                       : Text(
-                          // 운영진 여부 표시
-                          '${player.name} (${player.gender})${player.manager ? " (운영진)" : ""}',
+                          '${player.name} (${player.gender})',
                           style: TextStyle(fontSize: iconAndFontSize),
                         ),
                   trailing: Row(

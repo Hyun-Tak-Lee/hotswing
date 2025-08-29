@@ -33,10 +33,6 @@ class _MainContentState extends State<MainContent> {
     final int sourceSectionIndex = data.section_index;
     final int sourceSubIndex = data.sub_index;
 
-    print(
-      "${data.player.name}, ${data.sourceSectionId}, [${data.section_index}, ${data.sub_index}] | ${targetPlayer?.name ?? 'none'}, $targetSectionId, [$targetSectionIndex, $targetSubIndex] (Action not yet implemented)",
-    );
-
     // 사례 1: 할당되지 않은 목록에서 드래그한 경우
     if (sourceSectionIndex == -1) {
       if (targetSectionIndex != -1) {
