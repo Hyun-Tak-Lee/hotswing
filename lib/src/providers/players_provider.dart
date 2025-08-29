@@ -1,3 +1,4 @@
+import 'dart:convert'; // Import for jsonEncode
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +21,26 @@ class Player {
     required this.played,
     required this.waited,
   }) : this.name = name.length > 7 ? name.substring(0, 7) : name;
+
+  // Add this method to convert Player to Map
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'manager': manager,
+        'rate': rate,
+        'gender': gender,
+        'played': played,
+        'waited': waited,
+      };
+
+  // Add this factory constructor to create Player from Map (for loading later)
+  factory Player.fromJson(Map<String, dynamic> json) => Player(
+        name: json['name'],
+        manager: json['manager'],
+        rate: json['rate'],
+        gender: json['gender'],
+        played: json['played'],
+        waited: json['waited'],
+      );
 
   // 두 Player 객체가 동일한지 비교합니다. 이름이 같으면 동일한 것으로 간주합니다.
   @override
@@ -62,6 +83,7 @@ class PlayersProvider with ChangeNotifier {
     //   _unassignedPlayers.add(newPlayer);
     // }
     _loadInitialAssignedPlayersCount();
+    _loadPlayersFromPrefs();
   }
 
   // SharedPreferences에서 초기 할당된 플레이어 섹션 수를 로드합니다.
@@ -69,6 +91,31 @@ class PlayersProvider with ChangeNotifier {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final int initialCount = prefs.getInt("numberOfSections") ?? 3;
     updateAssignedPlayersListCount(initialCount);
+  }
+
+  // Function to save players to SharedPreferences
+  Future<void> _savePlayersToPrefs() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    Map<String, String> playersJsonMap = _players.map((key, player) {
+      return MapEntry(key, jsonEncode(player.toJson()));
+    });
+    String encodedPlayers = jsonEncode(playersJsonMap);
+    await prefs.setString('players_list', encodedPlayers);
+  }
+
+  Future<void> _loadPlayersFromPrefs() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? encodedPlayers = prefs.getString('players_list');
+    if (encodedPlayers != null) {
+      Map<String, dynamic> playersJsonMap = jsonDecode(encodedPlayers);
+      playersJsonMap.forEach((key, playerJsonString) {
+        Map<String, dynamic> playerMap = jsonDecode(playerJsonString);
+        Player player = Player.fromJson(playerMap);
+        _players[key] = player;
+        _unassignedPlayers.add(player);
+      });
+      notifyListeners();
+    }
   }
 
   // 모든 플레이어의 수정 불가능한 맵을 반환합니다.
@@ -96,6 +143,7 @@ class PlayersProvider with ChangeNotifier {
       _players[name] = newPlayer;
       _unassignedPlayers.add(newPlayer);
       notifyListeners();
+      _savePlayersToPrefs();
     }
   }
 
@@ -114,6 +162,7 @@ class PlayersProvider with ChangeNotifier {
       _unassignedPlayers.remove(playerToRemove);
       _players.remove(name);
       notifyListeners();
+      _savePlayersToPrefs();
     }
   }
 
@@ -128,6 +177,7 @@ class PlayersProvider with ChangeNotifier {
         player.name = newName;
         _players[newName] = player;
         notifyListeners();
+        _savePlayersToPrefs();
       }
     }
   }
@@ -140,6 +190,7 @@ class PlayersProvider with ChangeNotifier {
       _assignedPlayers[i] = [null, null, null, null];
     }
     notifyListeners();
+    _savePlayersToPrefs();
   }
 
   // 모든 플레이어의 목록을 played가 낮은 순으로, waited가 많은 순으로 정렬하여 반환합니다.
@@ -287,6 +338,7 @@ class PlayersProvider with ChangeNotifier {
       }
     }
     notifyListeners();
+    _savePlayersToPrefs();
   }
 
   // 특정 코트에 4명의 플레이어를 할당합니다. (점수 기반 시스템)
