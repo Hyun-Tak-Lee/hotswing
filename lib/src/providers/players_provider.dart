@@ -24,23 +24,23 @@ class Player {
 
   // Add this method to convert Player to Map
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'manager': manager,
-        'rate': rate,
-        'gender': gender,
-        'played': played,
-        'waited': waited,
-      };
+    'name': name,
+    'manager': manager,
+    'rate': rate,
+    'gender': gender,
+    'played': played,
+    'waited': waited,
+  };
 
   // Add this factory constructor to create Player from Map (for loading later)
   factory Player.fromJson(Map<String, dynamic> json) => Player(
-        name: json['name'],
-        manager: json['manager'],
-        rate: json['rate'],
-        gender: json['gender'],
-        played: json['played'],
-        waited: json['waited'],
-      );
+    name: json['name'],
+    manager: json['manager'],
+    rate: json['rate'],
+    gender: json['gender'],
+    played: json['played'],
+    waited: json['waited'],
+  );
 
   // 두 Player 객체가 동일한지 비교합니다. 이름이 같으면 동일한 것으로 간주합니다.
   @override
@@ -166,20 +166,33 @@ class PlayersProvider with ChangeNotifier {
     }
   }
 
-  // 플레이어의 이름을 변경합니다. 기존 이름과 새 이름이 같거나 새 이름이 이미 존재하면 변경하지 않습니다.
-  void updatePlayerName(String oldName, String newName) {
-    if (oldName == newName) return;
+  // 플레이어 정보를 업데이트합니다.
+  void updatePlayer({
+    required String oldName,
+    required String newName,
+    required int newRate,
+    required String newGender,
+    required bool newManager,
+  }) {
     if (newName.length > 7) return;
-    if (_players.containsKey(newName)) return;
-    if (_players.containsKey(oldName)) {
-      Player? player = _players.remove(oldName);
-      if (player != null) {
-        player.name = newName;
-        _players[newName] = player;
-        notifyListeners();
-        _savePlayersToPrefs();
-      }
+    if (!_players.containsKey(oldName)) return;
+    if (oldName != newName && _players.containsKey(newName)) return;
+
+    Player? playerToUpdate = _players[oldName];
+    if (playerToUpdate == null) return;
+
+    playerToUpdate.rate = newRate;
+    playerToUpdate.gender = newGender;
+    playerToUpdate.manager = newManager;
+
+    if (oldName != newName) {
+      _players.remove(oldName);
+      playerToUpdate.name = newName;
+      _players[newName] = playerToUpdate;
     }
+
+    notifyListeners();
+    _savePlayersToPrefs();
   }
 
   // 모든 플레이어 정보를 초기화합니다.
@@ -374,12 +387,12 @@ class PlayersProvider with ChangeNotifier {
   }
 
   Player? _findBestPlayerForCourt(
-      int sectionIndex, {
-        required double skillWeight,
-        required double genderWeight,
-        required double waitedWeight,
-        required double playedWeight,
-      }) {
+    int sectionIndex, {
+    required double skillWeight,
+    required double genderWeight,
+    required double waitedWeight,
+    required double playedWeight,
+  }) {
     if (_unassignedPlayers.isEmpty) return null;
 
     final currentPlayersOnCourt = _assignedPlayers[sectionIndex]
@@ -387,15 +400,18 @@ class PlayersProvider with ChangeNotifier {
         .cast<Player>()
         .toList();
 
-    final int unassignedManagersCount =
-        _unassignedPlayers.where((p) => p.manager).length;
+    final int unassignedManagersCount = _unassignedPlayers
+        .where((p) => p.manager)
+        .length;
     final bool isLastManagerCondition =
         unassignedManagersCount == 1 && _unassignedPlayers.length > 1;
 
     if (currentPlayersOnCourt.isEmpty) {
       List<Player> candidatePlayers = _unassignedPlayers;
       if (isLastManagerCondition) {
-        final nonManagers = _unassignedPlayers.where((p) => !p.manager).toList();
+        final nonManagers = _unassignedPlayers
+            .where((p) => !p.manager)
+            .toList();
         if (nonManagers.isNotEmpty) {
           candidatePlayers = nonManagers;
         }
@@ -414,7 +430,7 @@ class PlayersProvider with ChangeNotifier {
       final topTierPlayers = sortedCandidates
           .where(
             (p) => p.played == topPlayer.played && p.waited == topPlayer.waited,
-      )
+          )
           .toList();
 
       if (topTierPlayers.length == 1) {
@@ -498,8 +514,9 @@ class PlayersProvider with ChangeNotifier {
 
     // 순차적으로 배치 했다고 가정 할 때 (대기인원 / 4) 만큼은 반드시 기다려야 하므로 해당 waited 를 1.0 으로 기준
     double waitedScore =
-        player.waited.toDouble() / (_unassignedPlayers.length == 0 ? 1 : _unassignedPlayers.length) * 4;
-
+        player.waited.toDouble() /
+        (_unassignedPlayers.length == 0 ? 1 : _unassignedPlayers.length) *
+        4;
 
     // 4. 플레이 점수 계산
     final double avgPlayed = _unassignedPlayers.isEmpty

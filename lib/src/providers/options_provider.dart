@@ -6,7 +6,7 @@ class OptionsProvider with ChangeNotifier {
   bool _divideTeam = false;
   int _numberOfSections = 3;
   double _skillWeight = 2.0;
-  double _genderWeight = 2.5;
+  double _genderWeight = 1.0;
   double _waitedWeight = 1.0;
   double _playedWeight = 1.0;
 

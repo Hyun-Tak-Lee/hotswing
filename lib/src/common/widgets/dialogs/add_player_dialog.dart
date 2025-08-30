@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:hotswing/src/common/utils/skill_utils.dart'; // 공통 유틸리티 파일 import
+import 'package:hotswing/src/common/utils/skill_utils.dart';
+import 'package:hotswing/src/providers/players_provider.dart';
 
 class AddPlayerDialog extends StatefulWidget {
-  const AddPlayerDialog({super.key});
+  final Player? player;
+
+  const AddPlayerDialog({super.key, this.player});
 
   @override
   State<AddPlayerDialog> createState() => _AddPlayerDialogState();
@@ -16,24 +19,39 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   final List<String> _genders = ['남', '여'];
   bool _isManager = false;
   String? _selectedSkillLevel;
-  // _skillLevelToRate 맵 정의 삭제
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.player != null) {
+      // 수정 모드: 기존 플레이어 정보로 상태 변수 초기화
+      _name = widget.player!.name;
+      _rate = widget.player!.rate;
+      // rate (int)를 _selectedSkillLevel (String)으로 변환 (skill_utils.dart의 getter 사용)
+      _selectedSkillLevel = rateToSkillLevel[widget.player!.rate];
+      _selectedGender = widget.player!.gender;
+      _isManager = widget.player!.manager;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
+    final bool isEditMode = widget.player != null; // 수정 모드 여부
 
-    // Dynamic font sizes and padding
     final double titleFontSize = isMobileSize ? 24 : 40;
     final double labelFontSize = isMobileSize ? 20 : 32;
     final double switchLabelFontSize = isMobileSize ? 16 : 24;
     final double contentPadding = isMobileSize ? 8.0 : 24.0;
     final double fieldSpacing = isMobileSize ? 16.0 : 32.0;
     final double dialogWidth = isMobileSize ? screenWidth * 0.8 : screenWidth * 0.5;
+    final double buttonFontSize = isMobileSize ? 16 : 22;
 
     return AlertDialog(
-      title: Text('플레이어 추가', style: TextStyle(fontSize: titleFontSize)),
+      title: Text(isEditMode ? '플레이어 수정' : '플레이어 추가', // 제목 동적 변경
+          style: TextStyle(fontSize: titleFontSize)),
       content: Form(
         key: _formKey,
         child: Padding(
@@ -49,6 +67,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     Flexible(
                       flex: isMobileSize ? 3 : 2,
                       child: TextFormField(
+                        initialValue: _name,
                         decoration: InputDecoration(
                           labelText: '이름',
                           labelStyle: TextStyle(fontSize: labelFontSize),
@@ -96,10 +115,12 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   decoration: InputDecoration(
                     labelText: '급수',
                     labelStyle: TextStyle(fontSize: labelFontSize),
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
                   ),
+                  isDense: false,
                   value: _selectedSkillLevel,
                   itemHeight: isMobileSize ? 48.0 : 80.0,
-                  items: skillLevelToRate.keys.map((String level) { // 공통 skillLevelToRate 사용
+                  items: skillLevelToRate.keys.map((String level) {
                     return DropdownMenuItem<String>(
                       value: level,
                       child: Text(level, style: TextStyle(fontSize: labelFontSize)),
@@ -113,7 +134,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   validator: (value) => value == null ? '급수를 선택하세요.' : null,
                   onSaved: (value) {
                     if (value != null) {
-                      _rate = skillLevelToRate[value]; // 공통 skillLevelToRate 사용
+                      _rate = skillLevelToRate[value];
                     }
                   },
                 ),
@@ -122,7 +143,9 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   decoration: InputDecoration(
                     labelText: '성별',
                     labelStyle: TextStyle(fontSize: labelFontSize),
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
                   ),
+                  isDense: false,
                   value: _selectedGender,
                   itemHeight: isMobileSize ? 48.0 : 80.0,
                   items: _genders.map((String gender) {
@@ -148,13 +171,14 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       ),
       actions: <Widget>[
         TextButton(
-          child: const Text('취소'),
+          child: Text('취소', style: TextStyle(fontSize: buttonFontSize)),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
         TextButton(
-          child: const Text('추가'),
+          child: Text(isEditMode ? '수정' : '추가',
+              style: TextStyle(fontSize: buttonFontSize)),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               _formKey.currentState!.save();

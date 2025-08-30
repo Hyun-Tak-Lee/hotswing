@@ -27,8 +27,8 @@ class RightSideMenu extends StatelessWidget {
           Slider(
             value: value,
             min: 0,
-            max: 4,
-            divisions: 8, // (4 - 0) / 0.5 = 8
+            max: 2,
+            divisions: 10,
             label: value.toStringAsFixed(1),
             onChanged: onChanged,
             activeColor: Colors.blueAccent,
