@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:math';
 
 import '../../providers/players_provider.dart';
 import '../utils/skill_utils.dart';
@@ -49,11 +50,9 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
       } else {
         int latedValue = 0;
         if (playersProvider.unassignedPlayers.isNotEmpty) {
-          double sumPlayed = playersProvider.unassignedPlayers
+          latedValue = playersProvider.unassignedPlayers
               .map((p) => p.played)
-              .reduce((a, b) => a + b)
-              .toDouble();
-          latedValue = (sumPlayed / playersProvider.unassignedPlayers.length).floor();
+              .reduce(max);
         }
         playersProvider.addPlayer(
           name: result['name'] as String,
@@ -144,7 +143,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                 (player) => ListTile(
                   tileColor: player.manager ? const Color(0x55FFF700) : null,
                   title: Text(
-                    '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]}',
+                    '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]} ${player.lated}',
                     style: TextStyle(fontSize: iconAndFontSize),
                   ),
                   trailing: Row(
@@ -161,7 +160,6 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                         icon: const Icon(Icons.delete),
                         iconSize: iconAndFontSize,
                         onPressed: () {
-                          // _editingPlayer 관련 상태 변경 로직은 모두 제거됨
                           showDialog(
                             context: context,
                             builder: (BuildContext dialogContext) {

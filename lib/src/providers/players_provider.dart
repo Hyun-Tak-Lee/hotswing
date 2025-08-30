@@ -30,7 +30,7 @@ class Player {
     'gender': gender,
     'played': played,
     'waited': waited,
-    'lated': lated, // Added lated to toJson
+    'lated': lated,
   };
 
   factory Player.fromJson(Map<String, dynamic> json) => Player(
@@ -38,10 +38,11 @@ class Player {
     manager: json['manager'],
     rate: json['rate'],
     gender: json['gender'],
-    played: json['played'],
-    waited: json['waited'],
-    lated: json['lated'], // Added lated to fromJson
+    played: json['played'] ?? 0,
+    waited: json['waited'] ?? 0,
+    lated: json['lated'] ?? 0,
   );
+
 
   @override
   bool operator ==(Object other) =>
@@ -68,7 +69,7 @@ class PlayersProvider with ChangeNotifier {
     //   String gender = _random.nextBool() ? '남' : '여';
     //   int played = 0;
     //   int waited = 0;
-    //   int lated = 0; // Initialize lated for new players
+    //   int lated = 0;
     //   Player newPlayer = Player(
     //     name: playerName,
     //     manager: manager,
@@ -76,7 +77,7 @@ class PlayersProvider with ChangeNotifier {
     //     gender: gender,
     //     played: played,
     //     waited: waited,
-    //     lated: lated, // Pass lated to constructor
+    //     lated: lated,
     //   );
     //   _players[playerName] = newPlayer;
     //   _unassignedPlayers.add(newPlayer);
@@ -92,7 +93,6 @@ class PlayersProvider with ChangeNotifier {
     updateAssignedPlayersListCount(initialCount);
   }
 
-  // Function to save players to SharedPreferences
   Future<void> _savePlayersToPrefs() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     Map<String, String> playersJsonMap = _players.map((key, player) {
@@ -207,11 +207,11 @@ class PlayersProvider with ChangeNotifier {
     _savePlayersToPrefs();
   }
 
-  // 모든 플레이어의 목록을 played가 낮은 순으로, waited가 많은 순으로 정렬하여 반환합니다.
+  // 모든 플레이어의 목록을 (played + lated)가 낮은 순으로, waited가 많은 순으로 정렬하여 반환합니다.
   List<Player> getPlayers() {
     var playerList = _players.values.toList();
     playerList.sort((a, b) {
-      int playedCompare = a.played.compareTo(b.played);
+      int playedCompare = (a.played + a.lated).compareTo(b.played + b.lated);
       if (playedCompare != 0) {
         return playedCompare;
       }
@@ -335,7 +335,7 @@ class PlayersProvider with ChangeNotifier {
   }
 
   // 해당 코트의 플레이어들을 미할당 구역으로 이동시킵니다.
-  void movePlayersFromCourtToUnassigned(int sectionIndex) {
+  void movePlayersFromCourtToUnassigned(int sectionIndex, [int played = 1]) {
     if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) {
       return;
     }
@@ -343,8 +343,8 @@ class PlayersProvider with ChangeNotifier {
     for (int i = 0; i < playersInCourt.length; i++) {
       Player? player = playersInCourt[i];
       if (player != null) {
-        player.waited = 0;
-        player.played++;
+        player.waited = played != 0 ? 0 : player.waited;
+        player.played += played;
         if (!_unassignedPlayers.contains(player)) {
           _unassignedPlayers.add(player);
         }
@@ -420,7 +420,7 @@ class PlayersProvider with ChangeNotifier {
 
       final sortedCandidates = List.of(candidatePlayers)
         ..sort((a, b) {
-          int playedCompare = a.played.compareTo(b.played);
+          int playedCompare = (a.played + a.lated).compareTo(b.played + b.lated);
           if (playedCompare != 0) return playedCompare;
           return b.waited.compareTo(a.waited);
         });
@@ -430,7 +430,7 @@ class PlayersProvider with ChangeNotifier {
       final topPlayer = sortedCandidates.first;
       final topTierPlayers = sortedCandidates
           .where(
-            (p) => p.played == topPlayer.played && p.waited == topPlayer.waited,
+            (p) => (p.played + p.lated) == (topPlayer.played + topPlayer.lated) && p.waited == topPlayer.waited,
           )
           .toList();
 
@@ -519,12 +519,12 @@ class PlayersProvider with ChangeNotifier {
         (_unassignedPlayers.length == 0 ? 1 : _unassignedPlayers.length) *
         4;
 
-    // 4. 플레이 점수 계산
+    // 4. 플레이 횟수 점수 계산
     final double avgPlayed = _unassignedPlayers.isEmpty
         ? 0.0
         : _unassignedPlayers.map((p) => p.played).reduce((a, b) => a + b) /
               _unassignedPlayers.length;
-    double playedScore = avgPlayed - player.played;
+    double playedScore = avgPlayed - (player.played + player.lated);
 
     // 최종 점수 = 각 점수 * 가중치의 합
     return (skillScore * skillWeight) +

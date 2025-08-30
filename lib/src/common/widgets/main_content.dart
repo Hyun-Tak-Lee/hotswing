@@ -257,46 +257,64 @@ class _MainContentState extends State<MainContent> {
                                 ),
                               ],
                             ),
-                            if (!isGameStarted)
-                              SizedBox(
-                                width: widget.isMobileSize ? 80.0 : 120.0,
-                                height: widget.isMobileSize ? 30.0 : 45.0,
-                                child: FloatingActionButton(
-                                  onPressed: () {
-                                    playersProvider.assignPlayersToCourt(
-                                      sectionIndex,
-                                      skillWeight: optionsProvider.skillWeight,
-                                      genderWeight: optionsProvider.genderWeight,
-                                      waitedWeight: optionsProvider.waitedWeight,
-                                      playedWeight: optionsProvider.playedWeight,
-                                    );
-                                    setState(() {
-                                      _courtGameStartedState[sectionIndex] = true;
-                                    });
-                                  },
-                                  heroTag: 'start_fab_$sectionIndex',
-                                  // child: Icon(Icons.play_arrow),
-                                  child: Text('자동 매칭',style:TextStyle(fontSize:widget.isMobileSize ? 12.0 : 20.0)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: widget.isMobileSize ? 40.0 : 50.0,
+                                  height: widget.isMobileSize ? 30.0 : 45.0,
+                                  child: FloatingActionButton(
+                                    onPressed: () {
+                                      playersProvider.movePlayersFromCourtToUnassigned(sectionIndex,0);
+                                      setState(() {
+                                        _courtGameStartedState[sectionIndex] = false;
+                                      });
+                                    },
+                                    heroTag: 'refresh_fab_$sectionIndex',
+                                    child: Icon(Icons.refresh, size: widget.isMobileSize ? 18.0 : 24.0),
+                                  ),
                                 ),
-                              ),
-                            if (isGameStarted)
-                              SizedBox(
-                                width: widget.isMobileSize ? 90.0 : 150.0,
-                                height: widget.isMobileSize ? 30.0 : 45.0,
-                                child: FloatingActionButton(
-                                  onPressed: () {
-                                    playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
-                                    playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
-                                    setState(() {
-                                      _courtGameStartedState[sectionIndex] =
-                                          false;
-                                    });
-                                  },
-                                  heroTag: 'stop_fab_$sectionIndex',
-                                  // child: Icon(Icons.stop),
-                                  child: Text('코트 확정, 제거',style:TextStyle(fontSize:widget.isMobileSize ? 12.0 : 20.0)),
-                                ),
-                              ),
+                                const SizedBox(width: 8.0),
+                                if (!isGameStarted)
+                                  SizedBox(
+                                    width: widget.isMobileSize ? 80.0 : 120.0,
+                                    height: widget.isMobileSize ? 30.0 : 45.0,
+                                    child: FloatingActionButton(
+                                      onPressed: () {
+                                        playersProvider.assignPlayersToCourt(
+                                          sectionIndex,
+                                          skillWeight: optionsProvider.skillWeight,
+                                          genderWeight: optionsProvider.genderWeight,
+                                          waitedWeight: optionsProvider.waitedWeight,
+                                          playedWeight: optionsProvider.playedWeight,
+                                        );
+                                        setState(() {
+                                          _courtGameStartedState[sectionIndex] = true;
+                                        });
+                                      },
+                                      heroTag: 'start_fab_$sectionIndex',
+                                      child: Text('자동 매칭',style:TextStyle(fontSize:widget.isMobileSize ? 12.0 : 20.0)),
+                                    ),
+                                  )
+                                else // isGameStarted
+                                  SizedBox(
+                                    width: widget.isMobileSize ? 90.0 : 150.0,
+                                    height: widget.isMobileSize ? 30.0 : 45.0,
+                                    child: FloatingActionButton(
+                                      onPressed: () {
+                                        playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
+                                        playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
+                                        setState(() {
+                                          _courtGameStartedState[sectionIndex] = false;
+                                        });
+                                      },
+                                      heroTag: 'stop_fab_$sectionIndex',
+                                      child: Text('코트 확정, 제거',style:TextStyle(fontSize:widget.isMobileSize ? 12.0 : 20.0)),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
                       );

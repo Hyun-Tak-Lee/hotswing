@@ -66,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
           elevation: 0,
           toolbarHeight: appBarHeight, // 수정된 AppBar 높이 적용
           leading: IconButton(
-            icon: const Icon(Icons.menu),
+            icon: const Icon(Icons.menu_rounded),
             iconSize: iconSize,
             onPressed: () {
               _scaffoldKey.currentState?.openDrawer();
@@ -74,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           actions: <Widget>[
             IconButton(
-              icon: const Icon(Icons.menu),
+              icon: const Icon(Icons.menu_rounded),
               iconSize: iconSize,
               onPressed: () {
                 _scaffoldKey.currentState?.openEndDrawer();
