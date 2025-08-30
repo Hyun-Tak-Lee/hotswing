@@ -11,8 +11,8 @@ class Player {
   String gender;
   int played;
   int waited;
+  int lated;
 
-  // Player 객체를 생성합니다.
   Player({
     required this.rate,
     required this.manager,
@@ -20,9 +20,9 @@ class Player {
     required this.gender,
     required this.played,
     required this.waited,
+    required this.lated,
   }) : this.name = name.length > 7 ? name.substring(0, 7) : name;
 
-  // Add this method to convert Player to Map
   Map<String, dynamic> toJson() => {
     'name': name,
     'manager': manager,
@@ -30,9 +30,9 @@ class Player {
     'gender': gender,
     'played': played,
     'waited': waited,
+    'lated': lated, // Added lated to toJson
   };
 
-  // Add this factory constructor to create Player from Map (for loading later)
   factory Player.fromJson(Map<String, dynamic> json) => Player(
     name: json['name'],
     manager: json['manager'],
@@ -40,27 +40,24 @@ class Player {
     gender: json['gender'],
     played: json['played'],
     waited: json['waited'],
+    lated: json['lated'], // Added lated to fromJson
   );
 
-  // 두 Player 객체가 동일한지 비교합니다. 이름이 같으면 동일한 것으로 간주합니다.
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is Player && runtimeType == other.runtimeType && name == other.name;
 
-  // Player 객체의 해시 코드를 반환합니다. 이름의 해시 코드를 사용합니다.
   @override
   int get hashCode => name.hashCode;
 }
 
-// 플레이어 목록 및 코트 할당 상태를 관리하는 클래스입니다.
 class PlayersProvider with ChangeNotifier {
   final Map<String, Player> _players = {};
   List<List<Player?>> _assignedPlayers = [];
   List<Player> _unassignedPlayers = [];
   final Random _random = Random();
 
-  // PlayersProvider 객체를 생성하고 초기 플레이어 데이터를 로드합니다.
   PlayersProvider() {
     // final List<int> skillRates = skillLevelToRate.values.toList();
     //
@@ -71,6 +68,7 @@ class PlayersProvider with ChangeNotifier {
     //   String gender = _random.nextBool() ? '남' : '여';
     //   int played = 0;
     //   int waited = 0;
+    //   int lated = 0; // Initialize lated for new players
     //   Player newPlayer = Player(
     //     name: playerName,
     //     manager: manager,
@@ -78,6 +76,7 @@ class PlayersProvider with ChangeNotifier {
     //     gender: gender,
     //     played: played,
     //     waited: waited,
+    //     lated: lated, // Pass lated to constructor
     //   );
     //   _players[playerName] = newPlayer;
     //   _unassignedPlayers.add(newPlayer);
@@ -129,6 +128,7 @@ class PlayersProvider with ChangeNotifier {
     required String gender,
     required int played,
     required int waited,
+    required int lated,
   }) {
     if (name.length > 7) return;
     if (!_players.containsKey(name)) {
@@ -139,6 +139,7 @@ class PlayersProvider with ChangeNotifier {
         gender: gender,
         played: played,
         waited: waited,
+        lated: lated,
       );
       _players[name] = newPlayer;
       _unassignedPlayers.add(newPlayer);

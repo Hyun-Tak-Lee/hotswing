@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/players_provider.dart';
+import '../utils/skill_utils.dart';
 import 'dialogs/add_player_dialog.dart';
 import 'dialogs/confirmation_dialog.dart';
 
@@ -46,6 +47,14 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           newManager: result['manager'] as bool,
         );
       } else {
+        int latedValue = 0;
+        if (playersProvider.unassignedPlayers.isNotEmpty) {
+          double sumPlayed = playersProvider.unassignedPlayers
+              .map((p) => p.played)
+              .reduce((a, b) => a + b)
+              .toDouble();
+          latedValue = (sumPlayed / playersProvider.unassignedPlayers.length).floor();
+        }
         playersProvider.addPlayer(
           name: result['name'] as String,
           rate: result['rate'] as int,
@@ -53,6 +62,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           manager: result['manager'] as bool,
           played: 0,
           waited: 0,
+          lated: latedValue,
         );
       }
     }
@@ -134,7 +144,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                 (player) => ListTile(
                   tileColor: player.manager ? const Color(0x55FFF700) : null,
                   title: Text(
-                    '${player.name} (${player.gender})',
+                    '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]}',
                     style: TextStyle(fontSize: iconAndFontSize),
                   ),
                   trailing: Row(

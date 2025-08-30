@@ -39,7 +39,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     double screenWidth = MediaQuery.of(context).size.width;
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
-    final bool isEditMode = widget.player != null; // 수정 모드 여부
+    final bool isEditMode = widget.player != null;
 
     final double titleFontSize = isMobileSize ? 24 : 40;
     final double labelFontSize = isMobileSize ? 20 : 32;
@@ -47,10 +47,10 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     final double contentPadding = isMobileSize ? 8.0 : 24.0;
     final double fieldSpacing = isMobileSize ? 16.0 : 32.0;
     final double dialogWidth = isMobileSize ? screenWidth * 0.8 : screenWidth * 0.5;
-    final double buttonFontSize = isMobileSize ? 16 : 22;
+    final double buttonFontSize = isMobileSize ? 16 : 28;
 
     return AlertDialog(
-      title: Text(isEditMode ? '플레이어 수정' : '플레이어 추가', // 제목 동적 변경
+      title: Text(isEditMode ? '플레이어 수정' : '플레이어 추가',
           style: TextStyle(fontSize: titleFontSize)),
       content: Form(
         key: _formKey,

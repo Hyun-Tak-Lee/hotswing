@@ -4,8 +4,8 @@ const Map<String, int> skillLevelToRate = {
   'D+': 1500,
   'C': 2000,
   'B': 3000,
-  'A': 5000,
-  'S': 10000,
+  'A': 4000,
+  'S': 6000,
 };
 
 // 역 매핑을 위한 getter 또는 함수 (필요한 경우)

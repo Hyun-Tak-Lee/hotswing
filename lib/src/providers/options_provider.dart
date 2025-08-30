@@ -17,6 +17,12 @@ class OptionsProvider with ChangeNotifier {
   static const String _waitedWeightKey = 'waitedWeight';
   static const String _playedWeightKey = 'playedWeight';
 
+  // Define min/max values based on right_side_menu.dart
+  static const int _minNumberOfSections = 1;
+  static const int _maxNumberOfSections = 8;
+  static const double _minWeight = 0.0;
+  static const double _maxWeight = 2.0;
+
   bool get divideTeam => _divideTeam;
 
   int get numberOfSections => _numberOfSections;
@@ -39,11 +45,16 @@ class OptionsProvider with ChangeNotifier {
     _prefs =
         await SharedPreferences.getInstance(); // SharedPreferences 인스턴스 가져오기 (비동기)
     _divideTeam = _prefs?.getBool(_divideTeamKey) ?? false;
-    _numberOfSections = _prefs?.getInt(_numberOfSectionsKey) ?? 3;
-    _skillWeight = _prefs?.getDouble(_skillWeightKey) ?? 2.0;
-    _genderWeight = _prefs?.getDouble(_genderWeightKey) ?? 2.5;
-    _waitedWeight = _prefs?.getDouble(_waitedWeightKey) ?? 1.0;
-    _playedWeight = _prefs?.getDouble(_playedWeightKey) ?? 1.0;
+    _numberOfSections = (_prefs?.getInt(_numberOfSectionsKey) ?? 3)
+        .clamp(_minNumberOfSections, _maxNumberOfSections);
+    _skillWeight = (_prefs?.getDouble(_skillWeightKey) ?? 2.0)
+        .clamp(_minWeight, _maxWeight);
+    _genderWeight = (_prefs?.getDouble(_genderWeightKey) ?? 1.0)
+        .clamp(_minWeight, _maxWeight);
+    _waitedWeight = (_prefs?.getDouble(_waitedWeightKey) ?? 1.0)
+        .clamp(_minWeight, _maxWeight);
+    _playedWeight = (_prefs?.getDouble(_playedWeightKey) ?? 1.0)
+        .clamp(_minWeight, _maxWeight);
     notifyListeners();
   }
 
@@ -65,31 +76,31 @@ class OptionsProvider with ChangeNotifier {
   }
 
   void setNumberOfSections(int newNumberOfSections) {
-    _numberOfSections = newNumberOfSections;
+    _numberOfSections = newNumberOfSections.clamp(_minNumberOfSections, _maxNumberOfSections);
     _savePreferences();
     notifyListeners();
   }
 
   void setSkillWeight(double newSkillWeight) {
-    _skillWeight = newSkillWeight;
+    _skillWeight = newSkillWeight.clamp(_minWeight, _maxWeight);
     _savePreferences();
     notifyListeners();
   }
 
   void setGenderWeight(double newGenderWeight) {
-    _genderWeight = newGenderWeight;
+    _genderWeight = newGenderWeight.clamp(_minWeight, _maxWeight);
     _savePreferences();
     notifyListeners();
   }
 
   void setWaitedWeight(double newWaitedWeight) {
-    _waitedWeight = newWaitedWeight;
+    _waitedWeight = newWaitedWeight.clamp(_minWeight, _maxWeight);
     _savePreferences();
     notifyListeners();
   }
 
   void setPlayedWeight(double newPlayedWeight) {
-    _playedWeight = newPlayedWeight;
+    _playedWeight = newPlayedWeight.clamp(_minWeight, _maxWeight);
     _savePreferences();
     notifyListeners();
   }

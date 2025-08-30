@@ -51,7 +51,7 @@ class RightSideMenu extends StatelessWidget {
     return Drawer(
       width: isMobileSize
           ? MediaQuery.of(context).size.width * 0.55
-          : MediaQuery.of(context).size.width * 0.35,
+          : MediaQuery.of(context).size.width * 0.45,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
@@ -71,7 +71,7 @@ class RightSideMenu extends StatelessWidget {
             ),
           ),
           ListTile(
-            title: Text('팀 나누기', style: TextStyle(fontSize: iconAndFontSize)),
+            title: Text('팀 지정 (사용x)', style: TextStyle(fontSize: iconAndFontSize)),
             trailing: Transform.scale(
               scale: switchScale,
               child: Switch(
@@ -148,7 +148,7 @@ class RightSideMenu extends StatelessWidget {
           const SizedBox(height: 10),
           _buildSliderListItem(
             context: context,
-            title: '플레이 수 가중치',
+            title: '플레이 횟수 가중치',
             value: optionsProvider.playedWeight,
             onChanged: (double value) {
               optionsProvider.setPlayedWeight(value);
