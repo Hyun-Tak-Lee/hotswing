@@ -43,7 +43,6 @@ class Player {
     lated: json['lated'] ?? 0,
   );
 
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -62,7 +61,7 @@ class PlayersProvider with ChangeNotifier {
   PlayersProvider() {
     // final List<int> skillRates = skillLevelToRate.values.toList();
     //
-    // for (int i = 1; i <= 24; i++) {
+    // for (int i = 1; i <= 32; i++) {
     //   String playerName = '플레이어 $i';
     //   bool manager = _random.nextBool();
     //   int playerRate = skillRates[_random.nextInt(skillRates.length)];
@@ -420,7 +419,9 @@ class PlayersProvider with ChangeNotifier {
 
       final sortedCandidates = List.of(candidatePlayers)
         ..sort((a, b) {
-          int playedCompare = (a.played + a.lated).compareTo(b.played + b.lated);
+          int playedCompare = (a.played + a.lated).compareTo(
+            b.played + b.lated,
+          );
           if (playedCompare != 0) return playedCompare;
           return b.waited.compareTo(a.waited);
         });
@@ -430,7 +431,9 @@ class PlayersProvider with ChangeNotifier {
       final topPlayer = sortedCandidates.first;
       final topTierPlayers = sortedCandidates
           .where(
-            (p) => (p.played + p.lated) == (topPlayer.played + topPlayer.lated) && p.waited == topPlayer.waited,
+            (p) =>
+                (p.played + p.lated) == (topPlayer.played + topPlayer.lated) &&
+                p.waited == topPlayer.waited,
           )
           .toList();
 
@@ -494,24 +497,33 @@ class PlayersProvider with ChangeNotifier {
     int menCount = currentPlayersOnCourt.where((p) => p.gender == '남').length;
     int womenCount = currentPlayersOnCourt.where((p) => p.gender == '여').length;
 
-    double genderScore = 0.5;
-    if (player.gender == '여') {
-      if (womenCount == 1 && menCount == 2) {
-        genderScore = 1.0;
-      } else if (womenCount > 0 && menCount == 0) {
-        genderScore = 1.5;
-      } else if (womenCount > 2) {
-        genderScore = 2.0;
-      }
+    if (player.gender == "여") {
+      womenCount++;
     } else {
-      if (menCount == 1 && womenCount == 2) {
-        genderScore = 1.0;
-      } else if (menCount > 0 && womenCount == 0) {
-        genderScore = 1.5;
-      } else if (menCount > 2) {
-        genderScore = 2.0;
-      }
+      menCount++;
     }
+    double mixScore = 0.25;
+    double singleGenderScore = 0.25;
+
+    if (menCount == 2 && womenCount == 2) {
+      mixScore = 2.0;
+    } else if (womenCount == 1 && menCount == 1) {
+      mixScore = 1.5;
+    } else if ((menCount == 2 && womenCount == 1) ||
+        (womenCount == 2 && menCount == 1)) {
+      mixScore = 1.5;
+    }
+    if (menCount == 4 || womenCount == 4) {
+      singleGenderScore = 2.0;
+    } else if ((womenCount == 0) || (menCount == 0)) {
+      singleGenderScore = 1.5;
+    }
+
+    double weightForMix = (2.0 - genderWeight);
+    double weightForSingle = genderWeight;
+
+    double genderScore =
+        (mixScore * weightForMix) + (singleGenderScore * weightForSingle);
 
     // 순차적으로 배치 했다고 가정 할 때 (대기인원 / 4) 만큼은 반드시 기다려야 하므로 해당 waited 를 1.0 으로 기준
     double waitedScore =

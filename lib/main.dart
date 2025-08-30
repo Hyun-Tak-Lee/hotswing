@@ -48,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
     final double iconSize = isMobileSize ? 24.0 : 76.0;
-    final double appBarHeight = isMobileSize ? kToolbarHeight : 88.0; // 조건부 AppBar 높이 (태블릿에서 72.0)
+    final double appBarHeight = isMobileSize ? kToolbarHeight : 92.0;
 
     return Container(
       decoration: BoxDecoration(
@@ -64,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          toolbarHeight: appBarHeight, // 수정된 AppBar 높이 적용
+          toolbarHeight: appBarHeight,
           leading: IconButton(
             icon: const Icon(Icons.menu_rounded),
             iconSize: iconSize,

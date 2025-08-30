@@ -91,7 +91,16 @@ class _MainContentState extends State<MainContent> {
 
     final optionsProvider = Provider.of<OptionsProvider>(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
-    final playerList = playersProvider.unassignedPlayers;
+    // playersProvider.unassignedPlayers로부터 리스트를 가져와서 수정 가능한 복사본을 만듭니다.
+    final playerList = List<Player>.from(playersProvider.unassignedPlayers);
+    playerList.sort((a, b) {
+      int playedCompare = (a.played + a.lated).compareTo(b.played + b.lated);
+      if (playedCompare != 0) {
+        return playedCompare;
+      }
+      return b.waited.compareTo(a.waited);
+    });
+
     final List<List<Player?>> sectionData = playersProvider.assignedPlayers;
     final bool shouldShowDivider = optionsProvider.divideTeam;
 
