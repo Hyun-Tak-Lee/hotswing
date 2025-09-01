@@ -1,10 +1,11 @@
-import 'dart:convert'; // Import for jsonEncode
+import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hotswing/src/common/utils/skill_utils.dart';
 
 class Player {
+  final int id;
   String name;
   bool manager;
   int rate;
@@ -14,6 +15,7 @@ class Player {
   int lated;
 
   Player({
+    required this.id,
     required this.rate,
     required this.manager,
     required String name,
@@ -24,6 +26,7 @@ class Player {
   }) : this.name = name.length > 7 ? name.substring(0, 7) : name;
 
   Map<String, dynamic> toJson() => {
+    'id': id,
     'name': name,
     'manager': manager,
     'rate': rate,
@@ -34,34 +37,38 @@ class Player {
   };
 
   factory Player.fromJson(Map<String, dynamic> json) => Player(
-    name: json['name'],
-    manager: json['manager'],
-    rate: json['rate'],
-    gender: json['gender'],
-    played: json['played'] ?? 0,
-    waited: json['waited'] ?? 0,
-    lated: json['lated'] ?? 0,
+    id: json['id'] as int,
+    // Expect int ID from JSON
+    name: json['name'] as String,
+    manager: json['manager'] as bool,
+    rate: json['rate'] as int,
+    gender: json['gender'] as String,
+    played: json['played'] as int? ?? 0,
+    waited: json['waited'] as int? ?? 0,
+    lated: json['lated'] as int? ?? 0,
   );
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Player && runtimeType == other.runtimeType && name == other.name;
+      other is Player && runtimeType == other.runtimeType && id == other.id; // Compare by ID
 
   @override
-  int get hashCode => name.hashCode;
+  int get hashCode => id.hashCode; // Hash by ID
 }
 
 class PlayersProvider with ChangeNotifier {
-  final Map<String, Player> _players = {};
+  final Map<int, Player> _players = {}; // Key changed to int (playerId)
   List<List<Player?>> _assignedPlayers = [];
   List<Player> _unassignedPlayers = [];
   final Random _random = Random();
+  int _nextPlayerId = 0; // For generating unique integer IDs
 
   PlayersProvider() {
     // final List<int> skillRates = skillLevelToRate.values.toList();
     //
     // for (int i = 1; i <= 32; i++) {
+    //   int id = i;
     //   String playerName = '플레이어 $i';
     //   bool manager = _random.nextBool();
     //   int playerRate = skillRates[_random.nextInt(skillRates.length)];
@@ -85,7 +92,6 @@ class PlayersProvider with ChangeNotifier {
     _loadPlayersFromPrefs();
   }
 
-  // SharedPreferences에서 초기 할당된 플레이어 섹션 수를 로드합니다.
   Future<void> _loadInitialAssignedPlayersCount() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final int initialCount = prefs.getInt("numberOfSections") ?? 3;
@@ -94,8 +100,9 @@ class PlayersProvider with ChangeNotifier {
 
   Future<void> _savePlayersToPrefs() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    Map<String, String> playersJsonMap = _players.map((key, player) {
-      return MapEntry(key, jsonEncode(player.toJson()));
+    // Convert Map<int, Player> to Map<String, String> for JSON encoding
+    Map<String, String> playersJsonMap = _players.map((playerId, player) {
+      return MapEntry(playerId.toString(), jsonEncode(player.toJson()));
     });
     String encodedPlayers = jsonEncode(playersJsonMap);
     await prefs.setString('players_list', encodedPlayers);
@@ -104,22 +111,28 @@ class PlayersProvider with ChangeNotifier {
   Future<void> _loadPlayersFromPrefs() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? encodedPlayers = prefs.getString('players_list');
+    int maxIdFound = -1;
+
     if (encodedPlayers != null) {
-      Map<String, dynamic> playersJsonMap = jsonDecode(encodedPlayers);
-      playersJsonMap.forEach((key, playerJsonString) {
-        Map<String, dynamic> playerMap = jsonDecode(playerJsonString);
+      Map<String, dynamic> playersJsonMap = jsonDecode(
+        encodedPlayers,
+      ); // Outer map: Map<String(id), String(playerJson)>
+      playersJsonMap.forEach((idString, playerJsonString) {
+        Map<String, dynamic> playerMap = jsonDecode(playerJsonString as String);
         Player player = Player.fromJson(playerMap);
-        _players[key] = player;
-        _unassignedPlayers.add(player);
+        _players[player.id] = player;
+        _unassignedPlayers.add(player); // Add to unassigned by default
+        if (player.id > maxIdFound) {
+          maxIdFound = player.id;
+        }
       });
-      notifyListeners();
     }
+    _nextPlayerId = maxIdFound + 1;
+    notifyListeners();
   }
 
-  // 모든 플레이어의 수정 불가능한 맵을 반환합니다.
-  Map<String, Player> get players => Map.unmodifiable(_players);
+  Map<int, Player> get players => Map.unmodifiable(_players);
 
-  // 새로운 플레이어를 추가합니다. 이미 존재하는 이름의 플레이어는 추가하지 않습니다.
   void addPlayer({
     required String name,
     required bool manager,
@@ -130,27 +143,28 @@ class PlayersProvider with ChangeNotifier {
     required int lated,
   }) {
     if (name.length > 7) return;
-    if (!_players.containsKey(name)) {
-      Player newPlayer = Player(
-        name: name,
-        manager: manager,
-        rate: rate,
-        gender: gender,
-        played: played,
-        waited: waited,
-        lated: lated,
-      );
-      _players[name] = newPlayer;
-      _unassignedPlayers.add(newPlayer);
-      notifyListeners();
-      _savePlayersToPrefs();
-    }
+    if (_players.values.any((player) => player.name == name)) return;
+
+    int newPlayerId = _nextPlayerId++;
+    Player newPlayer = Player(
+      id: newPlayerId,
+      name: name,
+      manager: manager,
+      rate: rate,
+      gender: gender,
+      played: played,
+      waited: waited,
+      lated: lated,
+    );
+    _players[newPlayerId] = newPlayer;
+    _unassignedPlayers.add(newPlayer);
+    notifyListeners();
+    _savePlayersToPrefs();
   }
 
-  // 지정된 이름의 플레이어를 제거합니다.
-  void removePlayer(String name) {
-    if (_players.containsKey(name)) {
-      Player? playerToRemove = _players[name];
+  void removePlayer(int playerId) {
+    if (_players.containsKey(playerId)) {
+      Player? playerToRemove = _players[playerId];
       if (playerToRemove == null) return;
       for (int i = 0; i < _assignedPlayers.length; i++) {
         for (int j = 0; j < _assignedPlayers[i].length; j++) {
@@ -159,54 +173,43 @@ class PlayersProvider with ChangeNotifier {
           }
         }
       }
-      _unassignedPlayers.remove(playerToRemove);
-      _players.remove(name);
+      _unassignedPlayers.remove(playerToRemove); // Equality uses ID
+      _players.remove(playerId);
       notifyListeners();
       _savePlayersToPrefs();
     }
   }
 
-  // 플레이어 정보를 업데이트합니다.
   void updatePlayer({
-    required String oldName,
+    required int playerId, // Changed to int playerId
     required String newName,
     required int newRate,
     required String newGender,
     required bool newManager,
   }) {
     if (newName.length > 7) return;
-    if (!_players.containsKey(oldName)) return;
-    if (oldName != newName && _players.containsKey(newName)) return;
-
-    Player? playerToUpdate = _players[oldName];
-    if (playerToUpdate == null) return;
-
+    if (!_players.containsKey(playerId)) return;
+    Player playerToUpdate = _players[playerId]!;
+    playerToUpdate.name = newName;
     playerToUpdate.rate = newRate;
     playerToUpdate.gender = newGender;
     playerToUpdate.manager = newManager;
-
-    if (oldName != newName) {
-      _players.remove(oldName);
-      playerToUpdate.name = newName;
-      _players[newName] = playerToUpdate;
-    }
 
     notifyListeners();
     _savePlayersToPrefs();
   }
 
-  // 모든 플레이어 정보를 초기화합니다.
   void clearPlayers() {
     _players.clear();
     _unassignedPlayers.clear();
     for (int i = 0; i < _assignedPlayers.length; i++) {
       _assignedPlayers[i] = [null, null, null, null];
     }
+    _nextPlayerId = 0;
     notifyListeners();
     _savePlayersToPrefs();
   }
 
-  // 모든 플레이어의 목록을 (played + lated)가 낮은 순으로, waited가 많은 순으로 정렬하여 반환합니다.
   List<Player> getPlayers() {
     var playerList = _players.values.toList();
     playerList.sort((a, b) {
@@ -219,7 +222,6 @@ class PlayersProvider with ChangeNotifier {
     return playerList;
   }
 
-  // 할당된 플레이어 목록(코트)의 수를 업데이트합니다.
   void updateAssignedPlayersListCount(int newCount) {
     if (newCount < 0) {
       return;
@@ -229,7 +231,7 @@ class PlayersProvider with ChangeNotifier {
       for (int i = newCount; i < currentCount; i++) {
         List<Player?> playersInList = _assignedPlayers[i];
         for (Player? player in playersInList) {
-          if (player != null) {
+          if (player != null && !_unassignedPlayers.contains(player)) {
             _unassignedPlayers.add(player);
           }
         }
@@ -243,7 +245,6 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 두 코트 위치에 있는 플레이어를 서로 교환합니다.
   void exchangePlayersInCourts({
     required int sectionIndex1,
     required int playerIndexInSection1,
@@ -274,7 +275,6 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 미할당 플레이어와 코트의 특정 위치에 있는 플레이어를 교환합니다.
   void exchangeUnassignedPlayerWithCourtPlayer({
     required Player unassignedPlayerToAssign,
     required int targetCourtSectionIndex,
@@ -303,7 +303,6 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 특정 코트의 특정 위치에서 플레이어를 제거하고 미할당 목록에 추가합니다.
   void removePlayerFromCourt({
     required int sectionIndex,
     required int playerIndexInSection,
@@ -325,15 +324,14 @@ class PlayersProvider with ChangeNotifier {
     }
   }
 
-  // 미할당 구역의 모든 플레이어의 waited 를 1 더합니다.
   void incrementWaitedTimeForAllUnassignedPlayers() {
     for (var player in _unassignedPlayers) {
       player.waited++;
     }
     notifyListeners();
+    _savePlayersToPrefs();
   }
 
-  // 해당 코트의 플레이어들을 미할당 구역으로 이동시킵니다.
   void movePlayersFromCourtToUnassigned(int sectionIndex, [int played = 1]) {
     if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) {
       return;
@@ -354,7 +352,6 @@ class PlayersProvider with ChangeNotifier {
     _savePlayersToPrefs();
   }
 
-  // 특정 코트에 4명의 플레이어를 할당합니다. (점수 기반 시스템)
   void assignPlayersToCourt(
     int sectionIndex, {
     required double skillWeight,
@@ -404,7 +401,8 @@ class PlayersProvider with ChangeNotifier {
         .where((p) => p.manager)
         .length;
     final bool isLastManagerCondition =
-        unassignedManagersCount == 1 && _unassignedPlayers.length > 1;
+        unassignedManagersCount == 1 &&
+        _unassignedPlayers.any((p) => !p.manager);
 
     if (currentPlayersOnCourt.isEmpty) {
       List<Player> candidatePlayers = _unassignedPlayers;
@@ -416,7 +414,6 @@ class PlayersProvider with ChangeNotifier {
           candidatePlayers = nonManagers;
         }
       }
-
       final sortedCandidates = List.of(candidatePlayers)
         ..sort((a, b) {
           int playedCompare = (a.played + a.lated).compareTo(
@@ -437,14 +434,11 @@ class PlayersProvider with ChangeNotifier {
           )
           .toList();
 
-      if (topTierPlayers.length == 1) {
-        return topPlayer;
-      } else {
-        final randomIndex = _random.nextInt(topTierPlayers.length);
-        return topTierPlayers[randomIndex];
-      }
+      final randomIndex = _random.nextInt(topTierPlayers.length);
+      return topTierPlayers[randomIndex];
     }
 
+    // If court is not empty, sort all unassigned players by score
     final sortedUnassignedPlayers = List.of(_unassignedPlayers)
       ..sort((a, b) {
         double scoreA = _calculatePlayerScoreForCourt(
@@ -463,20 +457,27 @@ class PlayersProvider with ChangeNotifier {
           waitedWeight: waitedWeight,
           playedWeight: playedWeight,
         );
-        return scoreB.compareTo(scoreA);
+        return scoreB.compareTo(scoreA); // Higher score is better
       });
 
-    final Player bestPlayer = sortedUnassignedPlayers.first;
-
+    if (sortedUnassignedPlayers.isEmpty) return null;
+    Player bestPlayer = sortedUnassignedPlayers.first;
+    
     if (isLastManagerCondition && bestPlayer.manager) {
-      if (sortedUnassignedPlayers.length > 1) {
-        return sortedUnassignedPlayers[1];
+      Player? bestNonManager = null;
+      for (final pInList in sortedUnassignedPlayers) { // 변수명 p가 이미 사용 중일 수 있으므로 pInList로 변경
+        if (!pInList.manager) {
+          bestNonManager = pInList;
+          break;
+        }
+      }
+      if (bestNonManager != null) {
+        return bestNonManager;
       }
     }
     return bestPlayer;
   }
 
-  // 플레이어의 최종 점수를 계산하는 함수
   double _calculatePlayerScoreForCourt(
     Player player,
     List<Player> currentPlayersOnCourt, {
@@ -545,7 +546,6 @@ class PlayersProvider with ChangeNotifier {
         (playedScore * playedWeight);
   }
 
-  // 미할당된 플레이어의 수정 불가능한 목록을 반환합니다.
   List<Player> get unassignedPlayers => List.unmodifiable(_unassignedPlayers);
 
   // 코트에 할당된 플레이어들의 수정 불가능한 목록 (리스트의 리스트 형태)을 반환합니다.

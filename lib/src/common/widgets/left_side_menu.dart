@@ -41,7 +41,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
         result['manager'] != null) {
       if (existingPlayer != null) {
         playersProvider.updatePlayer(
-          oldName: existingPlayer.name,
+          playerId: existingPlayer.id,
           newName: result['name'] as String,
           newRate: result['rate'] as int,
           newGender: result['gender'] as String,
@@ -166,7 +166,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                               return ConfirmationDialog(
                                 message: '"${player.name}" 님을 삭제하시겠습니까?',
                                 onConfirm: () {
-                                  playersProvider.removePlayer(player.name);
+                                  playersProvider.removePlayer(player.id);
                                 },
                               );
                             },
