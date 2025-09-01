@@ -356,8 +356,6 @@ class PlayersProvider with ChangeNotifier {
             if (otherPlayerInCourt != null && otherPlayerInCourt.id != player.id) {
               player.gamesPlayedWith[otherPlayerInCourt.id] = 
                   (player.gamesPlayedWith[otherPlayerInCourt.id] ?? 0) + 1;
-              otherPlayerInCourt.gamesPlayedWith[player.id] = 
-                  (otherPlayerInCourt.gamesPlayedWith[player.id] ?? 0) + 1;
             }
           }
         }
