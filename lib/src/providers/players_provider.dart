@@ -13,6 +13,7 @@ class Player {
   int played;
   int waited;
   int lated;
+  Map<int, int> gamesPlayedWith;
 
   Player({
     required this.id,
@@ -23,7 +24,9 @@ class Player {
     required this.played,
     required this.waited,
     required this.lated,
-  }) : this.name = name.length > 7 ? name.substring(0, 7) : name;
+    Map<int, int>? gamesPlayedWith, // Optional parameter for initialization
+  }) : this.name = name.length > 7 ? name.substring(0, 7) : name,
+       this.gamesPlayedWith = gamesPlayedWith ?? {}; // Initialize if null
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -34,11 +37,11 @@ class Player {
     'played': played,
     'waited': waited,
     'lated': lated,
+    'gamesPlayedWith': gamesPlayedWith.map((key, value) => MapEntry(key.toString(), value)),
   };
 
   factory Player.fromJson(Map<String, dynamic> json) => Player(
     id: json['id'] as int,
-    // Expect int ID from JSON
     name: json['name'] as String,
     manager: json['manager'] as bool,
     rate: json['rate'] as int,
@@ -46,23 +49,26 @@ class Player {
     played: json['played'] as int? ?? 0,
     waited: json['waited'] as int? ?? 0,
     lated: json['lated'] as int? ?? 0,
+    gamesPlayedWith: (json['gamesPlayedWith'] as Map<String, dynamic>?)
+            ?.map((key, value) => MapEntry(int.parse(key), value as int)) ??
+        {},
   );
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Player && runtimeType == other.runtimeType && id == other.id; // Compare by ID
+      other is Player && runtimeType == other.runtimeType && id == other.id;
 
   @override
-  int get hashCode => id.hashCode; // Hash by ID
+  int get hashCode => id.hashCode;
 }
 
 class PlayersProvider with ChangeNotifier {
-  final Map<int, Player> _players = {}; // Key changed to int (playerId)
+  final Map<int, Player> _players = {};
   List<List<Player?>> _assignedPlayers = [];
   List<Player> _unassignedPlayers = [];
   final Random _random = Random();
-  int _nextPlayerId = 0; // For generating unique integer IDs
+  int _nextPlayerId = 0;
 
   PlayersProvider() {
     // final List<int> skillRates = skillLevelToRate.values.toList();
@@ -116,7 +122,7 @@ class PlayersProvider with ChangeNotifier {
     if (encodedPlayers != null) {
       Map<String, dynamic> playersJsonMap = jsonDecode(
         encodedPlayers,
-      ); // Outer map: Map<String(id), String(playerJson)>
+      );
       playersJsonMap.forEach((idString, playerJsonString) {
         Map<String, dynamic> playerMap = jsonDecode(playerJsonString as String);
         Player player = Player.fromJson(playerMap);
@@ -155,6 +161,7 @@ class PlayersProvider with ChangeNotifier {
       played: played,
       waited: waited,
       lated: lated,
+      gamesPlayedWith: {}, // Initialize with empty map
     );
     _players[newPlayerId] = newPlayer;
     _unassignedPlayers.add(newPlayer);
@@ -336,12 +343,25 @@ class PlayersProvider with ChangeNotifier {
     if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) {
       return;
     }
-    List<Player?> playersInCourt = _assignedPlayers[sectionIndex];
+    List<Player?> playersInCourt = List.from(_assignedPlayers[sectionIndex]);
+
     for (int i = 0; i < playersInCourt.length; i++) {
       Player? player = playersInCourt[i];
       if (player != null) {
         player.waited = played != 0 ? 0 : player.waited;
         player.played += played;
+
+        if (played == 1) {
+          for (Player? otherPlayerInCourt in playersInCourt) {
+            if (otherPlayerInCourt != null && otherPlayerInCourt.id != player.id) {
+              player.gamesPlayedWith[otherPlayerInCourt.id] = 
+                  (player.gamesPlayedWith[otherPlayerInCourt.id] ?? 0) + 1;
+              otherPlayerInCourt.gamesPlayedWith[player.id] = 
+                  (otherPlayerInCourt.gamesPlayedWith[player.id] ?? 0) + 1;
+            }
+          }
+        }
+
         if (!_unassignedPlayers.contains(player)) {
           _unassignedPlayers.add(player);
         }
@@ -465,7 +485,7 @@ class PlayersProvider with ChangeNotifier {
     
     if (isLastManagerCondition && bestPlayer.manager) {
       Player? bestNonManager = null;
-      for (final pInList in sortedUnassignedPlayers) { // 변수명 p가 이미 사용 중일 수 있으므로 pInList로 변경
+      for (final pInList in sortedUnassignedPlayers) {
         if (!pInList.manager) {
           bestNonManager = pInList;
           break;
