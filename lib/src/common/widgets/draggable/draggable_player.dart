@@ -48,8 +48,8 @@ class DraggablePlayerItem extends StatelessWidget {
     final isMobileSize = screenWidth < 600;
 
     final double nameFontSize = isMobileSize ? 20.0 : 32.0;
-    final double skillFontSize = isMobileSize ? 14.0 : 28.0;
-    final double detailFontSize = isMobileSize ? 14.0 : 28.0;
+    final double skillFontSize = isMobileSize ? 16.0 : 28.0;
+    final double detailFontSize = isMobileSize ? 16.0 : 28.0;
 
     String skillLevelDisplay = _getSkillLevelString(player.rate);
     final onPrimaryContainer = Theme.of(context).colorScheme.onPrimaryContainer;
@@ -217,7 +217,7 @@ class PlayerDropZone extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobileSize = screenWidth < 600;
-    final double currentMinHeight = isMobileSize ? 140.0 : 240.0;
+    final double currentHeight = isMobileSize ? 140.0 : 240.0; // 변수명 변경
 
     return DragTarget<PlayerDragData>(
       onWillAcceptWithDetails: (details) {
@@ -242,40 +242,38 @@ class PlayerDropZone extends StatelessWidget {
             : const Color(0x66FFFFFF);
         Color hoveringBgColor = const Color(0x88F0FFFF);
 
-        return ConstrainedBox(
-          constraints: BoxConstraints(minHeight: currentMinHeight),
-          child: Container(
-            padding: const EdgeInsets.all(0.0),
-            margin: const EdgeInsets.all(4.0),
-            decoration: BoxDecoration(
-              color: isHovering ? hoveringBgColor : determinedDefaultBgColor,
-              borderRadius: BorderRadius.circular(12.0),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withAlpha(64),
-                width: 1.0,
-              ),
+        return Container( // ConstrainedBox 대신 Container 사용
+          height: currentHeight, // height 속성 추가
+          padding: const EdgeInsets.all(0.0),
+          margin: const EdgeInsets.all(2.0),
+          decoration: BoxDecoration(
+            color: isHovering ? hoveringBgColor : determinedDefaultBgColor,
+            borderRadius: BorderRadius.circular(12.0),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withAlpha(64),
+              width: 1.0,
             ),
-            child: Center(
-              child: player == null
-                  ? Text(
-                      isDropEnabled ? '' : 'X',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24.0,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurfaceVariant.withAlpha(179),
-                      ),
-                    )
-                  : DraggablePlayerItem(
-                      player: player!,
-                      sourceSectionId: sectionId,
-                      section_index: section_index,
-                      sub_index: sub_index,
-                      onDragStarted: onDragStartedFromZone,
-                      onDragEnded: onDragEndedFromZone,
+          ),
+          child: Center(
+            child: player == null
+                ? Text(
+                    isDropEnabled ? '' : 'X',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 24.0,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant.withAlpha(179),
                     ),
-            ),
+                  )
+                : DraggablePlayerItem(
+                    player: player!,
+                    sourceSectionId: sectionId,
+                    section_index: section_index,
+                    sub_index: sub_index,
+                    onDragStarted: onDragStartedFromZone,
+                    onDragEnded: onDragEndedFromZone,
+                  ),
           ),
         );
       },
