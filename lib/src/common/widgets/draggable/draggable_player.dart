@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
-import 'package:hotswing/src/common/utils/skill_utils.dart'; // 공통 유틸리티 파일 import
+import 'package:hotswing/src/common/utils/skill_utils.dart';
 
 // 드래그되는 플레이어의 데이터와 원래 소속 섹션 정보를 전달하기 위한 클래스
 class PlayerDragData {

@@ -128,152 +128,25 @@ class _MainContentState extends State<MainContent> {
                           color: pastelBlue,
                           borderRadius: BorderRadius.circular(20.0),
                         ),
-                        child: Stack(
-                          alignment: Alignment.center,
+                        child: Column(
                           children: [
-                            Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: PlayerDropZone(
-                                        sectionId: '${sectionIndex}_0',
-                                        player: item.asMap().containsKey(0)
-                                            ? item[0]
-                                            : null,
-                                        section_index: sectionIndex,
-                                        sub_index: 0,
-                                        onPlayerDropped:
-                                            (
-                                              data,
-                                              droppedOnPlayer,
-                                              targetId,
-                                              targetSectionIdx,
-                                              targetSubIdx,
-                                            ) => _handlePlayerDrop(
-                                              context,
-                                              data,
-                                              droppedOnPlayer,
-                                              targetId,
-                                              targetSectionIdx,
-                                              targetSubIdx,
-                                            ),
-                                        onDragStartedFromZone:
-                                            _onCourtPlayerDragStarted,
-                                        onDragEndedFromZone:
-                                            _onCourtPlayerDragEnded,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: PlayerDropZone(
-                                        sectionId: '${sectionIndex}_1',
-                                        player: item.asMap().containsKey(1)
-                                            ? item[1]
-                                            : null,
-                                        section_index: sectionIndex,
-                                        sub_index: 1,
-                                        onPlayerDropped:
-                                            (
-                                              data,
-                                              droppedOnPlayer,
-                                              targetId,
-                                              targetSectionIdx,
-                                              targetSubIdx,
-                                            ) => _handlePlayerDrop(
-                                              context,
-                                              data,
-                                              droppedOnPlayer,
-                                              targetId,
-                                              targetSectionIdx,
-                                              targetSubIdx,
-                                            ),
-                                        onDragStartedFromZone:
-                                            _onCourtPlayerDragStarted,
-                                        onDragEndedFromZone:
-                                            _onCourtPlayerDragEnded,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Visibility(
-                                  visible: shouldShowDivider,
-                                  child: Divider(
-                                    color: Colors.grey,
-                                    thickness: 1,
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: PlayerDropZone(
-                                        sectionId: '${sectionIndex}_2',
-                                        player: item.asMap().containsKey(2)
-                                            ? item[2]
-                                            : null,
-                                        section_index: sectionIndex,
-                                        sub_index: 2,
-                                        onPlayerDropped:
-                                            (
-                                              data,
-                                              droppedOnPlayer,
-                                              targetId,
-                                              targetSectionIdx,
-                                              targetSubIdx,
-                                            ) => _handlePlayerDrop(
-                                              context,
-                                              data,
-                                              droppedOnPlayer,
-                                              targetId,
-                                              targetSectionIdx,
-                                              targetSubIdx,
-                                            ),
-                                        onDragStartedFromZone:
-                                            _onCourtPlayerDragStarted,
-                                        onDragEndedFromZone:
-                                            _onCourtPlayerDragEnded,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: PlayerDropZone(
-                                        sectionId: '${sectionIndex}_3',
-                                        player: item.asMap().containsKey(3)
-                                            ? item[3]
-                                            : null,
-                                        section_index: sectionIndex,
-                                        sub_index: 3,
-                                        onPlayerDropped:
-                                            (
-                                              data,
-                                              droppedOnPlayer,
-                                              targetId,
-                                              targetSectionIdx,
-                                              targetSubIdx,
-                                            ) => _handlePlayerDrop(
-                                              context,
-                                              data,
-                                              droppedOnPlayer,
-                                              targetId,
-                                              targetSectionIdx,
-                                              targetSubIdx,
-                                            ),
-                                        onDragStartedFromZone:
-                                            _onCourtPlayerDragStarted,
-                                        onDragEndedFromZone:
-                                            _onCourtPlayerDragEnded,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                Text(
+                                  '${sectionIndex + 1} 코트',
+                                  style: TextStyle(
+                                    fontSize: widget.isMobileSize ? 20.0 : 32.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: widget.isMobileSize ? 16.0 : 32.0),
                                 SizedBox(
                                   width: widget.isMobileSize ? 40.0 : 50.0,
                                   height: widget.isMobileSize ? 30.0 : 45.0,
                                   child: FloatingActionButton(
+                                    elevation: 2.0,
                                     onPressed: () {
                                       playersProvider.movePlayersFromCourtToUnassigned(sectionIndex,0);
                                       setState(() {
@@ -290,6 +163,7 @@ class _MainContentState extends State<MainContent> {
                                     width: widget.isMobileSize ? 80.0 : 120.0,
                                     height: widget.isMobileSize ? 30.0 : 45.0,
                                     child: FloatingActionButton(
+                                      elevation: 2.0,
                                       onPressed: () {
                                         playersProvider.assignPlayersToCourt(
                                           sectionIndex,
@@ -311,6 +185,7 @@ class _MainContentState extends State<MainContent> {
                                     width: widget.isMobileSize ? 90.0 : 150.0,
                                     height: widget.isMobileSize ? 30.0 : 45.0,
                                     child: FloatingActionButton(
+                                      elevation: 2.0,
                                       onPressed: () {
                                         playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
                                         playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
@@ -319,9 +194,141 @@ class _MainContentState extends State<MainContent> {
                                         });
                                       },
                                       heroTag: 'stop_fab_$sectionIndex',
-                                      child: Text('코트 확정, 제거',style:TextStyle(fontSize:widget.isMobileSize ? 12.0 : 20.0)),
+                                      child: Text('경기 종료',style:TextStyle(fontSize:widget.isMobileSize ? 12.0 : 20.0)),
                                     ),
                                   ),
+                              ],
+                            ),
+                            const SizedBox(height: 4.0), // Added for spacing
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: PlayerDropZone(
+                                    sectionId: '${sectionIndex}_0',
+                                    player: item.asMap().containsKey(0)
+                                        ? item[0]
+                                        : null,
+                                    section_index: sectionIndex,
+                                    sub_index: 0,
+                                    onPlayerDropped:
+                                        (
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ) => _handlePlayerDrop(
+                                          context,
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ),
+                                    onDragStartedFromZone:
+                                        _onCourtPlayerDragStarted,
+                                    onDragEndedFromZone:
+                                        _onCourtPlayerDragEnded,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: PlayerDropZone(
+                                    sectionId: '${sectionIndex}_1',
+                                    player: item.asMap().containsKey(1)
+                                        ? item[1]
+                                        : null,
+                                    section_index: sectionIndex,
+                                    sub_index: 1,
+                                    onPlayerDropped:
+                                        (
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ) => _handlePlayerDrop(
+                                          context,
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ),
+                                    onDragStartedFromZone:
+                                        _onCourtPlayerDragStarted,
+                                    onDragEndedFromZone:
+                                        _onCourtPlayerDragEnded,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Visibility(
+                              visible: shouldShowDivider,
+                              child: Divider(
+                                color: Colors.grey,
+                                thickness: 1,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: PlayerDropZone(
+                                    sectionId: '${sectionIndex}_2',
+                                    player: item.asMap().containsKey(2)
+                                        ? item[2]
+                                        : null,
+                                    section_index: sectionIndex,
+                                    sub_index: 2,
+                                    onPlayerDropped:
+                                        (
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ) => _handlePlayerDrop(
+                                          context,
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ),
+                                    onDragStartedFromZone:
+                                        _onCourtPlayerDragStarted,
+                                    onDragEndedFromZone:
+                                        _onCourtPlayerDragEnded,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: PlayerDropZone(
+                                    sectionId: '${sectionIndex}_3',
+                                    player: item.asMap().containsKey(3)
+                                        ? item[3]
+                                        : null,
+                                    section_index: sectionIndex,
+                                    sub_index: 3,
+                                    onPlayerDropped:
+                                        (
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ) => _handlePlayerDrop(
+                                          context,
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ),
+                                    onDragStartedFromZone:
+                                        _onCourtPlayerDragStarted,
+                                    onDragEndedFromZone:
+                                        _onCourtPlayerDragEnded,
+                                  ),
+                                ),
                               ],
                             ),
                           ],
