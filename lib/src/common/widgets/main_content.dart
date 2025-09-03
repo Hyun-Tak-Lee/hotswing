@@ -446,7 +446,7 @@ class _MainContentState extends State<MainContent> {
                                     alignment: FractionalOffset(0.5, 0.20),
                                     child: Container(
                                       padding: EdgeInsets.symmetric(
-                                        horizontal: isMobileSize ? 5.0 : 10.0,
+                                        horizontal: isMobileSize ? 5.0 : 15.0,
                                         vertical: isMobileSize ? 3.0 : 5.0,
                                       ),
                                       decoration: BoxDecoration(
@@ -468,7 +468,7 @@ class _MainContentState extends State<MainContent> {
                                     alignment: FractionalOffset(0.5, 0.80),
                                     child: Container(
                                       padding: EdgeInsets.symmetric(
-                                        horizontal: isMobileSize ? 5.0 : 10.0,
+                                        horizontal: isMobileSize ? 5.0 : 15.0,
                                         vertical: isMobileSize ? 3.0 : 5.0,
                                       ),
                                       decoration: BoxDecoration(
@@ -490,7 +490,7 @@ class _MainContentState extends State<MainContent> {
                                     alignment: FractionalOffset(0.10, 0.5),
                                     child: Container(
                                       padding: EdgeInsets.symmetric(
-                                        horizontal: isMobileSize ? 5.0 : 10.0,
+                                        horizontal: isMobileSize ? 5.0 : 15.0,
                                         vertical: isMobileSize ? 3.0 : 5.0,
                                       ),
                                       decoration: BoxDecoration(
@@ -512,7 +512,7 @@ class _MainContentState extends State<MainContent> {
                                     alignment: FractionalOffset(0.90, 0.5),
                                     child: Container(
                                       padding: EdgeInsets.symmetric(
-                                        horizontal: isMobileSize ? 5.0 : 10.0,
+                                        horizontal: isMobileSize ? 5.0 : 15.0,
                                         vertical: isMobileSize ? 3.0 : 5.0,
                                       ),
                                       decoration: BoxDecoration(
@@ -553,7 +553,7 @@ class _MainContentState extends State<MainContent> {
                                           padding: EdgeInsets.symmetric(
                                             horizontal: isMobileSize
                                                 ? 5.0
-                                                : 10.0,
+                                                : 15.0,
                                             vertical: isMobileSize ? 3.0 : 5.0,
                                           ),
                                           decoration: BoxDecoration(
@@ -598,7 +598,7 @@ class _MainContentState extends State<MainContent> {
                                           padding: EdgeInsets.symmetric(
                                             horizontal: isMobileSize
                                                 ? 5.0
-                                                : 10.0,
+                                                : 15.0,
                                             vertical: isMobileSize ? 3.0 : 5.0,
                                           ),
                                           decoration: BoxDecoration(
