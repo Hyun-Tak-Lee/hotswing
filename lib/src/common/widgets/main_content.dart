@@ -14,7 +14,7 @@ class DiagonalPainterLeft extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color =
-          const Color(0xAA007FFF) // 선 색상
+          const Color(0x66007FFF) // 선 색상
       ..strokeWidth = strokeWidth; // 선 두께
     canvas.drawLine(Offset(0, 0), Offset(size.width, size.height), paint);
   }
@@ -33,7 +33,7 @@ class DiagonalPainterRight extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color =
-          const Color(0xAA007FFF) // 선 색상
+          const Color(0x66007FFF) // 선 색상
       ..strokeWidth = strokeWidth; // 선 두께
     canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
   }
@@ -288,7 +288,7 @@ class _MainContentState extends State<MainContent> {
                             ),
                             const SizedBox(height: 4.0),
                             SizedBox(
-                              height: widget.isMobileSize ? 310.0 : 530.0,
+                              height: widget.isMobileSize ? 310.0 : 510.0,
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [
@@ -361,7 +361,7 @@ class _MainContentState extends State<MainContent> {
                                       SizedBox(
                                         height: widget.isMobileSize
                                             ? 10.0
-                                            : 20.0,
+                                            : 10.0,
                                       ),
                                       Visibility(
                                         visible: shouldShowDivider,
@@ -373,7 +373,7 @@ class _MainContentState extends State<MainContent> {
                                       SizedBox(
                                         height: widget.isMobileSize
                                             ? 10.0
-                                            : 20.0,
+                                            : 10.0,
                                       ),
                                       Row(
                                         children: [
@@ -532,23 +532,12 @@ class _MainContentState extends State<MainContent> {
                                   ),
                                   Align(
                                     alignment: FractionalOffset(
-                                      isMobileSize ? 0.40 : 0.43,
+                                      isMobileSize ? 0.35 : 0.40,
                                       0.5,
                                     ),
                                     child: Stack(
                                       alignment: Alignment.center,
                                       children: [
-                                        SizedBox(
-                                          width: isMobileSize ? 70.0 : 140.0,
-                                          height: isMobileSize ? 30.0 : 50.0,
-                                          child: CustomPaint(
-                                            painter: DiagonalPainterLeft(
-                                              strokeWidth: isMobileSize
-                                                  ? 2.0
-                                                  : 4.0,
-                                            ),
-                                          ),
-                                        ),
                                         Container(
                                           padding: EdgeInsets.symmetric(
                                             horizontal: isMobileSize
@@ -563,7 +552,7 @@ class _MainContentState extends State<MainContent> {
                                             ),
                                           ),
                                           child: Text(
-                                            getGamesPlayedWith(item, 0, 3),
+                                            '1⇄4 ' +getGamesPlayedWith(item, 0, 3),
                                             style: TextStyle(
                                               fontSize: isMobileSize
                                                   ? 16.0
@@ -577,23 +566,12 @@ class _MainContentState extends State<MainContent> {
                                   ),
                                   Align(
                                     alignment: FractionalOffset(
-                                      isMobileSize ? 0.60 : 0.57,
+                                      isMobileSize ? 0.65 : 0.60,
                                       0.5,
                                     ),
                                     child: Stack(
                                       alignment: Alignment.center,
                                       children: [
-                                        SizedBox(
-                                          width: isMobileSize ? 70.0 : 140.0,
-                                          height: isMobileSize ? 30.0 : 50.0,
-                                          child: CustomPaint(
-                                            painter: DiagonalPainterRight(
-                                              strokeWidth: isMobileSize
-                                                  ? 2.0
-                                                  : 4.0,
-                                            ),
-                                          ),
-                                        ),
                                         Container(
                                           padding: EdgeInsets.symmetric(
                                             horizontal: isMobileSize
@@ -608,7 +586,7 @@ class _MainContentState extends State<MainContent> {
                                             ),
                                           ),
                                           child: Text(
-                                            getGamesPlayedWith(item, 1, 2),
+                                            '2⇄3 ' + getGamesPlayedWith(item, 1, 2),
                                             style: TextStyle(
                                               fontSize: isMobileSize
                                                   ? 16.0
