@@ -143,7 +143,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                 (player) => ListTile(
                   tileColor: player.manager ? const Color(0x55FFF700) : null,
                   title: Text(
-                    '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]} ${player.lated}',
+                    '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]}',
                     style: TextStyle(fontSize: iconAndFontSize),
                   ),
                   trailing: Row(

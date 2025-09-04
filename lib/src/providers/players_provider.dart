@@ -37,7 +37,9 @@ class Player {
     'played': played,
     'waited': waited,
     'lated': lated,
-    'gamesPlayedWith': gamesPlayedWith.map((key, value) => MapEntry(key.toString(), value)),
+    'gamesPlayedWith': gamesPlayedWith.map(
+      (key, value) => MapEntry(key.toString(), value),
+    ),
   };
 
   factory Player.fromJson(Map<String, dynamic> json) => Player(
@@ -49,8 +51,10 @@ class Player {
     played: json['played'] as int? ?? 0,
     waited: json['waited'] as int? ?? 0,
     lated: json['lated'] as int? ?? 0,
-    gamesPlayedWith: (json['gamesPlayedWith'] as Map<String, dynamic>?)
-            ?.map((key, value) => MapEntry(int.parse(key), value as int)) ??
+    gamesPlayedWith:
+        (json['gamesPlayedWith'] as Map<String, dynamic>?)?.map(
+          (key, value) => MapEntry(int.parse(key), value as int),
+        ) ??
         {},
   );
 
@@ -121,9 +125,7 @@ class PlayersProvider with ChangeNotifier {
     int maxIdFound = -1;
 
     if (encodedPlayers != null) {
-      Map<String, dynamic> playersJsonMap = jsonDecode(
-        encodedPlayers,
-      );
+      Map<String, dynamic> playersJsonMap = jsonDecode(encodedPlayers);
       playersJsonMap.forEach((idString, playerJsonString) {
         Map<String, dynamic> playerMap = jsonDecode(playerJsonString as String);
         Player player = Player.fromJson(playerMap);
@@ -354,8 +356,9 @@ class PlayersProvider with ChangeNotifier {
 
         if (played == 1) {
           for (Player? otherPlayerInCourt in playersInCourt) {
-            if (otherPlayerInCourt != null && otherPlayerInCourt.id != player.id) {
-              player.gamesPlayedWith[otherPlayerInCourt.id] = 
+            if (otherPlayerInCourt != null &&
+                otherPlayerInCourt.id != player.id) {
+              player.gamesPlayedWith[otherPlayerInCourt.id] =
                   (player.gamesPlayedWith[otherPlayerInCourt.id] ?? 0) + 1;
             }
           }
@@ -481,7 +484,7 @@ class PlayersProvider with ChangeNotifier {
 
     if (sortedUnassignedPlayers.isEmpty) return null;
     Player bestPlayer = sortedUnassignedPlayers.first;
-    
+
     if (isLastManagerCondition && bestPlayer.manager) {
       Player? bestNonManager = null;
       for (final pInList in sortedUnassignedPlayers) {
@@ -505,15 +508,39 @@ class PlayersProvider with ChangeNotifier {
     required double waitedWeight,
     required double playedWeight,
   }) {
-    // 1. 실력 점수 계산
+    // 실력 균등 분배 (2:2) 계산
+    double equalScore;
+
+    if (currentPlayersOnCourt.length == 1) {
+      equalScore = 1.0;
+    } else if (currentPlayersOnCourt.length == 2) {
+      Player player1 = currentPlayersOnCourt[0];
+      int rateDiff1 = (player.rate - player1.rate).abs();
+      Player player2 = currentPlayersOnCourt[1];
+      int rateDiff2 = (player.rate - player2.rate).abs();
+      equalScore = 2.0 - min(rateDiff1, rateDiff2) / 1000.0;
+    } else {
+      final double avgRate =
+          currentPlayersOnCourt.map((p) => p.rate).reduce((a, b) => a + b) /
+          3.0;
+      final Player playerWithMaxDiff = currentPlayersOnCourt.reduce((a, b) {
+        final diffA = (a.rate - avgRate).abs();
+        final diffB = (b.rate - avgRate).abs();
+        return diffA > diffB ? a : b;
+      });
+      final int finalRateDiff = (player.rate - playerWithMaxDiff.rate).abs();
+      equalScore = 2.0 - finalRateDiff / 1000.0;
+    }
+
+    // 실력 점수 계산
     double avgRate = currentPlayersOnCourt.isEmpty
         ? player.rate.toDouble()
         : currentPlayersOnCourt.map((p) => p.rate).reduce((a, b) => a + b) /
               currentPlayersOnCourt.length;
     double rateDiff = (player.rate - avgRate).abs();
-    double skillScore = 2.0 - rateDiff / 500.0;
+    double skillScore = 2.0 - rateDiff / 1000.0;
 
-    // 2. 성별 점수 계산
+    // 성별 점수 계산
     int menCount = currentPlayersOnCourt.where((p) => p.gender == '남').length;
     int womenCount = currentPlayersOnCourt.where((p) => p.gender == '여').length;
 
@@ -551,7 +578,7 @@ class PlayersProvider with ChangeNotifier {
         (_unassignedPlayers.length == 0 ? 1 : _unassignedPlayers.length) *
         4;
 
-    // 4. 플레이 횟수 점수 계산
+    // 플레이 횟수 점수 계산
     final double avgPlayed = _unassignedPlayers.isEmpty
         ? 0.0
         : _unassignedPlayers.map((p) => p.played).reduce((a, b) => a + b) /
@@ -559,7 +586,8 @@ class PlayersProvider with ChangeNotifier {
     double playedScore = avgPlayed - (player.played + player.lated);
 
     // 최종 점수 = 각 점수 * 가중치의 합
-    return (skillScore * skillWeight) +
+    return equalScore +
+        (skillScore * skillWeight) +
         (genderScore * genderWeight) +
         (waitedScore * waitedWeight) +
         (playedScore * playedWeight);
