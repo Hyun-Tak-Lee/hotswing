@@ -4,44 +4,6 @@ import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
 
-// 왼쪽 상단 -> 오른쪽 하단 대각선
-class DiagonalPainterLeft extends CustomPainter {
-  final double strokeWidth;
-
-  DiagonalPainterLeft({required this.strokeWidth});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color =
-          const Color(0x66007FFF) // 선 색상
-      ..strokeWidth = strokeWidth; // 선 두께
-    canvas.drawLine(Offset(0, 0), Offset(size.width, size.height), paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
-}
-
-// 오른쪽 상단 -> 왼쪽 하단 대각선
-class DiagonalPainterRight extends CustomPainter {
-  final double strokeWidth;
-
-  DiagonalPainterRight({required this.strokeWidth});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color =
-          const Color(0x66007FFF) // 선 색상
-      ..strokeWidth = strokeWidth; // 선 두께
-    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
-}
-
 class MainContent extends StatefulWidget {
   const MainContent({super.key, required this.isMobileSize});
 
@@ -138,7 +100,8 @@ class _MainContentState extends State<MainContent> {
     final isMobileSize = screenWidth < tabletThreshold;
 
     final Color pastelBlue = Color(0x9987CEFA);
-    final Color pastelPink = Color(0xFFFFD1DC); // 파스텔 핑크색 정의
+    final Color playedWithColor = Color(0xFF89A7DA);
+    final Color playedWithTextColor = Color(0xFFFFEB3B);
 
     final optionsProvider = Provider.of<OptionsProvider>(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
@@ -450,7 +413,7 @@ class _MainContentState extends State<MainContent> {
                                         vertical: isMobileSize ? 3.0 : 5.0,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: pastelPink, // 변경된 부분
+                                        color: playedWithColor, // 변경된 부분
                                         borderRadius: BorderRadius.circular(
                                           16.0,
                                         ),
@@ -459,7 +422,7 @@ class _MainContentState extends State<MainContent> {
                                         getGamesPlayedWith(item, 0, 1),
                                         style: TextStyle(
                                           fontSize: isMobileSize ? 16.0 : 28.0,
-                                          color: Colors.white,
+                                          color: playedWithTextColor,
                                         ),
                                       ),
                                     ),
@@ -472,7 +435,7 @@ class _MainContentState extends State<MainContent> {
                                         vertical: isMobileSize ? 3.0 : 5.0,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: pastelPink, // 변경된 부분
+                                        color: playedWithColor, // 변경된 부분
                                         borderRadius: BorderRadius.circular(
                                           16.0,
                                         ),
@@ -481,7 +444,7 @@ class _MainContentState extends State<MainContent> {
                                         getGamesPlayedWith(item, 2, 3),
                                         style: TextStyle(
                                           fontSize: isMobileSize ? 16.0 : 28.0,
-                                          color: Colors.white,
+                                          color: playedWithTextColor,
                                         ),
                                       ),
                                     ),
@@ -494,7 +457,7 @@ class _MainContentState extends State<MainContent> {
                                         vertical: isMobileSize ? 3.0 : 5.0,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: pastelPink, // 변경된 부분
+                                        color: playedWithColor, // 변경된 부분
                                         borderRadius: BorderRadius.circular(
                                           16.0,
                                         ),
@@ -503,7 +466,7 @@ class _MainContentState extends State<MainContent> {
                                         getGamesPlayedWith(item, 0, 2),
                                         style: TextStyle(
                                           fontSize: isMobileSize ? 16.0 : 28.0,
-                                          color: Colors.white,
+                                          color: playedWithTextColor,
                                         ),
                                       ),
                                     ),
@@ -516,7 +479,7 @@ class _MainContentState extends State<MainContent> {
                                         vertical: isMobileSize ? 3.0 : 5.0,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: pastelPink, // 변경된 부분
+                                        color: playedWithColor, // 변경된 부분
                                         borderRadius: BorderRadius.circular(
                                           16.0,
                                         ),
@@ -525,7 +488,7 @@ class _MainContentState extends State<MainContent> {
                                         getGamesPlayedWith(item, 1, 3),
                                         style: TextStyle(
                                           fontSize: isMobileSize ? 16.0 : 28.0,
-                                          color: Colors.white,
+                                          color: playedWithTextColor,
                                         ),
                                       ),
                                     ),
@@ -546,7 +509,7 @@ class _MainContentState extends State<MainContent> {
                                             vertical: isMobileSize ? 3.0 : 5.0,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: pastelPink,
+                                            color: playedWithColor,
                                             borderRadius: BorderRadius.circular(
                                               16.0,
                                             ),
@@ -557,7 +520,7 @@ class _MainContentState extends State<MainContent> {
                                               fontSize: isMobileSize
                                                   ? 16.0
                                                   : 28.0,
-                                              color: Colors.white,
+                                              color: playedWithTextColor,
                                             ),
                                           ),
                                         ),
@@ -580,7 +543,7 @@ class _MainContentState extends State<MainContent> {
                                             vertical: isMobileSize ? 3.0 : 5.0,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: pastelPink,
+                                            color: playedWithColor,
                                             borderRadius: BorderRadius.circular(
                                               16.0,
                                             ),
@@ -591,7 +554,7 @@ class _MainContentState extends State<MainContent> {
                                               fontSize: isMobileSize
                                                   ? 16.0
                                                   : 28.0,
-                                              color: Colors.white,
+                                              color: playedWithTextColor,
                                             ),
                                           ),
                                         ),
