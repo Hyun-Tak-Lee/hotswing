@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
+import 'dialogs/confirmation_dialog.dart';
 
 class RightSideMenu extends StatelessWidget {
   const RightSideMenu({super.key, required this.isMobileSize});
@@ -70,6 +71,39 @@ class RightSideMenu extends StatelessWidget {
               child: Text('옵션', style: TextStyle(fontSize: iconAndFontSize)),
             ),
           ),
+          ListTile(
+            leading: Icon(
+              Icons.refresh, // 새로고침/초기화 아이콘
+              size: iconAndFontSize,
+              color: Colors.orangeAccent, // 주황색 계열로 강조
+            ),
+            title: Text(
+              '플레이 정보 초기화',
+              style: TextStyle(
+                fontSize: iconAndFontSize,
+                color: Colors.orangeAccent, // 아이콘과 동일한 색상으로 통일감
+                fontWeight: FontWeight.bold, // 굵게 표시
+              ),
+            ),
+            tileColor: Colors.orangeAccent.withOpacity(0.1), // 은은한 주황색 배경
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext dialogContext) {
+                  return ConfirmationDialog(
+                    message: '모든 참여자의 플레이 정보들을 초기화 하시겠습니까?',
+                    onConfirm: () {
+                      playersProvider.resetPlayerStats();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('플레이 정보가 초기화되었습니다')),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 10),
           ListTile(
             title: Text('팀 지정 (사용x)', style: TextStyle(fontSize: iconAndFontSize)),
             trailing: Transform.scale(
@@ -159,7 +193,7 @@ class RightSideMenu extends StatelessWidget {
           _buildSliderListItem(
             context: context,
             title: '중복 방지 가중치',
-            value: optionsProvider.playedWeight,
+            value: optionsProvider.playedWithWeight,
             onChanged: (double value) {
               optionsProvider.setPlayedWithWeight(value);
             },

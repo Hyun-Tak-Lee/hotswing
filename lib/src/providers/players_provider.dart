@@ -209,6 +209,17 @@ class PlayersProvider with ChangeNotifier {
     _savePlayersToPrefs();
   }
 
+  void resetPlayerStats() {
+    for (Player player in _players.values) {
+      player.played = 0;
+      player.waited = 0;
+      player.lated = 0;
+      player.gamesPlayedWith = {};
+    }
+    notifyListeners();
+    _savePlayersToPrefs();
+  }
+
   void clearPlayers() {
     _players.clear();
     _unassignedPlayers.clear();
