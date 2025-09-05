@@ -201,6 +201,8 @@ class _MainContentState extends State<MainContent> {
                                               optionsProvider.waitedWeight,
                                           playedWeight:
                                               optionsProvider.playedWeight,
+                                          playedWithWeight:
+                                              optionsProvider.playedWithWeight,
                                         );
                                         setState(() {
                                           _courtGameStartedState[sectionIndex] =
@@ -515,7 +517,8 @@ class _MainContentState extends State<MainContent> {
                                             ),
                                           ),
                                           child: Text(
-                                            '1⇄4 ' +getGamesPlayedWith(item, 0, 3),
+                                            '1⇄4 ' +
+                                                getGamesPlayedWith(item, 0, 3),
                                             style: TextStyle(
                                               fontSize: isMobileSize
                                                   ? 16.0
@@ -549,7 +552,8 @@ class _MainContentState extends State<MainContent> {
                                             ),
                                           ),
                                           child: Text(
-                                            '2⇄3 ' + getGamesPlayedWith(item, 1, 2),
+                                            '2⇄3 ' +
+                                                getGamesPlayedWith(item, 1, 2),
                                             style: TextStyle(
                                               fontSize: isMobileSize
                                                   ? 16.0

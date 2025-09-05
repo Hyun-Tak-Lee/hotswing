@@ -155,6 +155,16 @@ class RightSideMenu extends StatelessWidget {
             },
             iconAndFontSize: iconAndFontSize,
           ),
+          const SizedBox(height: 10),
+          _buildSliderListItem(
+            context: context,
+            title: '중복 방지 가중치',
+            value: optionsProvider.playedWeight,
+            onChanged: (double value) {
+              optionsProvider.setPlayedWithWeight(value);
+            },
+            iconAndFontSize: iconAndFontSize,
+          ),
         ],
       ),
     );

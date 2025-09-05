@@ -5,10 +5,11 @@ class OptionsProvider with ChangeNotifier {
   SharedPreferences? _prefs;
   bool _divideTeam = false;
   int _numberOfSections = 3;
-  double _skillWeight = 2.0;
+  double _skillWeight = 1.0;
   double _genderWeight = 1.0;
   double _waitedWeight = 1.0;
   double _playedWeight = 1.0;
+  double _playedWithWeight = 1.0;
 
   static const String _divideTeamKey = 'divideTeam';
   static const String _numberOfSectionsKey = 'numberOfSections';
@@ -16,8 +17,8 @@ class OptionsProvider with ChangeNotifier {
   static const String _genderWeightKey = 'genderWeight';
   static const String _waitedWeightKey = 'waitedWeight';
   static const String _playedWeightKey = 'playedWeight';
+  static const String _playedWithWeightKey = 'playedWithWeight';
 
-  // Define min/max values based on right_side_menu.dart
   static const int _minNumberOfSections = 1;
   static const int _maxNumberOfSections = 8;
   static const double _minWeight = 0.0;
@@ -35,26 +36,39 @@ class OptionsProvider with ChangeNotifier {
 
   double get playedWeight => _playedWeight;
 
-  // 생성자: OptionsProvider 객체가 생성될 때 _loadPreferences 호출
+  double get playedWithWeight => _playedWithWeight;
+
   OptionsProvider() {
     _loadPreferences();
   }
 
-  // SharedPreferences에서 마지막으로 저장된 값들을 불러오는 메소드
   Future<void> _loadPreferences() async {
-    _prefs =
-        await SharedPreferences.getInstance(); // SharedPreferences 인스턴스 가져오기 (비동기)
+    _prefs = await SharedPreferences.getInstance();
     _divideTeam = _prefs?.getBool(_divideTeamKey) ?? false;
-    _numberOfSections = (_prefs?.getInt(_numberOfSectionsKey) ?? 3)
-        .clamp(_minNumberOfSections, _maxNumberOfSections);
-    _skillWeight = (_prefs?.getDouble(_skillWeightKey) ?? 2.0)
-        .clamp(_minWeight, _maxWeight);
-    _genderWeight = (_prefs?.getDouble(_genderWeightKey) ?? 1.0)
-        .clamp(_minWeight, _maxWeight);
-    _waitedWeight = (_prefs?.getDouble(_waitedWeightKey) ?? 1.0)
-        .clamp(_minWeight, _maxWeight);
-    _playedWeight = (_prefs?.getDouble(_playedWeightKey) ?? 1.0)
-        .clamp(_minWeight, _maxWeight);
+    _numberOfSections = (_prefs?.getInt(_numberOfSectionsKey) ?? 3).clamp(
+      _minNumberOfSections,
+      _maxNumberOfSections,
+    );
+    _skillWeight = (_prefs?.getDouble(_skillWeightKey) ?? 1.0).clamp(
+      _minWeight,
+      _maxWeight,
+    );
+    _genderWeight = (_prefs?.getDouble(_genderWeightKey) ?? 1.0).clamp(
+      _minWeight,
+      _maxWeight,
+    );
+    _waitedWeight = (_prefs?.getDouble(_waitedWeightKey) ?? 1.0).clamp(
+      _minWeight,
+      _maxWeight,
+    );
+    _playedWeight = (_prefs?.getDouble(_playedWeightKey) ?? 1.0).clamp(
+      _minWeight,
+      _maxWeight,
+    );
+    _playedWithWeight = (_prefs?.getDouble(_playedWithWeightKey) ?? 1.0).clamp(
+      _minWeight,
+      _maxWeight,
+    );
     notifyListeners();
   }
 
@@ -67,6 +81,7 @@ class OptionsProvider with ChangeNotifier {
     await _prefs?.setDouble(_genderWeightKey, _genderWeight);
     await _prefs?.setDouble(_waitedWeightKey, _waitedWeight);
     await _prefs?.setDouble(_playedWeightKey, _playedWeight);
+    await _prefs?.setDouble(_playedWithWeightKey, _playedWithWeight);
   }
 
   void toggleDivideTeam() {
@@ -76,7 +91,10 @@ class OptionsProvider with ChangeNotifier {
   }
 
   void setNumberOfSections(int newNumberOfSections) {
-    _numberOfSections = newNumberOfSections.clamp(_minNumberOfSections, _maxNumberOfSections);
+    _numberOfSections = newNumberOfSections.clamp(
+      _minNumberOfSections,
+      _maxNumberOfSections,
+    );
     _savePreferences();
     notifyListeners();
   }
@@ -101,6 +119,12 @@ class OptionsProvider with ChangeNotifier {
 
   void setPlayedWeight(double newPlayedWeight) {
     _playedWeight = newPlayedWeight.clamp(_minWeight, _maxWeight);
+    _savePreferences();
+    notifyListeners();
+  }
+
+  void setPlayedWithWeight(double newPlayedWithWeight) {
+    _playedWithWeight = newPlayedWithWeight.clamp(_minWeight, _maxWeight);
     _savePreferences();
     notifyListeners();
   }

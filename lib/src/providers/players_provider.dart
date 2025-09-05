@@ -380,6 +380,7 @@ class PlayersProvider with ChangeNotifier {
     required double genderWeight,
     required double waitedWeight,
     required double playedWeight,
+    required double playedWithWeight, // Added playedWithWeight
   }) {
     if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) return;
 
@@ -393,6 +394,7 @@ class PlayersProvider with ChangeNotifier {
           genderWeight: genderWeight,
           waitedWeight: waitedWeight,
           playedWeight: playedWeight,
+          playedWithWeight: playedWithWeight, // Pass playedWithWeight
         );
 
         if (playerToAssign != null) {
@@ -411,6 +413,7 @@ class PlayersProvider with ChangeNotifier {
     required double genderWeight,
     required double waitedWeight,
     required double playedWeight,
+    required double playedWithWeight, // Added playedWithWeight
   }) {
     if (_unassignedPlayers.isEmpty) return null;
 
@@ -470,6 +473,7 @@ class PlayersProvider with ChangeNotifier {
           genderWeight: genderWeight,
           waitedWeight: waitedWeight,
           playedWeight: playedWeight,
+          playedWithWeight: playedWithWeight, // Pass playedWithWeight
         );
         double scoreB = _calculatePlayerScoreForCourt(
           b,
@@ -478,6 +482,7 @@ class PlayersProvider with ChangeNotifier {
           genderWeight: genderWeight,
           waitedWeight: waitedWeight,
           playedWeight: playedWeight,
+          playedWithWeight: playedWithWeight, // Pass playedWithWeight
         );
         return scoreB.compareTo(scoreA); // Higher score is better
       });
@@ -507,6 +512,7 @@ class PlayersProvider with ChangeNotifier {
     required double genderWeight,
     required double waitedWeight,
     required double playedWeight,
+    required double playedWithWeight,
   }) {
     // 실력 균등 분배 (2:2) 계산
     double equalScore;
@@ -533,11 +539,11 @@ class PlayersProvider with ChangeNotifier {
     }
 
     // 실력 점수 계산
-    double avgRate = currentPlayersOnCourt.isEmpty
+    double avgRateOfCourt = currentPlayersOnCourt.isEmpty
         ? player.rate.toDouble()
         : currentPlayersOnCourt.map((p) => p.rate).reduce((a, b) => a + b) /
               currentPlayersOnCourt.length;
-    double rateDiff = (player.rate - avgRate).abs();
+    double rateDiff = (player.rate - avgRateOfCourt).abs();
     double skillScore = 2.0 - rateDiff / 1000.0;
 
     // 성별 점수 계산
@@ -575,7 +581,7 @@ class PlayersProvider with ChangeNotifier {
     // 순차적으로 배치 했다고 가정 할 때 (대기인원 / 4) 만큼은 반드시 기다려야 하므로 해당 waited 를 1.0 으로 기준
     double waitedScore =
         player.waited.toDouble() /
-        (_unassignedPlayers.length == 0 ? 1 : _unassignedPlayers.length) *
+        (_unassignedPlayers.isEmpty ? 1 : _unassignedPlayers.length) *
         4;
 
     // 플레이 횟수 점수 계산
@@ -585,12 +591,27 @@ class PlayersProvider with ChangeNotifier {
               _unassignedPlayers.length;
     double playedScore = avgPlayed - (player.played + player.lated);
 
+    // 함께 플레이한 횟수 점수 계산
+    double playedWithFactor = 0;
+    if (currentPlayersOnCourt.isNotEmpty) {
+      for (Player pInCourt in currentPlayersOnCourt) {
+        playedWithFactor += pow(
+          (player.gamesPlayedWith[pInCourt.id] ?? 0) * 0.5,
+          1.1,
+        );
+      }
+      playedWithFactor = playedWithFactor / currentPlayersOnCourt.length;
+      playedWithFactor = min(4.0, playedWithFactor);
+    }
+    double playedWithScore = 1.0 - playedWithFactor;
+
     // 최종 점수 = 각 점수 * 가중치의 합
     return equalScore +
         (skillScore * skillWeight) +
         (genderScore * genderWeight) +
         (waitedScore * waitedWeight) +
-        (playedScore * playedWeight);
+        (playedScore * playedWeight) +
+        (playedWithScore * playedWithWeight);
   }
 
   List<Player> get unassignedPlayers => List.unmodifiable(_unassignedPlayers);
