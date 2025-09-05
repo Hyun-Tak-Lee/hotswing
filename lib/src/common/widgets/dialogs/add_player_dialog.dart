@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Required for TextInputFormatter
 import 'package:hotswing/src/common/utils/skill_utils.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 
@@ -19,6 +20,8 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   final List<String> _genders = ['남', '여'];
   bool _isManager = false;
   String? _selectedSkillLevel;
+  int? _playCount;
+  int? _waitCount;
 
   @override
   void initState() {
@@ -27,10 +30,11 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       // 수정 모드: 기존 플레이어 정보로 상태 변수 초기화
       _name = widget.player!.name;
       _rate = widget.player!.rate;
-      // rate (int)를 _selectedSkillLevel (String)으로 변환 (skill_utils.dart의 getter 사용)
       _selectedSkillLevel = rateToSkillLevel[widget.player!.rate];
       _selectedGender = widget.player!.gender;
       _isManager = widget.player!.manager;
+      _playCount = widget.player!.played;
+      _waitCount = widget.player!.waited;
     }
   }
 
@@ -164,6 +168,67 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     _selectedGender = value;
                   },
                 ),
+                if (isEditMode) ...[
+                  SizedBox(height: fieldSpacing),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Flexible(
+                        flex: 1,
+                        child: TextFormField(
+                          initialValue: _playCount?.toString(),
+                          decoration: InputDecoration(
+                            labelText: '플레이 횟수',
+                            labelStyle: TextStyle(fontSize: labelFontSize),
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return '플레이 횟수를 입력하세요.';
+                            }
+                            if (int.tryParse(value) == null) {
+                              return '숫자만 입력해주세요.';
+                            }
+                            return null;
+                          },
+                          onSaved: (value) {
+                            _playCount = int.tryParse(value ?? '0');
+                          },
+                        ),
+                      ),
+                      SizedBox(width: fieldSpacing), // Horizontal spacing
+                      Flexible(
+                        flex: 1,
+                        child: TextFormField(
+                          initialValue: _waitCount?.toString(),
+                          decoration: InputDecoration(
+                            labelText: '대기 횟수',
+                            labelStyle: TextStyle(fontSize: labelFontSize),
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return '대기 횟수를 입력하세요.';
+                            }
+                            if (int.tryParse(value) == null) {
+                              return '숫자만 입력해주세요.';
+                            }
+                            return null;
+                          },
+                          onSaved: (value) {
+                            _waitCount = int.tryParse(value ?? '0');
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -184,7 +249,14 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
               _formKey.currentState!.save();
               Navigator.of(
                 context,
-              ).pop({'name': _name, 'rate': _rate, 'gender': _selectedGender, 'manager': _isManager});
+              ).pop({
+                'name': _name,
+                'rate': _rate,
+                'gender': _selectedGender,
+                'manager': _isManager,
+                'playCount': _playCount,
+                'waitCount': _waitCount,
+              });
             }
           },
         ),
