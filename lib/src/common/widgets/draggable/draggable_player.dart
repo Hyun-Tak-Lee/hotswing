@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/common/utils/skill_utils.dart';
+import 'package:hotswing/src/common/widgets/dialogs/game_played_dialog.dart';
+import 'package:provider/provider.dart';
 
 // 드래그되는 플레이어의 데이터와 원래 소속 섹션 정보를 전달하기 위한 클래스
 class PlayerDragData {
@@ -44,6 +46,7 @@ class DraggablePlayerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final playersProvider = Provider.of<PlayersProvider>(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobileSize = screenWidth < 600;
 
@@ -55,7 +58,8 @@ class DraggablePlayerItem extends StatelessWidget {
     final onPrimaryContainer = Theme.of(context).colorScheme.onPrimaryContainer;
     final onPrimary = Theme.of(context).colorScheme.onPrimary;
 
-    Widget playerContent = Container(
+    // 순수 UI 표현을 위한 위젯
+    Widget playerItemDisplay = Container(
       padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 0.0),
       decoration: BoxDecoration(
@@ -114,8 +118,26 @@ class DraggablePlayerItem extends StatelessWidget {
       ),
     );
 
+    // 탭 기능을 추가하기 위해 GestureDetector로 감싼 위젯
+    Widget interactivePlayerContent = GestureDetector(
+      onTap: () {
+        final newGamesPlayedWithMap = player.gamesPlayedWith.map((key, value) {
+          final newKey = playersProvider.getPlayerById(key)?.name ?? "";
+          return MapEntry(newKey, value);
+        });
+
+        showDialog(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            return GamePlayedDialog(gamesPlayedWithMap: newGamesPlayedWithMap,player: player);
+          },
+        );
+      },
+      child: playerItemDisplay,
+    );
+
     if (!isDragEnabled) {
-      return playerContent;
+      return interactivePlayerContent;
     }
 
     return LongPressDraggable<PlayerDragData>(
@@ -160,7 +182,8 @@ class DraggablePlayerItem extends StatelessWidget {
           ),
         ),
       ),
-      childWhenDragging: Opacity(opacity: 0.5, child: playerContent),
+      // 드래그 중에는 순수 UI만 표시 (탭 기능 없음)
+      childWhenDragging: Opacity(opacity: 0.5, child: playerItemDisplay),
       onDragStarted: () {
         if (section_index != -1 && onDragStarted != null) {
           onDragStarted!();
@@ -176,7 +199,8 @@ class DraggablePlayerItem extends StatelessWidget {
           onDragEnded!();
         }
       },
-      child: playerContent,
+      // 실제 드래그 대상이 되는 자식 위젯 (탭 기능 포함)
+      child: interactivePlayerContent,
     );
   }
 }
@@ -217,7 +241,7 @@ class PlayerDropZone extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobileSize = screenWidth < 600;
-    final double currentHeight = isMobileSize ? 140.0 : 240.0; // 변수명 변경
+    final double currentHeight = isMobileSize ? 140.0 : 240.0;
 
     return DragTarget<PlayerDragData>(
       onWillAcceptWithDetails: (details) {
@@ -242,8 +266,8 @@ class PlayerDropZone extends StatelessWidget {
             : const Color(0x66FFFFFF);
         Color hoveringBgColor = const Color(0x88F0FFFF);
 
-        return Container( // ConstrainedBox 대신 Container 사용
-          height: currentHeight, // height 속성 추가
+        return Container(
+          height: currentHeight,
           padding: const EdgeInsets.all(0.0),
           margin: const EdgeInsets.all(2.0),
           decoration: BoxDecoration(

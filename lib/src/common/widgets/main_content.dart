@@ -497,7 +497,7 @@ class _MainContentState extends State<MainContent> {
                                   ),
                                   Align(
                                     alignment: FractionalOffset(
-                                      isMobileSize ? 0.35 : 0.40,
+                                      isMobileSize ? 0.35 : 0.35,
                                       0.5,
                                     ),
                                     child: Stack(
@@ -532,7 +532,7 @@ class _MainContentState extends State<MainContent> {
                                   ),
                                   Align(
                                     alignment: FractionalOffset(
-                                      isMobileSize ? 0.65 : 0.60,
+                                      isMobileSize ? 0.65 : 0.65,
                                       0.5,
                                     ),
                                     child: Stack(

@@ -75,30 +75,30 @@ class PlayersProvider with ChangeNotifier {
   int _nextPlayerId = 0;
 
   PlayersProvider() {
-    final List<int> skillRates = skillLevelToRate.values.toList();
+    // final List<int> skillRates = skillLevelToRate.values.toList();
 
-    for (int i = 1; i <= 32; i++) {
-      int id = i;
-      String playerName = '플레이어 $i';
-      bool manager = _random.nextBool();
-      int playerRate = skillRates[_random.nextInt(skillRates.length)];
-      String gender = _random.nextBool() ? '남' : '여';
-      int played = 0;
-      int waited = 0;
-      int lated = 0;
-      Player newPlayer = Player(
-        id: id,
-        name: playerName,
-        manager: manager,
-        rate: playerRate,
-        gender: gender,
-        played: played,
-        waited: waited,
-        lated: lated,
-      );
-      _players[i] = newPlayer;
-      _unassignedPlayers.add(newPlayer);
-    }
+    // for (int i = 1; i <= 32; i++) {
+    //   int id = i;
+    //   String playerName = '플레이어 $i';
+    //   bool manager = _random.nextBool();
+    //   int playerRate = skillRates[_random.nextInt(skillRates.length)];
+    //   String gender = _random.nextBool() ? '남' : '여';
+    //   int played = 0;
+    //   int waited = 0;
+    //   int lated = 0;
+    //   Player newPlayer = Player(
+    //     id: id,
+    //     name: playerName,
+    //     manager: manager,
+    //     rate: playerRate,
+    //     gender: gender,
+    //     played: played,
+    //     waited: waited,
+    //     lated: lated,
+    //   );
+    //   _players[i] = newPlayer;
+    //   _unassignedPlayers.add(newPlayer);
+    // }
     _loadInitialAssignedPlayersCount();
     _loadPlayersFromPrefs();
   }
@@ -111,7 +111,6 @@ class PlayersProvider with ChangeNotifier {
 
   Future<void> _savePlayersToPrefs() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    // Convert Map<int, Player> to Map<String, String> for JSON encoding
     Map<String, String> playersJsonMap = _players.map((playerId, player) {
       return MapEntry(playerId.toString(), jsonEncode(player.toJson()));
     });
@@ -141,6 +140,10 @@ class PlayersProvider with ChangeNotifier {
   }
 
   Map<int, Player> get players => Map.unmodifiable(_players);
+
+  Player? getPlayerById(int id) {
+    return _players[id];
+  }
 
   void addPlayer({
     required String name,
@@ -391,7 +394,7 @@ class PlayersProvider with ChangeNotifier {
     required double genderWeight,
     required double waitedWeight,
     required double playedWeight,
-    required double playedWithWeight, // Added playedWithWeight
+    required double playedWithWeight,
   }) {
     if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) return;
 
