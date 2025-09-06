@@ -126,10 +126,18 @@ class DraggablePlayerItem extends StatelessWidget {
           return MapEntry(newKey, value);
         });
 
+        final allPlayerNames = playersProvider.players.values.map((p) => p.name).toList();
+        final playedWithPlayerNames = newGamesPlayedWithMap.keys.toSet();
+        final notPlayedWithNames = allPlayerNames.where((name) => !playedWithPlayerNames.contains(name) && name != player.name).toList();
+
         showDialog(
           context: context,
           builder: (BuildContext dialogContext) {
-            return GamePlayedDialog(gamesPlayedWithMap: newGamesPlayedWithMap,player: player);
+            return GamePlayedDialog(
+              gamesPlayedWithMap: newGamesPlayedWithMap,
+              player: player,
+              notPlayedWithNames: notPlayedWithNames,
+            );
           },
         );
       },
