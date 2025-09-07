@@ -27,7 +27,6 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   void initState() {
     super.initState();
     if (widget.player != null) {
-      // 수정 모드: 기존 플레이어 정보로 상태 변수 초기화
       _name = widget.player!.name;
       _rate = widget.player!.rate;
       _selectedSkillLevel = rateToSkillLevel[widget.player!.rate];
@@ -56,180 +55,182 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     return AlertDialog(
       title: Text(isEditMode ? '플레이어 수정' : '플레이어 추가',
           style: TextStyle(fontSize: titleFontSize)),
-      content: Form(
-        key: _formKey,
-        child: Padding(
-          padding: EdgeInsets.all(contentPadding),
-          child: SizedBox(
-            width: dialogWidth,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      flex: isMobileSize ? 3 : 2,
-                      child: TextFormField(
-                        initialValue: _name,
-                        decoration: InputDecoration(
-                          labelText: '이름',
-                          labelStyle: TextStyle(fontSize: labelFontSize),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return '이름을 입력하세요.';
-                          }
-                          if (value.length > 7) {
-                            return '이름은 7자 이하로 입력해주세요.';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _name = value;
-                        },
-                      ),
-                    ),
-                    Flexible(
-                      flex: isMobileSize ? 2 : 1,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text('운영진', style: TextStyle(fontSize: switchLabelFontSize)),
-                          SizedBox(width: isMobileSize ? 4 : 20),
-                          Transform.scale(
-                            scale: isMobileSize ? 1.0 : 1.5,
-                            child: Switch(
-                              value: _isManager,
-                              onChanged: (bool value) {
-                                setState(() {
-                                  _isManager = value;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: fieldSpacing),
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: '급수',
-                    labelStyle: TextStyle(fontSize: labelFontSize),
-                    floatingLabelBehavior: FloatingLabelBehavior.always,
-                  ),
-                  isDense: false,
-                  value: _selectedSkillLevel,
-                  itemHeight: isMobileSize ? 48.0 : 80.0,
-                  items: skillLevelToRate.keys.map((String level) {
-                    return DropdownMenuItem<String>(
-                      value: level,
-                      child: Text(level, style: TextStyle(fontSize: labelFontSize)),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedSkillLevel = newValue;
-                    });
-                  },
-                  validator: (value) => value == null ? '급수를 선택하세요.' : null,
-                  onSaved: (value) {
-                    if (value != null) {
-                      _rate = skillLevelToRate[value];
-                    }
-                  },
-                ),
-                SizedBox(height: fieldSpacing),
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: '성별',
-                    labelStyle: TextStyle(fontSize: labelFontSize),
-                    floatingLabelBehavior: FloatingLabelBehavior.always,
-                  ),
-                  isDense: false,
-                  value: _selectedGender,
-                  itemHeight: isMobileSize ? 48.0 : 80.0,
-                  items: _genders.map((String gender) {
-                    return DropdownMenuItem<String>(
-                      value: gender,
-                      child: Text(gender, style: TextStyle(fontSize: labelFontSize)),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedGender = newValue;
-                    });
-                  },
-                  validator: (value) => value == null ? '성별을 선택하세요.' : null,
-                  onSaved: (value) {
-                    _selectedGender = value;
-                  },
-                ),
-                if (isEditMode) ...[
-                  SizedBox(height: fieldSpacing),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: EdgeInsets.all(contentPadding),
+            child: SizedBox(
+              width: dialogWidth,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
                       Flexible(
-                        flex: 1,
+                        flex: isMobileSize ? 1 : 2,
                         child: TextFormField(
-                          initialValue: _playCount?.toString(),
+                          initialValue: _name,
                           decoration: InputDecoration(
-                            labelText: '플레이 횟수',
+                            labelText: '이름',
                             labelStyle: TextStyle(fontSize: labelFontSize),
                           ),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return '플레이 횟수를 입력하세요.';
+                              return '이름을 입력하세요.';
                             }
-                            if (int.tryParse(value) == null) {
-                              return '숫자만 입력해주세요.';
+                            if (value.length > 7) {
+                              return '이름은 7자 이하로 입력해주세요.';
                             }
                             return null;
                           },
                           onSaved: (value) {
-                            _playCount = int.tryParse(value ?? '0');
+                            _name = value;
                           },
                         ),
                       ),
-                      SizedBox(width: fieldSpacing), // Horizontal spacing
                       Flexible(
-                        flex: 1,
-                        child: TextFormField(
-                          initialValue: _waitCount?.toString(),
-                          decoration: InputDecoration(
-                            labelText: '대기 횟수',
-                            labelStyle: TextStyle(fontSize: labelFontSize),
-                          ),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.digitsOnly
+                        flex: isMobileSize ? 1 : 1,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text('운영진', style: TextStyle(fontSize: switchLabelFontSize)),
+                            SizedBox(width: isMobileSize ? 4 : 20),
+                            Transform.scale(
+                              scale: isMobileSize ? 1.0 : 1.5,
+                              child: Switch(
+                                value: _isManager,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    _isManager = value;
+                                  });
+                                },
+                              ),
+                            ),
                           ],
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return '대기 횟수를 입력하세요.';
-                            }
-                            if (int.tryParse(value) == null) {
-                              return '숫자만 입력해주세요.';
-                            }
-                            return null;
-                          },
-                          onSaved: (value) {
-                            _waitCount = int.tryParse(value ?? '0');
-                          },
                         ),
                       ),
                     ],
                   ),
+                  SizedBox(height: fieldSpacing),
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: '급수',
+                      labelStyle: TextStyle(fontSize: labelFontSize),
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                    ),
+                    isDense: false,
+                    value: _selectedSkillLevel,
+                    itemHeight: isMobileSize ? 48.0 : 80.0,
+                    items: skillLevelToRate.keys.map((String level) {
+                      return DropdownMenuItem<String>(
+                        value: level,
+                        child: Text(level, style: TextStyle(fontSize: labelFontSize)),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedSkillLevel = newValue;
+                      });
+                    },
+                    validator: (value) => value == null ? '급수를 선택하세요.' : null,
+                    onSaved: (value) {
+                      if (value != null) {
+                        _rate = skillLevelToRate[value];
+                      }
+                    },
+                  ),
+                  SizedBox(height: fieldSpacing),
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: '성별',
+                      labelStyle: TextStyle(fontSize: labelFontSize),
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                    ),
+                    isDense: false,
+                    value: _selectedGender,
+                    itemHeight: isMobileSize ? 48.0 : 80.0,
+                    items: _genders.map((String gender) {
+                      return DropdownMenuItem<String>(
+                        value: gender,
+                        child: Text(gender, style: TextStyle(fontSize: labelFontSize)),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedGender = newValue;
+                      });
+                    },
+                    validator: (value) => value == null ? '성별을 선택하세요.' : null,
+                    onSaved: (value) {
+                      _selectedGender = value;
+                    },
+                  ),
+                  if (isEditMode) ...[
+                    SizedBox(height: fieldSpacing),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Flexible(
+                          flex: 1,
+                          child: TextFormField(
+                            initialValue: _playCount?.toString(),
+                            decoration: InputDecoration(
+                              labelText: '플레이 횟수',
+                              labelStyle: TextStyle(fontSize: labelFontSize),
+                            ),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: <TextInputFormatter>[
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return '플레이 횟수를 입력하세요.';
+                              }
+                              if (int.tryParse(value) == null) {
+                                return '숫자만 입력해주세요.';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _playCount = int.tryParse(value ?? '0');
+                            },
+                          ),
+                        ),
+                        SizedBox(width: fieldSpacing), // Horizontal spacing
+                        Flexible(
+                          flex: 1,
+                          child: TextFormField(
+                            initialValue: _waitCount?.toString(),
+                            decoration: InputDecoration(
+                              labelText: '대기 횟수',
+                              labelStyle: TextStyle(fontSize: labelFontSize),
+                            ),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: <TextInputFormatter>[
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return '대기 횟수를 입력하세요.';
+                              }
+                              if (int.tryParse(value) == null) {
+                                return '숫자만 입력해주세요.';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _waitCount = int.tryParse(value ?? '0');
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

@@ -97,7 +97,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
         children: <Widget>[
           SizedBox(
             height: widget.isMobileSize
-                ? MediaQuery.of(context).size.height * 0.1
+                ? 120
                 : 180,
             child: DrawerHeader(
               decoration: const BoxDecoration(

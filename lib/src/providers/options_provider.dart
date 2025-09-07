@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class OptionsProvider with ChangeNotifier {
   SharedPreferences? _prefs;
-  bool _divideTeam = false;
   int _numberOfSections = 3;
   double _skillWeight = 1.0;
   double _genderWeight = 1.0;
@@ -11,7 +10,6 @@ class OptionsProvider with ChangeNotifier {
   double _playedWeight = 1.0;
   double _playedWithWeight = 1.0;
 
-  static const String _divideTeamKey = 'divideTeam';
   static const String _numberOfSectionsKey = 'numberOfSections';
   static const String _skillWeightKey = 'skillWeight';
   static const String _genderWeightKey = 'genderWeight';
@@ -23,8 +21,6 @@ class OptionsProvider with ChangeNotifier {
   static const int _maxNumberOfSections = 8;
   static const double _minWeight = 0.0;
   static const double _maxWeight = 2.0;
-
-  bool get divideTeam => _divideTeam;
 
   int get numberOfSections => _numberOfSections;
 
@@ -44,7 +40,6 @@ class OptionsProvider with ChangeNotifier {
 
   Future<void> _loadPreferences() async {
     _prefs = await SharedPreferences.getInstance();
-    _divideTeam = _prefs?.getBool(_divideTeamKey) ?? false;
     _numberOfSections = (_prefs?.getInt(_numberOfSectionsKey) ?? 3).clamp(
       _minNumberOfSections,
       _maxNumberOfSections,
@@ -74,20 +69,12 @@ class OptionsProvider with ChangeNotifier {
 
   // 현재 값들을 SharedPreferences에 저장하는 메소드
   Future<void> _savePreferences() async {
-    // _divideTeamKey를 사용하여 현재 _divideTeam 값을 bool 타입으로 저장 (비동기)
-    await _prefs?.setBool(_divideTeamKey, _divideTeam);
     await _prefs?.setInt(_numberOfSectionsKey, _numberOfSections);
     await _prefs?.setDouble(_skillWeightKey, _skillWeight);
     await _prefs?.setDouble(_genderWeightKey, _genderWeight);
     await _prefs?.setDouble(_waitedWeightKey, _waitedWeight);
     await _prefs?.setDouble(_playedWeightKey, _playedWeight);
     await _prefs?.setDouble(_playedWithWeightKey, _playedWithWeight);
-  }
-
-  void toggleDivideTeam() {
-    _divideTeam = !_divideTeam;
-    _savePreferences();
-    notifyListeners();
   }
 
   void setNumberOfSections(int newNumberOfSections) {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
-import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
+import 'package:provider/provider.dart';
 
 class MainContent extends StatefulWidget {
   const MainContent({super.key, required this.isMobileSize});
@@ -16,6 +16,28 @@ class MainContent extends StatefulWidget {
 class _MainContentState extends State<MainContent> {
   bool _showCourtHighlight = false;
   Map<int, bool> _courtGameStartedState = {};
+
+  void _updateCourtStateIfFull(BuildContext context, int courtIndex) {
+    if (courtIndex == -1) return;
+
+    final playersProvider = Provider.of<PlayersProvider>(
+      context,
+      listen: false,
+    );
+    final courtPlayers = playersProvider.assignedPlayers[courtIndex];
+
+    final playerCount = courtPlayers.where((p) => p != null).length;
+
+    if (playerCount == 4 && _courtGameStartedState[courtIndex] != true) {
+      setState(() {
+        _courtGameStartedState[courtIndex] = true;
+      });
+    } else if (playerCount < 4 && _courtGameStartedState[courtIndex] == true) {
+      setState(() {
+        _courtGameStartedState[courtIndex] = false;
+      });
+    }
+  }
 
   void _handlePlayerDrop(
     BuildContext context,
@@ -66,6 +88,9 @@ class _MainContentState extends State<MainContent> {
         );
       }
     }
+
+    _updateCourtStateIfFull(context, targetSectionIndex);
+    _updateCourtStateIfFull(context, sourceSectionIndex);
   }
 
   void _onCourtPlayerDragStarted() {
@@ -105,7 +130,6 @@ class _MainContentState extends State<MainContent> {
 
     final optionsProvider = Provider.of<OptionsProvider>(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
-    // playersProvider.unassignedPlayers로부터 리스트를 가져와서 수정 가능한 복사본을 만듭니다.
     final playerList = List<Player>.from(playersProvider.unassignedPlayers);
     playerList.sort((a, b) {
       int playedCompare = (a.played + a.lated).compareTo(b.played + b.lated);
@@ -116,7 +140,6 @@ class _MainContentState extends State<MainContent> {
     });
 
     final List<List<Player?>> sectionData = playersProvider.assignedPlayers;
-    final bool shouldShowDivider = optionsProvider.divideTeam;
 
     return Center(
       child: Row(
@@ -328,13 +351,6 @@ class _MainContentState extends State<MainContent> {
                                             ? 10.0
                                             : 10.0,
                                       ),
-                                      Visibility(
-                                        visible: shouldShowDivider,
-                                        child: Divider(
-                                          color: Colors.grey,
-                                          thickness: 1,
-                                        ),
-                                      ),
                                       SizedBox(
                                         height: widget.isMobileSize
                                             ? 10.0
@@ -452,7 +468,7 @@ class _MainContentState extends State<MainContent> {
                                     ),
                                   ),
                                   Align(
-                                    alignment: FractionalOffset(0.10, 0.5),
+                                    alignment: FractionalOffset(0.05, 0.5),
                                     child: Container(
                                       padding: EdgeInsets.symmetric(
                                         horizontal: isMobileSize ? 5.0 : 15.0,
@@ -474,7 +490,7 @@ class _MainContentState extends State<MainContent> {
                                     ),
                                   ),
                                   Align(
-                                    alignment: FractionalOffset(0.90, 0.5),
+                                    alignment: FractionalOffset(0.95, 0.5),
                                     child: Container(
                                       padding: EdgeInsets.symmetric(
                                         horizontal: isMobileSize ? 5.0 : 15.0,
@@ -497,7 +513,7 @@ class _MainContentState extends State<MainContent> {
                                   ),
                                   Align(
                                     alignment: FractionalOffset(
-                                      isMobileSize ? 0.35 : 0.35,
+                                      isMobileSize ? 0.25 : 0.35,
                                       0.5,
                                     ),
                                     child: Stack(
@@ -532,7 +548,7 @@ class _MainContentState extends State<MainContent> {
                                   ),
                                   Align(
                                     alignment: FractionalOffset(
-                                      isMobileSize ? 0.65 : 0.65,
+                                      isMobileSize ? 0.75 : 0.65,
                                       0.5,
                                     ),
                                     child: Stack(

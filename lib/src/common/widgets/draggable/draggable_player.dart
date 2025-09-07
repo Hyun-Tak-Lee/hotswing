@@ -78,6 +78,8 @@ class DraggablePlayerItem extends StatelessWidget {
               color: onPrimaryContainer,
             ),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           SizedBox(height: 2.0),
           Column(

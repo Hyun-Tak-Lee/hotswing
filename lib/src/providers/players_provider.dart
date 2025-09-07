@@ -75,30 +75,30 @@ class PlayersProvider with ChangeNotifier {
   int _nextPlayerId = 0;
 
   PlayersProvider() {
-    // final List<int> skillRates = skillLevelToRate.values.toList();
+    final List<int> skillRates = skillLevelToRate.values.toList();
 
-    // for (int i = 1; i <= 32; i++) {
-    //   int id = i;
-    //   String playerName = '플레이어 $i';
-    //   bool manager = _random.nextBool();
-    //   int playerRate = skillRates[_random.nextInt(skillRates.length)];
-    //   String gender = _random.nextBool() ? '남' : '여';
-    //   int played = 0;
-    //   int waited = 0;
-    //   int lated = 0;
-    //   Player newPlayer = Player(
-    //     id: id,
-    //     name: playerName,
-    //     manager: manager,
-    //     rate: playerRate,
-    //     gender: gender,
-    //     played: played,
-    //     waited: waited,
-    //     lated: lated,
-    //   );
-    //   _players[i] = newPlayer;
-    //   _unassignedPlayers.add(newPlayer);
-    // }
+    for (int i = 1; i <= 32; i++) {
+      int id = i;
+      String playerName = '플레이어 $i';
+      bool manager = _random.nextBool();
+      int playerRate = skillRates[_random.nextInt(skillRates.length)];
+      String gender = _random.nextBool() ? '남' : '여';
+      int played = 0;
+      int waited = 0;
+      int lated = 0;
+      Player newPlayer = Player(
+        id: id,
+        name: playerName,
+        manager: manager,
+        rate: playerRate,
+        gender: gender,
+        played: played,
+        waited: waited,
+        lated: lated,
+      );
+      _players[i] = newPlayer;
+      _unassignedPlayers.add(newPlayer);
+    }
     _loadInitialAssignedPlayersCount();
     _loadPlayersFromPrefs();
   }

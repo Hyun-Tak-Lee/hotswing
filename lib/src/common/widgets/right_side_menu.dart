@@ -58,7 +58,7 @@ class RightSideMenu extends StatelessWidget {
         children: <Widget>[
           SizedBox(
             height: isMobileSize
-                ? MediaQuery.of(context).size.height * 0.1
+                ? 120
                 : 180,
             child: DrawerHeader(
               decoration: const BoxDecoration(
@@ -101,24 +101,6 @@ class RightSideMenu extends StatelessWidget {
                   );
                 },
               );
-            },
-          ),
-          const SizedBox(height: 10),
-          ListTile(
-            title: Text('팀 지정 (사용x)', style: TextStyle(fontSize: iconAndFontSize)),
-            trailing: Transform.scale(
-              scale: switchScale,
-              child: Switch(
-                value: optionsProvider.divideTeam,
-                onChanged: (bool value) {
-                  optionsProvider.toggleDivideTeam();
-                },
-                activeColor: Colors.blueAccent,
-              ),
-            ),
-            tileColor: Colors.black.withAlpha(13),
-            onTap: () {
-              optionsProvider.toggleDivideTeam();
             },
           ),
           const SizedBox(height: 10),
