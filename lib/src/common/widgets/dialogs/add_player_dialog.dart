@@ -5,8 +5,9 @@ import 'package:hotswing/src/providers/players_provider.dart';
 
 class AddPlayerDialog extends StatefulWidget {
   final Player? player;
+  final bool isGuest;
 
-  const AddPlayerDialog({super.key, this.player});
+  const AddPlayerDialog({super.key, this.player, this.isGuest = false});
 
   @override
   State<AddPlayerDialog> createState() => _AddPlayerDialogState();
@@ -31,7 +32,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _rate = widget.player!.rate;
       _selectedSkillLevel = rateToSkillLevel[widget.player!.rate];
       _selectedGender = widget.player!.gender;
-      _isManager = widget.player!.manager;
+      _isManager = widget.player!.role == "manager" ? true : false;
       _playCount = widget.player!.played;
       _waitCount = widget.player!.waited;
     }
@@ -43,18 +44,23 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
     final bool isEditMode = widget.player != null;
+    final bool isGuestMode = widget.isGuest || (widget.player?.role == 'guest');
 
     final double titleFontSize = isMobileSize ? 24 : 40;
     final double labelFontSize = isMobileSize ? 20 : 32;
     final double switchLabelFontSize = isMobileSize ? 16 : 24;
     final double contentPadding = isMobileSize ? 8.0 : 24.0;
     final double fieldSpacing = isMobileSize ? 16.0 : 32.0;
-    final double dialogWidth = isMobileSize ? screenWidth * 0.8 : screenWidth * 0.5;
+    final double dialogWidth = isMobileSize
+        ? screenWidth * 0.8
+        : screenWidth * 0.5;
     final double buttonFontSize = isMobileSize ? 16 : 28;
 
     return AlertDialog(
-      title: Text(isEditMode ? '플레이어 수정' : '플레이어 추가',
-          style: TextStyle(fontSize: titleFontSize)),
+      title: Text(
+        isEditMode ? '플레이어 수정' : '플레이어 추가',
+        style: TextStyle(fontSize: titleFontSize),
+      ),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -90,28 +96,32 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                           },
                         ),
                       ),
-                      Flexible(
-                        flex: isMobileSize ? 1 : 1,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text('운영진', style: TextStyle(fontSize: switchLabelFontSize)),
-                            SizedBox(width: isMobileSize ? 4 : 20),
-                            Transform.scale(
-                              scale: isMobileSize ? 1.0 : 1.5,
-                              child: Switch(
-                                value: _isManager,
-                                onChanged: (bool value) {
-                                  setState(() {
-                                    _isManager = value;
-                                  });
-                                },
+                      if (!isGuestMode)
+                        Flexible(
+                          flex: isMobileSize ? 1 : 1,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                '운영진',
+                                style: TextStyle(fontSize: switchLabelFontSize),
                               ),
-                            ),
-                          ],
+                              SizedBox(width: isMobileSize ? 4 : 20),
+                              Transform.scale(
+                                scale: isMobileSize ? 1.0 : 1.5,
+                                child: Switch(
+                                  value: _isManager,
+                                  onChanged: (bool value) {
+                                    setState(() {
+                                      _isManager = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
                     ],
                   ),
                   SizedBox(height: fieldSpacing),
@@ -127,7 +137,10 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     items: skillLevelToRate.keys.map((String level) {
                       return DropdownMenuItem<String>(
                         value: level,
-                        child: Text(level, style: TextStyle(fontSize: labelFontSize)),
+                        child: Text(
+                          level,
+                          style: TextStyle(fontSize: labelFontSize),
+                        ),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
@@ -155,7 +168,10 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     items: _genders.map((String gender) {
                       return DropdownMenuItem<String>(
                         value: gender,
-                        child: Text(gender, style: TextStyle(fontSize: labelFontSize)),
+                        child: Text(
+                          gender,
+                          style: TextStyle(fontSize: labelFontSize),
+                        ),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
@@ -183,7 +199,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                             ),
                             keyboardType: TextInputType.number,
                             inputFormatters: <TextInputFormatter>[
-                              FilteringTextInputFormatter.digitsOnly
+                              FilteringTextInputFormatter.digitsOnly,
                             ],
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -210,7 +226,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                             ),
                             keyboardType: TextInputType.number,
                             inputFormatters: <TextInputFormatter>[
-                              FilteringTextInputFormatter.digitsOnly
+                              FilteringTextInputFormatter.digitsOnly,
                             ],
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -243,18 +259,20 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
           },
         ),
         TextButton(
-          child: Text(isEditMode ? '수정' : '추가',
-              style: TextStyle(fontSize: buttonFontSize)),
+          child: Text(
+            isEditMode ? '수정' : '추가',
+            style: TextStyle(fontSize: buttonFontSize),
+          ),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               _formKey.currentState!.save();
-              Navigator.of(
-                context,
-              ).pop({
+              Navigator.of(context).pop({
                 'name': _name,
                 'rate': _rate,
                 'gender': _selectedGender,
-                'manager': _isManager,
+                'role': isGuestMode
+                    ? 'guest'
+                    : (_isManager ? "manager" : "user"),
                 'playCount': _playCount,
                 'waitCount': _waitCount,
               });

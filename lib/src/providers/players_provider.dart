@@ -7,7 +7,7 @@ import 'package:hotswing/src/common/utils/skill_utils.dart';
 class Player {
   final int id;
   String name;
-  bool manager;
+  String role;
   int rate;
   String gender;
   int played;
@@ -18,20 +18,20 @@ class Player {
   Player({
     required this.id,
     required this.rate,
-    required this.manager,
+    required this.role,
     required String name,
     required this.gender,
     required this.played,
     required this.waited,
     required this.lated,
-    Map<int, int>? gamesPlayedWith, // Optional parameter for initialization
+    Map<int, int>? gamesPlayedWith,
   }) : this.name = name.length > 7 ? name.substring(0, 7) : name,
-       this.gamesPlayedWith = gamesPlayedWith ?? {}; // Initialize if null
+       this.gamesPlayedWith = gamesPlayedWith ?? {};
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
-    'manager': manager,
+    'role': role,
     'rate': rate,
     'gender': gender,
     'played': played,
@@ -45,7 +45,7 @@ class Player {
   factory Player.fromJson(Map<String, dynamic> json) => Player(
     id: json['id'] as int,
     name: json['name'] as String,
-    manager: json['manager'] as bool,
+    role: json['role'] as String,
     rate: json['rate'] as int,
     gender: json['gender'] as String,
     played: json['played'] as int? ?? 0,
@@ -75,12 +75,12 @@ class PlayersProvider with ChangeNotifier {
   int _nextPlayerId = 0;
 
   PlayersProvider() {
-    // final List<int> skillRates = skillLevelToRate.values.toList();
-    //
+    final List<int> skillRates = skillLevelToRate.values.toList();
+
     // for (int i = 1; i <= 32; i++) {
     //   int id = i;
     //   String playerName = '플레이어 $i';
-    //   bool manager = _random.nextBool();
+    //   String role = _random.nextBool() ? "manager" : "user";
     //   int playerRate = skillRates[_random.nextInt(skillRates.length)];
     //   String gender = _random.nextBool() ? '남' : '여';
     //   int played = 0;
@@ -89,7 +89,7 @@ class PlayersProvider with ChangeNotifier {
     //   Player newPlayer = Player(
     //     id: id,
     //     name: playerName,
-    //     manager: manager,
+    //     role: role,
     //     rate: playerRate,
     //     gender: gender,
     //     played: played,
@@ -147,7 +147,7 @@ class PlayersProvider with ChangeNotifier {
 
   void addPlayer({
     required String name,
-    required bool manager,
+    required String role,
     required int rate,
     required String gender,
     required int played,
@@ -161,7 +161,7 @@ class PlayersProvider with ChangeNotifier {
     Player newPlayer = Player(
       id: newPlayerId,
       name: name,
-      manager: manager,
+      role: role,
       rate: rate,
       gender: gender,
       played: played,
@@ -198,7 +198,7 @@ class PlayersProvider with ChangeNotifier {
     required String newName,
     required int newRate,
     required String newGender,
-    required bool newManager,
+    required String newRole,
   }) {
     if (newName.length > 7) return;
     if (!_players.containsKey(playerId)) return;
@@ -206,7 +206,7 @@ class PlayersProvider with ChangeNotifier {
     playerToUpdate.name = newName;
     playerToUpdate.rate = newRate;
     playerToUpdate.gender = newGender;
-    playerToUpdate.manager = newManager;
+    playerToUpdate.role = newRole;
 
     notifyListeners();
     _savePlayersToPrefs();
@@ -427,7 +427,7 @@ class PlayersProvider with ChangeNotifier {
     required double genderWeight,
     required double waitedWeight,
     required double playedWeight,
-    required double playedWithWeight, // Added playedWithWeight
+    required double playedWithWeight,
   }) {
     if (_unassignedPlayers.isEmpty) return null;
 
@@ -437,17 +437,17 @@ class PlayersProvider with ChangeNotifier {
         .toList();
 
     final int unassignedManagersCount = _unassignedPlayers
-        .where((p) => p.manager)
+        .where((p) => p.role == "manager")
         .length;
-    final bool isLastManagerCondition =
+    final bool isNotLastManager =
         unassignedManagersCount == 1 &&
-        _unassignedPlayers.any((p) => !p.manager);
+        _unassignedPlayers.any((p) => p.role != "manager");
 
     if (currentPlayersOnCourt.isEmpty) {
       List<Player> candidatePlayers = _unassignedPlayers;
-      if (isLastManagerCondition) {
+      if (isNotLastManager) {
         final nonManagers = _unassignedPlayers
-            .where((p) => !p.manager)
+            .where((p) => p.role != "manager")
             .toList();
         if (nonManagers.isNotEmpty) {
           candidatePlayers = nonManagers;
@@ -487,7 +487,7 @@ class PlayersProvider with ChangeNotifier {
           genderWeight: genderWeight,
           waitedWeight: waitedWeight,
           playedWeight: playedWeight,
-          playedWithWeight: playedWithWeight, // Pass playedWithWeight
+          playedWithWeight: playedWithWeight,
         );
         double scoreB = _calculatePlayerScoreForCourt(
           b,
@@ -496,18 +496,18 @@ class PlayersProvider with ChangeNotifier {
           genderWeight: genderWeight,
           waitedWeight: waitedWeight,
           playedWeight: playedWeight,
-          playedWithWeight: playedWithWeight, // Pass playedWithWeight
+          playedWithWeight: playedWithWeight,
         );
-        return scoreB.compareTo(scoreA); // Higher score is better
+        return scoreB.compareTo(scoreA);
       });
 
     if (sortedUnassignedPlayers.isEmpty) return null;
     Player bestPlayer = sortedUnassignedPlayers.first;
 
-    if (isLastManagerCondition && bestPlayer.manager) {
+    if (isNotLastManager && bestPlayer.role == "manager") {
       Player? bestNonManager = null;
       for (final pInList in sortedUnassignedPlayers) {
-        if (!pInList.manager) {
+        if (pInList.role != "manager") {
           bestNonManager = pInList;
           break;
         }

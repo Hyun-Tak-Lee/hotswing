@@ -17,20 +17,20 @@ class LeftSideMenu extends StatefulWidget {
 }
 
 class _LeftSideMenuState extends State<LeftSideMenu> {
-
   @override
   void dispose() {
     super.dispose();
   }
 
   Future<void> _showAddPlayerDialog(
-    PlayersProvider playersProvider, {
+    PlayersProvider playersProvider,
+    bool isGuest, {
     Player? existingPlayer,
   }) async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AddPlayerDialog(player: existingPlayer);
+        return AddPlayerDialog(player: existingPlayer, isGuest: isGuest);
       },
     );
 
@@ -38,14 +38,14 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
         result['name'] != null &&
         result['rate'] != null &&
         result['gender'] != null &&
-        result['manager'] != null) {
+        result['role'] != null) {
       if (existingPlayer != null) {
         playersProvider.updatePlayer(
           playerId: existingPlayer.id,
           newName: result['name'] as String,
           newRate: result['rate'] as int,
           newGender: result['gender'] as String,
-          newManager: result['manager'] as bool,
+          newRole: result['role'] as String,
         );
       } else {
         int latedValue = 0;
@@ -58,7 +58,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           name: result['name'] as String,
           rate: result['rate'] as int,
           gender: result['gender'] as String,
-          manager: result['manager'] as bool,
+          role: result['role'] as String,
           played: 0,
           waited: 0,
           lated: latedValue,
@@ -96,9 +96,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
         padding: EdgeInsets.zero,
         children: <Widget>[
           SizedBox(
-            height: widget.isMobileSize
-                ? 120
-                : 180,
+            height: widget.isMobileSize ? 120 : 180,
             child: DrawerHeader(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -125,11 +123,22 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                           );
                         },
                       ),
+                      const SizedBox(width: 8),
                       IconButton(
-                        icon: const Icon(Icons.add),
+                        tooltip: '게스트 추가',
+                        icon: const Icon(Icons.person_pin),
                         iconSize: iconAndFontSize,
                         onPressed: () {
-                          _showAddPlayerDialog(playersProvider);
+                          _showAddPlayerDialog(playersProvider, true);
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        tooltip: '일반 참여자 추가',
+                        icon: const Icon(Icons.person_add),
+                        iconSize: iconAndFontSize,
+                        onPressed: () {
+                          _showAddPlayerDialog(playersProvider, false);
                         },
                       ),
                     ],
@@ -141,7 +150,11 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           ...players
               .map(
                 (player) => ListTile(
-                  tileColor: player.manager ? const Color(0x55FFF700) : null,
+                  tileColor: player.role == "manager"
+                      ? const Color(0x55FFF700)
+                      : player.role == "user"
+                          ? const Color(0x3300BFFF)
+                          : null,
                   title: Text(
                     '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]}',
                     style: TextStyle(fontSize: iconAndFontSize),
@@ -153,7 +166,11 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                         icon: const Icon(Icons.edit),
                         iconSize: iconAndFontSize,
                         onPressed: () {
-                          _showAddPlayerDialog(playersProvider, existingPlayer: player);
+                          _showAddPlayerDialog(
+                            playersProvider,
+                            false,
+                            existingPlayer: player,
+                          );
                         },
                       ),
                       IconButton(

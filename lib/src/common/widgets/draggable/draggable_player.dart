@@ -128,9 +128,16 @@ class DraggablePlayerItem extends StatelessWidget {
           return MapEntry(newKey, value);
         });
 
-        final allPlayerNames = playersProvider.players.values.map((p) => p.name).toList();
+        final allPlayerNames = playersProvider.players.values
+            .map((p) => p.name)
+            .toList();
         final playedWithPlayerNames = newGamesPlayedWithMap.keys.toSet();
-        final notPlayedWithNames = allPlayerNames.where((name) => !playedWithPlayerNames.contains(name) && name != player.name).toList();
+        final notPlayedWithNames = allPlayerNames
+            .where(
+              (name) =>
+                  !playedWithPlayerNames.contains(name) && name != player.name,
+            )
+            .toList();
 
         showDialog(
           context: context,
@@ -271,7 +278,8 @@ class PlayerDropZone extends StatelessWidget {
       builder: (context, candidateData, rejectedData) {
         bool isHovering = candidateData.isNotEmpty && isDropEnabled;
 
-        Color determinedDefaultBgColor = player != null && player!.manager
+        Color determinedDefaultBgColor =
+            player != null && player!.role == "manager"
             ? const Color(0x77FFF700)
             : const Color(0x66FFFFFF);
         Color hoveringBgColor = const Color(0x88F0FFFF);
