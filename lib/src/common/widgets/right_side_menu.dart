@@ -12,6 +12,8 @@ class RightSideMenu extends StatelessWidget {
   Widget _buildSliderListItem({
     required BuildContext context,
     required String title,
+    required String leftText,
+    required String rightText,
     required double value,
     required ValueChanged<double> onChanged,
     required double iconAndFontSize,
@@ -22,8 +24,31 @@ class RightSideMenu extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '$title: ${value.toStringAsFixed(1)}',
-            style: TextStyle(fontSize: iconAndFontSize),
+            title,
+            style: TextStyle(
+              fontSize: iconAndFontSize,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                leftText,
+                style: TextStyle(fontSize: iconAndFontSize * 0.8),
+              ),
+              Text(
+                value.toStringAsFixed(1),
+                style: TextStyle(
+                  fontSize: iconAndFontSize * 0.9,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                rightText,
+                style: TextStyle(fontSize: iconAndFontSize * 0.8),
+              ),
+            ],
           ),
           Slider(
             value: value,
@@ -51,15 +76,13 @@ class RightSideMenu extends StatelessWidget {
 
     return Drawer(
       width: isMobileSize
-          ? MediaQuery.of(context).size.width * 0.55
-          : MediaQuery.of(context).size.width * 0.45,
+          ? MediaQuery.of(context).size.width * 0.75
+          : MediaQuery.of(context).size.width * 0.60,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           SizedBox(
-            height: isMobileSize
-                ? 120
-                : 180,
+            height: isMobileSize ? 120 : 180,
             child: DrawerHeader(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -116,8 +139,8 @@ class RightSideMenu extends StatelessWidget {
                 Slider(
                   value: optionsProvider.numberOfSections.toDouble(),
                   min: 1,
-                  max: 8,
-                  divisions: 7,
+                  max: 10,
+                  divisions: 9,
                   label: optionsProvider.numberOfSections.round().toString(),
                   onChanged: (double value) {
                     int newNumberOfSections = value.round();
@@ -134,7 +157,9 @@ class RightSideMenu extends StatelessWidget {
           const SizedBox(height: 10),
           _buildSliderListItem(
             context: context,
-            title: '실력 가중치',
+            title: '실력',
+            leftText: '2명씩 균등',
+            rightText: '4인 균등',
             value: optionsProvider.skillWeight,
             onChanged: (double value) {
               optionsProvider.setSkillWeight(value);
@@ -144,7 +169,9 @@ class RightSideMenu extends StatelessWidget {
           const SizedBox(height: 10),
           _buildSliderListItem(
             context: context,
-            title: '성별 가중치',
+            title: '성별',
+            leftText: '남2여2',
+            rightText: '남4 or 여4',
             value: optionsProvider.genderWeight,
             onChanged: (double value) {
               optionsProvider.setGenderWeight(value);
@@ -154,7 +181,9 @@ class RightSideMenu extends StatelessWidget {
           const SizedBox(height: 10),
           _buildSliderListItem(
             context: context,
-            title: '대기 가중치',
+            title: '대기 횟수',
+            leftText: '무시',
+            rightText: '중시',
             value: optionsProvider.waitedWeight,
             onChanged: (double value) {
               optionsProvider.setWaitedWeight(value);
@@ -164,7 +193,9 @@ class RightSideMenu extends StatelessWidget {
           const SizedBox(height: 10),
           _buildSliderListItem(
             context: context,
-            title: '플레이 횟수 가중치',
+            title: '경기 횟수',
+            leftText: '무시',
+            rightText: '중시',
             value: optionsProvider.playedWeight,
             onChanged: (double value) {
               optionsProvider.setPlayedWeight(value);
@@ -174,7 +205,9 @@ class RightSideMenu extends StatelessWidget {
           const SizedBox(height: 10),
           _buildSliderListItem(
             context: context,
-            title: '중복 방지 가중치',
+            title: '중복 횟수',
+            leftText: '무시',
+            rightText: '최소화',
             value: optionsProvider.playedWithWeight,
             onChanged: (double value) {
               optionsProvider.setPlayedWithWeight(value);

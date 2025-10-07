@@ -18,7 +18,7 @@ class OptionsProvider with ChangeNotifier {
   static const String _playedWithWeightKey = 'playedWithWeight';
 
   static const int _minNumberOfSections = 1;
-  static const int _maxNumberOfSections = 8;
+  static const int _maxNumberOfSections = 10;
   static const double _minWeight = 0.0;
   static const double _maxWeight = 2.0;
 
