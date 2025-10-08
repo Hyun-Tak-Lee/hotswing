@@ -1,104 +1,45 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hotswing/src/common/utils/skill_utils.dart';
-
-class Player {
-  final int id;
-  String name;
-  String role;
-  int rate;
-  String gender;
-  int played;
-  int waited;
-  int lated;
-  Map<int, int> gamesPlayedWith;
-
-  Player({
-    required this.id,
-    required this.rate,
-    required this.role,
-    required String name,
-    required this.gender,
-    required this.played,
-    required this.waited,
-    required this.lated,
-    Map<int, int>? gamesPlayedWith,
-  }) : this.name = name.length > 7 ? name.substring(0, 7) : name,
-       this.gamesPlayedWith = gamesPlayedWith ?? {};
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'role': role,
-    'rate': rate,
-    'gender': gender,
-    'played': played,
-    'waited': waited,
-    'lated': lated,
-    'gamesPlayedWith': gamesPlayedWith.map(
-      (key, value) => MapEntry(key.toString(), value),
-    ),
-  };
-
-  factory Player.fromJson(Map<String, dynamic> json) => Player(
-    id: json['id'] as int,
-    name: json['name'] as String,
-    role: json['role'] as String,
-    rate: json['rate'] as int,
-    gender: json['gender'] as String,
-    played: json['played'] as int? ?? 0,
-    waited: json['waited'] as int? ?? 0,
-    lated: json['lated'] as int? ?? 0,
-    gamesPlayedWith:
-        (json['gamesPlayedWith'] as Map<String, dynamic>?)?.map(
-          (key, value) => MapEntry(int.parse(key), value as int),
-        ) ??
-        {},
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Player && runtimeType == other.runtimeType && id == other.id;
-
-  @override
-  int get hashCode => id.hashCode;
-}
+import 'package:hotswing/src/models/player.dart';
+import 'package:hotswing/src/services/court_assign_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PlayersProvider with ChangeNotifier {
+  final CourtAssignService _courtService = CourtAssignService();
+  final Random _random = Random();
+
   final Map<int, Player> _players = {};
   List<List<Player?>> _assignedPlayers = [];
   List<Player> _unassignedPlayers = [];
-  final Random _random = Random();
   int _nextPlayerId = 0;
 
   PlayersProvider() {
     final List<int> skillRates = skillLevelToRate.values.toList();
 
-    // for (int i = 1; i <= 32; i++) {
-    //   int id = i;
-    //   String playerName = '플레이어 $i';
-    //   String role = _random.nextBool() ? "manager" : "user";
-    //   int playerRate = skillRates[_random.nextInt(skillRates.length)];
-    //   String gender = _random.nextBool() ? '남' : '여';
-    //   int played = 0;
-    //   int waited = 0;
-    //   int lated = 0;
-    //   Player newPlayer = Player(
-    //     id: id,
-    //     name: playerName,
-    //     role: role,
-    //     rate: playerRate,
-    //     gender: gender,
-    //     played: played,
-    //     waited: waited,
-    //     lated: lated,
-    //   );
-    //   _players[i] = newPlayer;
-    //   _unassignedPlayers.add(newPlayer);
-    // }
+    for (int i = 1; i <= 32; i++) {
+      int id = i;
+      String playerName = '플레이어 $i';
+      String role = _random.nextBool() ? "manager" : "user";
+      int playerRate = skillRates[_random.nextInt(skillRates.length)];
+      String gender = _random.nextBool() ? '남' : '여';
+      int played = 0;
+      int waited = 0;
+      int lated = 0;
+      Player newPlayer = Player(
+        id: id,
+        name: playerName,
+        role: role,
+        rate: playerRate,
+        gender: gender,
+        played: played,
+        waited: waited,
+        lated: lated,
+      );
+      _players[i] = newPlayer;
+      _unassignedPlayers.add(newPlayer);
+    }
     _loadInitialAssignedPlayersCount();
     _loadPlayersFromPrefs();
   }
@@ -129,7 +70,7 @@ class PlayersProvider with ChangeNotifier {
         Map<String, dynamic> playerMap = jsonDecode(playerJsonString as String);
         Player player = Player.fromJson(playerMap);
         _players[player.id] = player;
-        _unassignedPlayers.add(player); // Add to unassigned by default
+        _unassignedPlayers.add(player);
         if (player.id > maxIdFound) {
           maxIdFound = player.id;
         }
@@ -167,7 +108,7 @@ class PlayersProvider with ChangeNotifier {
       played: played,
       waited: waited,
       lated: lated,
-      gamesPlayedWith: {}, // Initialize with empty map
+      gamesPlayedWith: {},
     );
     _players[newPlayerId] = newPlayer;
     _unassignedPlayers.add(newPlayer);
@@ -186,7 +127,7 @@ class PlayersProvider with ChangeNotifier {
           }
         }
       }
-      _unassignedPlayers.remove(playerToRemove); // Equality uses ID
+      _unassignedPlayers.remove(playerToRemove);
       _players.remove(playerId);
       notifyListeners();
       _savePlayersToPrefs();
@@ -194,7 +135,7 @@ class PlayersProvider with ChangeNotifier {
   }
 
   void updatePlayer({
-    required int playerId, // Changed to int playerId
+    required int playerId,
     required String newName,
     required int newRate,
     required String newGender,
@@ -402,13 +343,17 @@ class PlayersProvider with ChangeNotifier {
       if (_unassignedPlayers.isEmpty) break;
 
       if (_assignedPlayers[sectionIndex][i] == null) {
-        Player? playerToAssign = _findBestPlayerForCourt(
-          sectionIndex,
+        Player? playerToAssign = _courtService.findBestPlayerForCourt(
+          unassignedPlayers: _unassignedPlayers,
+          currentPlayersOnCourt: _assignedPlayers[sectionIndex]
+              .where((p) => p != null)
+              .cast<Player>()
+              .toList(),
           skillWeight: skillWeight,
           genderWeight: genderWeight,
           waitedWeight: waitedWeight,
           playedWeight: playedWeight,
-          playedWithWeight: playedWithWeight, // Pass playedWithWeight
+          playedWithWeight: playedWithWeight,
         );
 
         if (playerToAssign != null) {
@@ -419,213 +364,6 @@ class PlayersProvider with ChangeNotifier {
     }
 
     notifyListeners();
-  }
-
-  Player? _findBestPlayerForCourt(
-    int sectionIndex, {
-    required double skillWeight,
-    required double genderWeight,
-    required double waitedWeight,
-    required double playedWeight,
-    required double playedWithWeight,
-  }) {
-    if (_unassignedPlayers.isEmpty) return null;
-
-    final currentPlayersOnCourt = _assignedPlayers[sectionIndex]
-        .where((p) => p != null)
-        .cast<Player>()
-        .toList();
-
-    final int unassignedManagersCount = _unassignedPlayers
-        .where((p) => p.role == "manager")
-        .length;
-    final bool isNotLastManager =
-        unassignedManagersCount == 1 &&
-        _unassignedPlayers.any((p) => p.role != "manager");
-
-    if (currentPlayersOnCourt.isEmpty) {
-      List<Player> candidatePlayers = _unassignedPlayers;
-      if (isNotLastManager) {
-        final nonManagers = _unassignedPlayers
-            .where((p) => p.role != "manager")
-            .toList();
-        if (nonManagers.isNotEmpty) {
-          candidatePlayers = nonManagers;
-        }
-      }
-      final sortedCandidates = List.of(candidatePlayers)
-        ..sort((a, b) {
-          int playedCompare = (a.played + a.lated).compareTo(
-            b.played + b.lated,
-          );
-          if (playedCompare != 0) return playedCompare;
-          return b.waited.compareTo(a.waited);
-        });
-
-      if (sortedCandidates.isEmpty) return null;
-
-      final topPlayer = sortedCandidates.first;
-      final topTierPlayers = sortedCandidates
-          .where(
-            (p) =>
-                (p.played + p.lated) == (topPlayer.played + topPlayer.lated) &&
-                p.waited == topPlayer.waited,
-          )
-          .toList();
-
-      final randomIndex = _random.nextInt(topTierPlayers.length);
-      return topTierPlayers[randomIndex];
-    }
-
-    // If court is not empty, sort all unassigned players by score
-    final sortedUnassignedPlayers = List.of(_unassignedPlayers)
-      ..sort((a, b) {
-        double scoreA = _calculatePlayerScoreForCourt(
-          a,
-          currentPlayersOnCourt,
-          skillWeight: skillWeight,
-          genderWeight: genderWeight,
-          waitedWeight: waitedWeight,
-          playedWeight: playedWeight,
-          playedWithWeight: playedWithWeight,
-        );
-        double scoreB = _calculatePlayerScoreForCourt(
-          b,
-          currentPlayersOnCourt,
-          skillWeight: skillWeight,
-          genderWeight: genderWeight,
-          waitedWeight: waitedWeight,
-          playedWeight: playedWeight,
-          playedWithWeight: playedWithWeight,
-        );
-        return scoreB.compareTo(scoreA);
-      });
-
-    if (sortedUnassignedPlayers.isEmpty) return null;
-    Player bestPlayer = sortedUnassignedPlayers.first;
-
-    if (isNotLastManager && bestPlayer.role == "manager") {
-      Player? bestNonManager = null;
-      for (final pInList in sortedUnassignedPlayers) {
-        if (pInList.role != "manager") {
-          bestNonManager = pInList;
-          break;
-        }
-      }
-      if (bestNonManager != null) {
-        return bestNonManager;
-      }
-    }
-    return bestPlayer;
-  }
-
-  double _calculatePlayerScoreForCourt(
-    Player player,
-    List<Player> currentPlayersOnCourt, {
-    required double skillWeight,
-    required double genderWeight,
-    required double waitedWeight,
-    required double playedWeight,
-    required double playedWithWeight,
-  }) {
-    // 실력 균등 분배 (2:2) 계산
-    double equalScore;
-
-    if (currentPlayersOnCourt.length == 1) {
-      equalScore = 1.0;
-    } else if (currentPlayersOnCourt.length == 2) {
-      Player player1 = currentPlayersOnCourt[0];
-      int rateDiff1 = (player.rate - player1.rate).abs();
-      Player player2 = currentPlayersOnCourt[1];
-      int rateDiff2 = (player.rate - player2.rate).abs();
-      equalScore = 2.0 - min(rateDiff1, rateDiff2) / 1000.0;
-    } else {
-      final double avgRate =
-          currentPlayersOnCourt.map((p) => p.rate).reduce((a, b) => a + b) /
-          3.0;
-      final Player playerWithMaxDiff = currentPlayersOnCourt.reduce((a, b) {
-        final diffA = (a.rate - avgRate).abs();
-        final diffB = (b.rate - avgRate).abs();
-        return diffA > diffB ? a : b;
-      });
-      final int finalRateDiff = (player.rate - playerWithMaxDiff.rate).abs();
-      equalScore = 2.0 - finalRateDiff / 1000.0;
-    }
-
-    // 실력 점수 계산
-    double avgRateOfCourt = currentPlayersOnCourt.isEmpty
-        ? player.rate.toDouble()
-        : currentPlayersOnCourt.map((p) => p.rate).reduce((a, b) => a + b) /
-              currentPlayersOnCourt.length;
-    double rateDiff = (player.rate - avgRateOfCourt).abs();
-    double skillScore = 2.0 - rateDiff / 1000.0;
-
-    // 성별 점수 계산
-    int menCount = currentPlayersOnCourt.where((p) => p.gender == '남').length;
-    int womenCount = currentPlayersOnCourt.where((p) => p.gender == '여').length;
-
-    if (player.gender == "여") {
-      womenCount++;
-    } else {
-      menCount++;
-    }
-    double mixScore = 0.25;
-    double singleGenderScore = 0.25;
-
-    if (menCount == 2 && womenCount == 2) {
-      mixScore = 2.0;
-    } else if (womenCount == 1 && menCount == 1) {
-      mixScore = 1.5;
-    } else if ((menCount == 2 && womenCount == 1) ||
-        (womenCount == 2 && menCount == 1)) {
-      mixScore = 1.5;
-    }
-    if (menCount == 4 || womenCount == 4) {
-      singleGenderScore = 2.0;
-    } else if ((womenCount == 0) || (menCount == 0)) {
-      singleGenderScore = 1.5;
-    }
-
-    double weightForMix = (2.0 - genderWeight);
-    double weightForSingle = genderWeight;
-
-    double genderScore =
-        (mixScore * weightForMix) + (singleGenderScore * weightForSingle);
-
-    // 순차적으로 배치 했다고 가정 할 때 (대기인원 / 4) 만큼은 반드시 기다려야 하므로 해당 waited 를 1.0 으로 기준
-    double waitedScore =
-        player.waited.toDouble() /
-        (_unassignedPlayers.isEmpty ? 1 : _unassignedPlayers.length) *
-        4;
-
-    // 플레이 횟수 점수 계산
-    final double avgPlayed = _unassignedPlayers.isEmpty
-        ? 0.0
-        : _unassignedPlayers.map((p) => p.played).reduce((a, b) => a + b) /
-              _unassignedPlayers.length;
-    double playedScore = avgPlayed - (player.played + player.lated);
-
-    // 함께 플레이한 횟수 점수 계산
-    double playedWithFactor = 0;
-    if (currentPlayersOnCourt.isNotEmpty) {
-      for (Player pInCourt in currentPlayersOnCourt) {
-        playedWithFactor += pow(
-          (player.gamesPlayedWith[pInCourt.id] ?? 0) * 0.5,
-          1.1,
-        );
-      }
-      playedWithFactor = playedWithFactor / currentPlayersOnCourt.length;
-      playedWithFactor = min(4.0, playedWithFactor);
-    }
-    double playedWithScore = 1.0 - playedWithFactor;
-
-    // 최종 점수 = 각 점수 * 가중치의 합
-    return equalScore +
-        (skillScore * skillWeight) +
-        (genderScore * genderWeight) +
-        (waitedScore * waitedWeight) +
-        (playedScore * playedWeight) +
-        (playedWithScore * playedWithWeight);
   }
 
   List<Player> get unassignedPlayers => List.unmodifiable(_unassignedPlayers);

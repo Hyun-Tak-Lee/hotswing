@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/models/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 
 class GamePlayedDialog extends StatelessWidget {
