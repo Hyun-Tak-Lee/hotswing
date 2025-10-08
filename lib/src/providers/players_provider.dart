@@ -36,6 +36,7 @@ class PlayersProvider with ChangeNotifier {
         played: played,
         waited: waited,
         lated: lated,
+        groups: [],
       );
       _players[i] = newPlayer;
       _unassignedPlayers.add(newPlayer);
@@ -69,6 +70,7 @@ class PlayersProvider with ChangeNotifier {
       playersJsonMap.forEach((idString, playerJsonString) {
         Map<String, dynamic> playerMap = jsonDecode(playerJsonString as String);
         Player player = Player.fromJson(playerMap);
+        player.groups ??= []; // version 마이그레이션 용
         _players[player.id] = player;
         _unassignedPlayers.add(player);
         if (player.id > maxIdFound) {
@@ -94,6 +96,7 @@ class PlayersProvider with ChangeNotifier {
     required int played,
     required int waited,
     required int lated,
+    required List<int> groups,
   }) {
     if (name.length > 7) return;
     if (_players.values.any((player) => player.name == name)) return;
@@ -109,6 +112,7 @@ class PlayersProvider with ChangeNotifier {
       waited: waited,
       lated: lated,
       gamesPlayedWith: {},
+      groups: groups,
     );
     _players[newPlayerId] = newPlayer;
     _unassignedPlayers.add(newPlayer);
@@ -140,6 +144,9 @@ class PlayersProvider with ChangeNotifier {
     required int newRate,
     required String newGender,
     required String newRole,
+    required int newPlayed,
+    required int newWaited,
+    required List<int> newGroups,
   }) {
     if (newName.length > 7) return;
     if (!_players.containsKey(playerId)) return;
@@ -148,6 +155,9 @@ class PlayersProvider with ChangeNotifier {
     playerToUpdate.rate = newRate;
     playerToUpdate.gender = newGender;
     playerToUpdate.role = newRole;
+    playerToUpdate.played = newWaited;
+    playerToUpdate.waited = newPlayed;
+    playerToUpdate.groups = newGroups;
 
     notifyListeners();
     _savePlayersToPrefs();
@@ -208,6 +218,14 @@ class PlayersProvider with ChangeNotifier {
       }
     }
     notifyListeners();
+  }
+
+  void incrementWaitedTimeForAllUnassignedPlayers() {
+    for (var player in _unassignedPlayers) {
+      player.waited++;
+    }
+    notifyListeners();
+    _savePlayersToPrefs();
   }
 
   void exchangePlayersInCourts({
@@ -287,14 +305,6 @@ class PlayersProvider with ChangeNotifier {
       }
       notifyListeners();
     }
-  }
-
-  void incrementWaitedTimeForAllUnassignedPlayers() {
-    for (var player in _unassignedPlayers) {
-      player.waited++;
-    }
-    notifyListeners();
-    _savePlayersToPrefs();
   }
 
   void movePlayersFromCourtToUnassigned(int sectionIndex, [int played = 1]) {

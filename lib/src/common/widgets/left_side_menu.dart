@@ -47,6 +47,9 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           newRate: result['rate'] as int,
           newGender: result['gender'] as String,
           newRole: result['role'] as String,
+          newPlayed: result['played'] as int,
+          newWaited: result['waited'] as int,
+          newGroups: result['groups'] as List<int>
         );
       } else {
         int latedValue = 0;
@@ -63,6 +66,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           played: 0,
           waited: 0,
           lated: latedValue,
+          groups: result['groups'] as List<int>
         );
       }
     }

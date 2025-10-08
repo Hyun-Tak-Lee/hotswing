@@ -8,6 +8,7 @@ class Player {
   int waited;
   int lated;
   Map<int, int> gamesPlayedWith;
+  List<int> groups;
 
   Player({
     required this.id,
@@ -19,8 +20,10 @@ class Player {
     required this.waited,
     required this.lated,
     Map<int, int>? gamesPlayedWith,
+    List<int>? groups,
   }) : this.name = name.length > 7 ? name.substring(0, 7) : name,
-        this.gamesPlayedWith = gamesPlayedWith ?? {};
+       this.gamesPlayedWith = gamesPlayedWith ?? {},
+       this.groups = groups ?? [];
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -32,8 +35,9 @@ class Player {
     'waited': waited,
     'lated': lated,
     'gamesPlayedWith': gamesPlayedWith.map(
-          (key, value) => MapEntry(key.toString(), value),
+      (key, value) => MapEntry(key.toString(), value),
     ),
+    'groups': groups,
   };
 
   factory Player.fromJson(Map<String, dynamic> json) => Player(
@@ -46,16 +50,18 @@ class Player {
     waited: json['waited'] as int? ?? 0,
     lated: json['lated'] as int? ?? 0,
     gamesPlayedWith:
-    (json['gamesPlayedWith'] as Map<String, dynamic>?)?.map(
+        (json['gamesPlayedWith'] as Map<String, dynamic>?)?.map(
           (key, value) => MapEntry(int.parse(key), value as int),
-    ) ??
+        ) ??
         {},
+    groups:
+        (json['groups'] as List<dynamic>?)?.map((e) => e as int).toList() ?? [],
   );
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is Player && runtimeType == other.runtimeType && id == other.id;
+      other is Player && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;

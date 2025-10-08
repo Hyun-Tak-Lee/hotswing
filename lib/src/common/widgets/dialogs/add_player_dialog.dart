@@ -24,6 +24,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   String? _selectedSkillLevel;
   int? _playCount;
   int? _waitCount;
+  List<int>? _groups;
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _isManager = widget.player!.role == "manager" ? true : false;
       _playCount = widget.player!.played;
       _waitCount = widget.player!.waited;
+      _groups = widget.player!.groups;
     }
   }
 
@@ -274,8 +276,9 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                 'role': isGuestMode
                     ? 'guest'
                     : (_isManager ? "manager" : "user"),
-                'playCount': _playCount,
-                'waitCount': _waitCount,
+                'played': _playCount,
+                'waited': _waitCount,
+                'groups': _groups,
               });
             }
           },
