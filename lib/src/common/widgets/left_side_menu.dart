@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hotswing/src/models/player.dart';
+import 'package:hotswing/src/models/players/player.dart';
 import 'package:provider/provider.dart';
+import 'package:realm/realm.dart';
 import 'dart:math';
 
 import '../../providers/players_provider.dart';
@@ -49,7 +50,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           newRole: result['role'] as String,
           newPlayed: result['played'] as int,
           newWaited: result['waited'] as int,
-          newGroups: result['groups'] as List<int>
+          newGroups: result['groups'] as RealmList<int>
         );
       } else {
         int latedValue = 0;

@@ -1,10 +1,10 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:hotswing/src/common/utils/skill_utils.dart';
-import 'package:hotswing/src/models/player.dart';
+import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/repository/realms/options.dart';
 import 'package:hotswing/src/services/court_assign_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:realm/realm.dart';
 
 class PlayersProvider with ChangeNotifier {
   final CourtAssignService _courtService = CourtAssignService();
@@ -28,11 +28,11 @@ class PlayersProvider with ChangeNotifier {
       int waited = 0;
       int lated = 0;
       Player newPlayer = Player(
-        id: id,
-        name: playerName,
-        role: role,
-        rate: playerRate,
-        gender: gender,
+        id,
+        playerName,
+        role,
+        playerRate,
+        gender,
         played: played,
         waited: waited,
         lated: lated,
@@ -40,46 +40,15 @@ class PlayersProvider with ChangeNotifier {
       );
       _players[i] = newPlayer;
       _unassignedPlayers.add(newPlayer);
+      _loadInitialAssignedPlayersCount();
     }
-    _loadInitialAssignedPlayersCount();
-    _loadPlayersFromPrefs();
   }
 
   Future<void> _loadInitialAssignedPlayersCount() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final int initialCount = prefs.getInt("numberOfSections") ?? 3;
+    OptionsRepository options_repository = OptionsRepository();
+
+    final int initialCount = options_repository.getOptions().numberOfSections;
     updateAssignedPlayersListCount(initialCount);
-  }
-
-  Future<void> _savePlayersToPrefs() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    Map<String, String> playersJsonMap = _players.map((playerId, player) {
-      return MapEntry(playerId.toString(), jsonEncode(player.toJson()));
-    });
-    String encodedPlayers = jsonEncode(playersJsonMap);
-    await prefs.setString('players_list', encodedPlayers);
-  }
-
-  Future<void> _loadPlayersFromPrefs() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? encodedPlayers = prefs.getString('players_list');
-    int maxIdFound = -1;
-
-    if (encodedPlayers != null) {
-      Map<String, dynamic> playersJsonMap = jsonDecode(encodedPlayers);
-      playersJsonMap.forEach((idString, playerJsonString) {
-        Map<String, dynamic> playerMap = jsonDecode(playerJsonString as String);
-        Player player = Player.fromJson(playerMap);
-        player.groups ??= []; // version 마이그레이션 용
-        _players[player.id] = player;
-        _unassignedPlayers.add(player);
-        if (player.id > maxIdFound) {
-          maxIdFound = player.id;
-        }
-      });
-    }
-    _nextPlayerId = maxIdFound + 1;
-    notifyListeners();
   }
 
   Map<int, Player> get players => Map.unmodifiable(_players);
@@ -103,11 +72,11 @@ class PlayersProvider with ChangeNotifier {
 
     int newPlayerId = _nextPlayerId++;
     Player newPlayer = Player(
-      id: newPlayerId,
-      name: name,
-      role: role,
-      rate: rate,
-      gender: gender,
+      newPlayerId,
+      name,
+      role,
+      rate,
+      gender,
       played: played,
       waited: waited,
       lated: lated,
@@ -117,7 +86,6 @@ class PlayersProvider with ChangeNotifier {
     _players[newPlayerId] = newPlayer;
     _unassignedPlayers.add(newPlayer);
     notifyListeners();
-    _savePlayersToPrefs();
   }
 
   void removePlayer(int playerId) {
@@ -134,7 +102,6 @@ class PlayersProvider with ChangeNotifier {
       _unassignedPlayers.remove(playerToRemove);
       _players.remove(playerId);
       notifyListeners();
-      _savePlayersToPrefs();
     }
   }
 
@@ -146,7 +113,7 @@ class PlayersProvider with ChangeNotifier {
     required String newRole,
     required int newPlayed,
     required int newWaited,
-    required List<int> newGroups,
+    required RealmList<int> newGroups,
   }) {
     if (newName.length > 7) return;
     if (!_players.containsKey(playerId)) return;
@@ -160,7 +127,6 @@ class PlayersProvider with ChangeNotifier {
     playerToUpdate.groups = newGroups;
 
     notifyListeners();
-    _savePlayersToPrefs();
   }
 
   void resetPlayerStats() {
@@ -168,10 +134,9 @@ class PlayersProvider with ChangeNotifier {
       player.played = 0;
       player.waited = 0;
       player.lated = 0;
-      player.gamesPlayedWith = {};
+      player.gamesPlayedWith.clear();
     }
     notifyListeners();
-    _savePlayersToPrefs();
   }
 
   void clearPlayers() {
@@ -182,7 +147,6 @@ class PlayersProvider with ChangeNotifier {
     }
     _nextPlayerId = 0;
     notifyListeners();
-    _savePlayersToPrefs();
   }
 
   List<Player> getPlayers() {
@@ -225,7 +189,6 @@ class PlayersProvider with ChangeNotifier {
       player.waited++;
     }
     notifyListeners();
-    _savePlayersToPrefs();
   }
 
   void exchangePlayersInCourts({
@@ -323,7 +286,7 @@ class PlayersProvider with ChangeNotifier {
           for (Player? otherPlayerInCourt in playersInCourt) {
             if (otherPlayerInCourt != null &&
                 otherPlayerInCourt.id != player.id) {
-              player.gamesPlayedWith[otherPlayerInCourt.id] =
+              player.gamesPlayedWith[otherPlayerInCourt.id.toString()] =
                   (player.gamesPlayedWith[otherPlayerInCourt.id] ?? 0) + 1;
             }
           }
@@ -336,7 +299,6 @@ class PlayersProvider with ChangeNotifier {
       }
     }
     notifyListeners();
-    _savePlayersToPrefs();
   }
 
   void assignPlayersToCourt(

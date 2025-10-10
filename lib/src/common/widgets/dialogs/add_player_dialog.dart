@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Required for TextInputFormatter
+import 'package:flutter/services.dart';
 import 'package:hotswing/src/common/utils/skill_utils.dart';
-import 'package:hotswing/src/models/player.dart';
-import 'package:hotswing/src/providers/players_provider.dart';
+import 'package:hotswing/src/models/players/player.dart';
 
 class AddPlayerDialog extends StatefulWidget {
   final Player? player;

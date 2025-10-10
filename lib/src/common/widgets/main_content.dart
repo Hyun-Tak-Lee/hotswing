@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
-import 'package:hotswing/src/models/player.dart';
+import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:provider/provider.dart';

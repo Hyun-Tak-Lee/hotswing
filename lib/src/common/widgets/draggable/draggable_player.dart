@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hotswing/src/models/player.dart';
+import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/common/utils/skill_utils.dart';
 import 'package:hotswing/src/common/widgets/dialogs/game_played_dialog.dart';
@@ -125,7 +125,7 @@ class DraggablePlayerItem extends StatelessWidget {
     Widget interactivePlayerContent = GestureDetector(
       onTap: () {
         final newGamesPlayedWithMap = player.gamesPlayedWith.map((key, value) {
-          final newKey = playersProvider.getPlayerById(key)?.name ?? "";
+          final newKey = playersProvider.getPlayerById(int.parse(key))?.name ?? "";
           return MapEntry(newKey, value);
         });
 
