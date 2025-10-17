@@ -31,7 +31,7 @@ class OptionsProvider with ChangeNotifier {
   }
 
   void _loadOptions() {
-    OptionsRepository options_repository = OptionsRepository();
+    OptionsRepository options_repository = OptionsRepository.instance;
     _options = options_repository.getOptions();
 
     notifyListeners();

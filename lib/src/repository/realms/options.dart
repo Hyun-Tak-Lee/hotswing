@@ -5,22 +5,34 @@ class OptionsRepository {
   late Realm _realm;
   late Options _options;
 
-  Options getOptions() {
+  OptionsRepository._() {
     final config = Configuration.local([Options.schema]);
     _realm = Realm(config);
+  }
 
+  static final OptionsRepository instance = OptionsRepository._();
+
+  Options getOptions() {
     final allOptions = _realm.all<Options>();
     if (allOptions.isEmpty) {
       _realm.write(() {
-        _options = _realm.add(Options(
-          0, // id
-          3, // numberOfSections
-          1.0, // skillWeight
-          1.0, // genderWeight
-          1.0, // waitedWeight
-          1.0, // playedWeight
-          1.0, // playedWithWeight
-        ));
+        _options = _realm.add(
+          Options(
+            0,
+            // id
+            3,
+            // numberOfSections
+            1.0,
+            // skillWeight
+            1.0,
+            // genderWeight
+            1.0,
+            // waitedWeight
+            1.0,
+            // playedWeight
+            1.0, // playedWithWeight
+          ),
+        );
       });
     } else {
       _options = allOptions.first;
@@ -31,6 +43,11 @@ class OptionsRepository {
       }
     }
     return _options;
+  }
 
+  void close() {
+    if (!_realm.isClosed) {
+      _realm.close();
+    }
   }
 }

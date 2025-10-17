@@ -45,7 +45,7 @@ class PlayersProvider with ChangeNotifier {
   }
 
   Future<void> _loadInitialAssignedPlayersCount() async {
-    OptionsRepository options_repository = OptionsRepository();
+    OptionsRepository options_repository = OptionsRepository.instance;
 
     final int initialCount = options_repository.getOptions().numberOfSections;
     updateAssignedPlayersListCount(initialCount);
