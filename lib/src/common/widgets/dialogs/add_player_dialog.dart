@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hotswing/src/common/forms/multi_select_form.dart';
 import 'package:hotswing/src/common/utils/skill_utils.dart';
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/providers/players_provider.dart';
 
 class AddPlayerDialog extends StatefulWidget {
+  final PlayersProvider? playersProvider;
   final Player? player;
   final bool isGuest;
 
-  const AddPlayerDialog({super.key, this.player, this.isGuest = false});
+  const AddPlayerDialog({
+    super.key,
+    this.playersProvider,
+    this.player,
+    this.isGuest = false,
+  });
 
   @override
   State<AddPlayerDialog> createState() => _AddPlayerDialogState();
@@ -23,7 +31,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   String? _selectedSkillLevel;
   int? _playCount;
   int? _waitCount;
-  List<int>? _groups;
+  List<int> _groups = [];
 
   @override
   void initState() {
@@ -36,7 +44,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _isManager = widget.player!.role == "manager" ? true : false;
       _playCount = widget.player!.played;
       _waitCount = widget.player!.waited;
-      _groups = widget.player!.groups;
+      _groups = widget.player!.groups.toList();
     }
   }
 
@@ -58,9 +66,18 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         : screenWidth * 0.5;
     final double buttonFontSize = isMobileSize ? 16 : 28;
 
+    final List<Player> allPlayers =
+        widget.playersProvider?.players.values.toList() ?? [];
+    final List<int> allPlayerIds = allPlayers
+        .map((player) => player.id)
+        .toList();
+    final List<String> allPlayerNames = allPlayers
+        .map((player) => player.name)
+        .toList();
+
     return AlertDialog(
       title: Text(
-        isEditMode ? '플레이어 수정' : '플레이어 추가',
+        '${isGuestMode ? '게스트' : '회원'} ${isEditMode ? '수정' : '추가'}',
         style: TextStyle(fontSize: titleFontSize),
       ),
       content: SingleChildScrollView(
@@ -186,6 +203,23 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       _selectedGender = value;
                     },
                   ),
+                  SizedBox(height: fieldSpacing),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: 60.0,
+                    ),
+                    child: MultiSelectForm(
+                      title: '같이 플레이할 플레이어',
+                      options: allPlayerNames,
+                      optionsId: allPlayerIds,
+                      initialValue: _groups,
+                      onSelectionChanged: (selectedOptions) {
+                        setState(() {
+                          _groups = selectedOptions;
+                        });
+                      },
+                    ),
+                  ),
                   if (isEditMode) ...[
                     SizedBox(height: fieldSpacing),
                     Row(
@@ -268,6 +302,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               _formKey.currentState!.save();
+              // TODO: _selectedPlayers를 사용하여 그룹 정보 업데이트 필요
               Navigator.of(context).pop({
                 'name': _name,
                 'rate': _rate,

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:provider/provider.dart';
@@ -32,43 +33,52 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AddPlayerDialog(player: existingPlayer, isGuest: isGuest);
+        return AddPlayerDialog(
+          playersProvider: playersProvider,
+          player: existingPlayer,
+          isGuest: isGuest,
+        );
       },
     );
-
-    if (result != null &&
-        result['name'] != null &&
-        result['rate'] != null &&
-        result['gender'] != null &&
-        result['role'] != null) {
-      if (existingPlayer != null) {
-        playersProvider.updatePlayer(
-          playerId: existingPlayer.id,
-          newName: result['name'] as String,
-          newRate: result['rate'] as int,
-          newGender: result['gender'] as String,
-          newRole: result['role'] as String,
-          newPlayed: result['played'] as int,
-          newWaited: result['waited'] as int,
-          newGroups: result['groups'] as RealmList<int>
-        );
-      } else {
-        int latedValue = 0;
-        if (playersProvider.unassignedPlayers.isNotEmpty) {
-          latedValue = playersProvider.unassignedPlayers
-              .map((p) => p.played)
-              .reduce(max);
+    try {
+      if (result != null &&
+          result['name'] != null &&
+          result['rate'] != null &&
+          result['gender'] != null &&
+          result['role'] != null) {
+        if (existingPlayer != null) {
+          playersProvider.updatePlayer(
+            playerId: existingPlayer.id,
+            newName: result['name'] as String,
+            newRate: result['rate'] as int,
+            newGender: result['gender'] as String,
+            newRole: result['role'] as String,
+            newPlayed: result['played'] as int,
+            newWaited: result['waited'] as int,
+            newGroups: result['groups'] as RealmList<int>,
+          );
+        } else {
+          int latedValue = 0;
+          if (playersProvider.unassignedPlayers.isNotEmpty) {
+            latedValue = playersProvider.unassignedPlayers
+                .map((p) => p.played)
+                .reduce(max);
+          }
+          playersProvider.addPlayer(
+            name: result['name'] as String,
+            rate: result['rate'] as int,
+            gender: result['gender'] as String,
+            role: result['role'] as String,
+            played: 0,
+            waited: 0,
+            lated: latedValue,
+            groups: result['groups'] as List<int>,
+          );
         }
-        playersProvider.addPlayer(
-          name: result['name'] as String,
-          rate: result['rate'] as int,
-          gender: result['gender'] as String,
-          role: result['role'] as String,
-          played: 0,
-          waited: 0,
-          lated: latedValue,
-          groups: result['groups'] as List<int>
-        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
       }
     }
   }
@@ -159,8 +169,8 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                   tileColor: player.role == "manager"
                       ? const Color(0x55FFF700)
                       : player.role == "user"
-                          ? const Color(0x3300BFFF)
-                          : null,
+                      ? const Color(0x3300BFFF)
+                      : null,
                   title: Text(
                     '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]}',
                     style: TextStyle(fontSize: iconAndFontSize),

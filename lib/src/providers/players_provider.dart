@@ -40,8 +40,9 @@ class PlayersProvider with ChangeNotifier {
       );
       _players[i] = newPlayer;
       _unassignedPlayers.add(newPlayer);
-      _loadInitialAssignedPlayersCount();
     }
+
+    _loadInitialAssignedPlayersCount();
   }
 
   Future<void> _loadInitialAssignedPlayersCount() async {
