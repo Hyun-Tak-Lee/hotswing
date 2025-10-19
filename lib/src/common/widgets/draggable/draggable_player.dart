@@ -97,7 +97,7 @@ class DraggablePlayerItem extends StatelessWidget {
               ),
               SizedBox(height: 4.0),
               Text(
-                '플레이: ${player.played}',
+                '플레이: ${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}',
                 style: TextStyle(
                   fontSize: detailFontSize,
                   color: onPrimaryContainer.withAlpha(204),
@@ -125,7 +125,8 @@ class DraggablePlayerItem extends StatelessWidget {
     Widget interactivePlayerContent = GestureDetector(
       onTap: () {
         final newGamesPlayedWithMap = player.gamesPlayedWith.map((key, value) {
-          final newKey = playersProvider.getPlayerById(int.parse(key))?.name ?? "";
+          final newKey =
+              playersProvider.getPlayerById(int.parse(key))?.name ?? "";
           return MapEntry(newKey, value);
         });
 
