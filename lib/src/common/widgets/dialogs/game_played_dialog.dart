@@ -30,6 +30,7 @@ class GamePlayedDialog extends StatelessWidget {
         ? screenHeight * 0.4
         : screenHeight * 0.4;
 
+    final sortedNotPlayedWithNames = List<String>.from(notPlayedWithNames)..sort();
     bool hasNotPlayedWith = notPlayedWithNames.isNotEmpty;
 
     return AlertDialog(
@@ -51,7 +52,7 @@ class GamePlayedDialog extends StatelessWidget {
                 return ListTile(
                   dense: true,
                   title: Text(
-                    '기록 없음: \n${notPlayedWithNames.join(', ')}',
+                    '기록 없음: \n${sortedNotPlayedWithNames.join(', ')}',
                     style: TextStyle(fontSize: contentFontSize),
                   ),
                 );

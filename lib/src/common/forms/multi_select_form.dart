@@ -68,7 +68,6 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
         );
       }
     }
-    print(_selectedOptions);
 
     return Wrap(spacing: 6.0, runSpacing: 6.0, children: selectedChips);
   }

@@ -55,7 +55,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
             newRole: result['role'] as String,
             newPlayed: result['played'] as int,
             newWaited: result['waited'] as int,
-            newGroups: result['groups'] as RealmList<int>,
+            newGroups: result['groups'] as List<int>,
           );
         } else {
           int latedValue = 0;
@@ -172,7 +172,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                       ? const Color(0x3300BFFF)
                       : null,
                   title: Text(
-                    '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]}',
+                    '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]} / ${player.groups}',
                     style: TextStyle(fontSize: iconAndFontSize),
                   ),
                   trailing: Row(

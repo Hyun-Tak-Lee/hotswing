@@ -4,10 +4,13 @@ import 'package:hotswing/src/common/utils/skill_utils.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/repository/realms/options.dart';
 import 'package:hotswing/src/services/court_assign_service.dart';
+import 'package:hotswing/src/services/player_service.dart';
 import 'package:realm/realm.dart';
 
 class PlayersProvider with ChangeNotifier {
   final CourtAssignService _courtService = CourtAssignService();
+  final PlayerService _playerService = PlayerService();
+
   final Random _random = Random();
 
   final Map<int, Player> _players = {};
@@ -58,6 +61,7 @@ class PlayersProvider with ChangeNotifier {
     return _players[id];
   }
 
+  //id 문제 해결 필요
   void addPlayer({
     required String name,
     required String role,
@@ -82,10 +86,14 @@ class PlayersProvider with ChangeNotifier {
       waited: waited,
       lated: lated,
       gamesPlayedWith: {},
-      groups: groups,
+      groups: RealmList(groups),
     );
     _players[newPlayerId] = newPlayer;
     _unassignedPlayers.add(newPlayer);
+
+    if (groups.isNotEmpty) {
+      _playerService.updateGroupPlayers(_players, groups, newPlayerId);
+    }
     notifyListeners();
   }
 
@@ -93,6 +101,9 @@ class PlayersProvider with ChangeNotifier {
     if (_players.containsKey(playerId)) {
       Player? playerToRemove = _players[playerId];
       if (playerToRemove == null) return;
+      if (playerToRemove.groups.isNotEmpty) {
+        _playerService.removeGroupPlayers(_players, playerToRemove.groups, playerId);
+      }
       for (int i = 0; i < _assignedPlayers.length; i++) {
         for (int j = 0; j < _assignedPlayers[i].length; j++) {
           if (_assignedPlayers[i][j] == playerToRemove) {
@@ -114,7 +125,7 @@ class PlayersProvider with ChangeNotifier {
     required String newRole,
     required int newPlayed,
     required int newWaited,
-    required RealmList<int> newGroups,
+    required List<int> newGroups,
   }) {
     if (newName.length > 7) return;
     if (!_players.containsKey(playerId)) return;
@@ -123,9 +134,22 @@ class PlayersProvider with ChangeNotifier {
     playerToUpdate.rate = newRate;
     playerToUpdate.gender = newGender;
     playerToUpdate.role = newRole;
-    playerToUpdate.played = newWaited;
-    playerToUpdate.waited = newPlayed;
-    playerToUpdate.groups = newGroups;
+    playerToUpdate.played = newPlayed;
+    playerToUpdate.waited = newWaited;
+
+    if (playerToUpdate.groups.isNotEmpty) {
+      _playerService.removeGroupPlayers(
+        _players,
+        playerToUpdate.groups,
+        playerId,
+      );
+    }
+    playerToUpdate.groups.clear();
+    playerToUpdate.groups.addAll(newGroups);
+
+    if (newGroups.isNotEmpty) {
+      _playerService.updateGroupPlayers(_players, newGroups, playerId);
+    }
 
     notifyListeners();
   }
