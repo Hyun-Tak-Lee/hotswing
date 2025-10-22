@@ -23,6 +23,7 @@ class AddPlayerDialog extends StatefulWidget {
 
 class _AddPlayerDialogState extends State<AddPlayerDialog> {
   final _formKey = GlobalKey<FormState>();
+  int? _id;
   String? _name;
   int? _rate;
   String? _selectedGender;
@@ -37,6 +38,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   void initState() {
     super.initState();
     if (widget.player != null) {
+      _id = widget.player!.id;
       _name = widget.player!.name;
       _rate = widget.player!.rate;
       _selectedSkillLevel = rateToSkillLevel[widget.player!.rate];
@@ -74,6 +76,11 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     final List<String> allPlayerNames = allPlayers
         .map((player) => player.name)
         .toList();
+    final List<int> allGroupedIds = allPlayers
+        .where((player) => player.groups.isNotEmpty)
+        .map((player) => player.id)
+        .toList();
+
 
     return AlertDialog(
       title: Text(
@@ -209,10 +216,12 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       minHeight: 60.0,
                     ),
                     child: MultiSelectForm(
-                      title: '같이 플레이할 플레이어',
+                      title: '그룹 플레이어',
                       options: allPlayerNames,
                       optionsId: allPlayerIds,
+                      groupsOptionId: allGroupedIds,
                       initialValue: _groups,
+                      currentId: _id,
                       onSelectionChanged: (selectedOptions) {
                         setState(() {
                           _groups = selectedOptions;

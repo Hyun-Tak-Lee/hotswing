@@ -1,6 +1,9 @@
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/repository/realms/players.dart';
 
 class PlayerService {
+  PlayerRepository _playerRepository = PlayerRepository.instance;
+
   void updateGroupPlayers(
     Map<int, Player> player,
     List<int> groups,

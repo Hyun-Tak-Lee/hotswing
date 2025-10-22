@@ -30,19 +30,16 @@ class PlayersProvider with ChangeNotifier {
       int played = 0;
       int waited = 0;
       int lated = 0;
-      Player newPlayer = Player(
-        id,
-        playerName,
-        role,
-        playerRate,
-        gender,
+      addPlayer(
+        name: playerName,
+        role: role,
+        rate: playerRate,
+        gender: gender,
         played: played,
         waited: waited,
         lated: lated,
         groups: [],
       );
-      _players[i] = newPlayer;
-      _unassignedPlayers.add(newPlayer);
     }
 
     _loadInitialAssignedPlayersCount();
@@ -102,7 +99,11 @@ class PlayersProvider with ChangeNotifier {
       Player? playerToRemove = _players[playerId];
       if (playerToRemove == null) return;
       if (playerToRemove.groups.isNotEmpty) {
-        _playerService.removeGroupPlayers(_players, playerToRemove.groups, playerId);
+        _playerService.removeGroupPlayers(
+          _players,
+          playerToRemove.groups,
+          playerId,
+        );
       }
       for (int i = 0; i < _assignedPlayers.length; i++) {
         for (int j = 0; j < _assignedPlayers[i].length; j++) {
