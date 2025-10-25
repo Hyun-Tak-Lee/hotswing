@@ -103,7 +103,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
   @override
   Widget build(BuildContext context) {
     final playersProvider = Provider.of<PlayersProvider>(context);
-    final players = playersProvider.getPlayers();
+    final players = playersProvider.getPlayers(option: 1);
     final iconAndFontSize = widget.isMobileSize ? 24.0 : 48.0;
 
     return Drawer(
@@ -172,7 +172,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                       ? const Color(0x3300BFFF)
                       : null,
                   title: Text(
-                    '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]} / ${player.groups}',
+                    '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]} / ${player.groups.map((id) => playersProvider.players[id]?.name).toList()}',
                     style: TextStyle(fontSize: iconAndFontSize),
                   ),
                   trailing: Row(

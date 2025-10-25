@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/skill_utils.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/repository/realms/options.dart';
@@ -52,7 +53,7 @@ class PlayersProvider with ChangeNotifier {
 
   Map<ObjectId, Player> get players => Map.unmodifiable(_players);
 
-  Player? getPlayerById(int id) {
+  Player? getPlayerById(ObjectId id) {
     return _players[id];
   }
 
@@ -112,6 +113,7 @@ class PlayersProvider with ChangeNotifier {
       }
       _unassignedPlayers.remove(playerToRemove);
       _players.remove(playerId);
+      _playerService.deletePlayer(playerId);
       notifyListeners();
     }
   }
@@ -129,13 +131,19 @@ class PlayersProvider with ChangeNotifier {
     if (newName.length > 7) return;
     if (!_players.containsKey(playerId)) return;
     Player playerToUpdate = _players[playerId]!;
-    playerToUpdate.name = newName;
-    playerToUpdate.rate = newRate;
-    playerToUpdate.gender = newGender;
-    playerToUpdate.role = newRole;
-    playerToUpdate.played = newPlayed;
-    playerToUpdate.waited = newWaited;
+    _playerService.updatePlayer(
+      playerToUpdate,
+      newName,
+      newRole,
+      newRate,
+      newGender,
+      newPlayed,
+      newWaited,
+      playerToUpdate.lated,
+      newGroups,
+    );
 
+    //기존 그룹 플레이어들의 그룹 제거
     if (playerToUpdate.groups.isNotEmpty) {
       _playerService.removeGroupPlayers(
         _players,
@@ -143,9 +151,7 @@ class PlayersProvider with ChangeNotifier {
         playerId,
       );
     }
-    playerToUpdate.groups.clear();
-    playerToUpdate.groups.addAll(newGroups);
-
+    // 자신 이외의 플레이어들도 그룹 생성
     if (newGroups.isNotEmpty) {
       _playerService.updateGroupPlayers(_players, newGroups, playerId);
     }
@@ -172,15 +178,29 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<Player> getPlayers() {
+  List<Player> getPlayers({int option = 0}) {
     var playerList = _players.values.toList();
-    playerList.sort((a, b) {
-      int playedCompare = (a.played + a.lated).compareTo(b.played + b.lated);
-      if (playedCompare != 0) {
-        return playedCompare;
-      }
-      return b.waited.compareTo(a.waited);
-    });
+    switch (option) {
+      case 0:
+        playerList.sort((a, b) {
+          int playedCompare = (a.played + a.lated).compareTo(
+            b.played + b.lated,
+          );
+          if (playedCompare != 0) {
+            return playedCompare;
+          }
+          return b.waited.compareTo(a.waited);
+        });
+        break;
+      case 1:
+        playerList.sort((a, b) {
+          return a.name.compareTo(b.name);
+        });
+        break;
+      default:
+        break;
+    }
+
     return playerList;
   }
 
@@ -209,7 +229,7 @@ class PlayersProvider with ChangeNotifier {
 
   void incrementWaitedTimeForAllUnassignedPlayers() {
     for (var player in _unassignedPlayers) {
-      player.waited++;
+      _playerService.incrementWaited(player);
     }
     notifyListeners();
   }
@@ -302,18 +322,8 @@ class PlayersProvider with ChangeNotifier {
     for (int i = 0; i < playersInCourt.length; i++) {
       Player? player = playersInCourt[i];
       if (player != null) {
-        player.waited = played != 0 ? 0 : player.waited;
-        player.played += played;
-
-        if (played == 1) {
-          for (Player? otherPlayerInCourt in playersInCourt) {
-            if (otherPlayerInCourt != null &&
-                otherPlayerInCourt.id != player.id) {
-              player.gamesPlayedWith[otherPlayerInCourt.id.toString()] =
-                  (player.gamesPlayedWith[otherPlayerInCourt.id] ?? 0) + 1;
-            }
-          }
-        }
+        _playerService.playedFinish(player);
+        _playerService.addGamesPlayedWith(player, playersInCourt, played);
 
         if (!_unassignedPlayers.contains(player)) {
           _unassignedPlayers.add(player);
@@ -324,6 +334,7 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // 자동 매칭
   void assignPlayersToCourt(
     int sectionIndex, {
     required double skillWeight,

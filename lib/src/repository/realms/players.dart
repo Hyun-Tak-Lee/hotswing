@@ -84,7 +84,31 @@ class PlayerRepository {
     }
   }
 
-  void deletePlayer(int id) {
+  void updateGamesPlayedWith({
+    required Player currentPlayer,
+    required List<Player?> playersInCourt,
+    required int games,
+  }) {
+    try {
+      _realm.write(() {
+        for (Player? otherPlayerInCourt in playersInCourt) {
+          if (otherPlayerInCourt != null &&
+              otherPlayerInCourt.id != currentPlayer.id) {
+            final otherPlayerId = otherPlayerInCourt.id.toString();
+            final currentGames =
+                currentPlayer.gamesPlayedWith[otherPlayerId] ?? 0;
+            currentPlayer.gamesPlayedWith[otherPlayerId] = currentGames + games;
+          }
+        }
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+  }
+
+  void deletePlayer(ObjectId id) {
     try {
       _realm.write(() {
         final player = _realm.find<Player>(id);

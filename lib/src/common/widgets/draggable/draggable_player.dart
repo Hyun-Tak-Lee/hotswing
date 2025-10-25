@@ -4,6 +4,7 @@ import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/common/utils/skill_utils.dart';
 import 'package:hotswing/src/common/widgets/dialogs/game_played_dialog.dart';
 import 'package:provider/provider.dart';
+import 'package:realm/realm.dart';
 
 // 드래그되는 플레이어의 데이터와 원래 소속 섹션 정보를 전달하기 위한 클래스
 class PlayerDragData {
@@ -124,17 +125,19 @@ class DraggablePlayerItem extends StatelessWidget {
     // 탭 기능을 추가하기 위해 GestureDetector로 감싼 위젯
     Widget interactivePlayerContent = GestureDetector(
       onTap: () {
-        final newGamesPlayedWithMap = player.gamesPlayedWith.map((key, value) {
-          final newKey =
-              playersProvider.getPlayerById(int.parse(key))?.name ?? "";
-          return MapEntry(newKey, value);
-        });
+        final Map<String, int> newGamesPlayedWithMap = player.gamesPlayedWith
+            .map((key, value) {
+              final newKey =
+                  playersProvider.getPlayerById(ObjectId.fromHexString(key))?.name ?? "";
+              return MapEntry(newKey, value);
+            });
 
-        final allPlayerNames = playersProvider.players.values
+        final List<String> allPlayerNames = playersProvider.players.values
             .map((p) => p.name)
             .toList();
-        final playedWithPlayerNames = newGamesPlayedWithMap.keys.toSet();
-        final notPlayedWithNames = allPlayerNames
+        final Set<String> playedWithPlayerNames = newGamesPlayedWithMap.keys
+            .toSet();
+        final List<String> notPlayedWithNames = allPlayerNames
             .where(
               (name) =>
                   !playedWithPlayerNames.contains(name) && name != player.name,
