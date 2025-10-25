@@ -175,7 +175,11 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
     register(_toEJson, _fromEJson);
     return const SchemaObject(ObjectType.realmObject, Player, 'Player', [
       SchemaProperty('id', RealmPropertyType.objectid, primaryKey: true),
-      SchemaProperty('name', RealmPropertyType.string),
+      SchemaProperty(
+        'name',
+        RealmPropertyType.string,
+        indexType: RealmIndexType.regular,
+      ),
       SchemaProperty('role', RealmPropertyType.string),
       SchemaProperty('rate', RealmPropertyType.int),
       SchemaProperty('gender', RealmPropertyType.string),

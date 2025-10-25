@@ -6,6 +6,7 @@ part 'player.realm.dart';
 class _Player {
   @PrimaryKey()
   late ObjectId id;
+  @Indexed()
   late String name;
   late String role;
   late int rate;

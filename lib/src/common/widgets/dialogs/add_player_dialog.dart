@@ -7,13 +7,13 @@ import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:realm/realm.dart';
 
 class AddPlayerDialog extends StatefulWidget {
-  final PlayersProvider? playersProvider;
+  final PlayersProvider playersProvider;
   final Player? player;
   final bool isGuest;
 
   const AddPlayerDialog({
     super.key,
-    this.playersProvider,
+    required this.playersProvider,
     this.player,
     this.isGuest = false,
   });
@@ -34,6 +34,8 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   int? _playCount;
   int? _waitCount;
   List<ObjectId> _groups = [];
+  Player? _player;
+  bool isLoaded = false;
 
   @override
   void initState() {
@@ -49,6 +51,32 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _waitCount = widget.player!.waited;
       _groups = widget.player!.groups;
     }
+  }
+
+  Iterable<Player> _findPlayersByName(TextEditingValue textEditingValue) {
+    setState(() {
+      isLoaded = false;
+    });
+    if (textEditingValue.text.isEmpty) {
+      return const Iterable<Player>.empty();
+    }
+    List<Player> searchPlayers = widget.playersProvider.findPlayersByPrefix(
+      textEditingValue.text,
+      5,
+    );
+
+    return searchPlayers;
+  }
+
+  void _loadPlayerAllForms(Player player) {
+    setState(() {
+      isLoaded = true;
+      _player = player;
+      _name = player.name;
+      _selectedSkillLevel = rateToSkillLevel[player.rate];
+      _selectedGender = player.gender;
+      _isManager = player.role == "manager" ? true : false;
+    });
   }
 
   @override
@@ -82,7 +110,6 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         .map((player) => player.id)
         .toList();
 
-
     return AlertDialog(
       title: Text(
         '${isGuestMode ? '게스트' : '회원'} ${isEditMode ? '수정' : '추가'}',
@@ -103,24 +130,49 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     children: [
                       Flexible(
                         flex: isMobileSize ? 1 : 2,
-                        child: TextFormField(
-                          initialValue: _name,
-                          decoration: InputDecoration(
-                            labelText: '이름',
-                            labelStyle: TextStyle(fontSize: labelFontSize),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return '이름을 입력하세요.';
+                        child: Autocomplete<Player>(
+                          initialValue: TextEditingValue(text: _name ?? ''),
+                          optionsBuilder: (TextEditingValue value) {
+                            if (isEditMode) {
+                              return const Iterable<Player>.empty();
                             }
-                            if (value.length > 7) {
-                              return '이름은 7자 이하로 입력해주세요.';
-                            }
-                            return null;
+                            return _findPlayersByName(value);
                           },
-                          onSaved: (value) {
-                            _name = value;
-                          },
+                          onSelected: _loadPlayerAllForms,
+                          displayStringForOption: (Player player) =>
+                              player.name,
+                          fieldViewBuilder:
+                              (
+                                BuildContext context,
+                                TextEditingController
+                                fieldTextEditingController,
+                                FocusNode fieldFocusNode,
+                                VoidCallback onFieldSubmitted,
+                              ) {
+                                return TextFormField(
+                                  controller: fieldTextEditingController,
+                                  focusNode: fieldFocusNode,
+                                  decoration: InputDecoration(
+                                    labelText: '이름',
+                                    labelStyle: TextStyle(
+                                      fontSize: labelFontSize,
+                                    ),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return '이름을 입력하세요';
+                                    }
+                                    if (value.length > 7) {
+                                      return '이름은 7자 이하로 입력해주세요';
+                                    }
+                                    return null;
+                                  },
+                                  onSaved: (value) {
+                                    _name = value;
+                                  },
+                                  onFieldSubmitted: (_) => onFieldSubmitted(),
+                                );
+                              },
                         ),
                       ),
                       if (!isGuestMode)
@@ -139,11 +191,13 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                                 scale: isMobileSize ? 1.0 : 1.5,
                                 child: Switch(
                                   value: _isManager,
-                                  onChanged: (bool value) {
-                                    setState(() {
-                                      _isManager = value;
-                                    });
-                                  },
+                                  onChanged: isLoaded
+                                      ? null
+                                      : (bool value) {
+                                          setState(() {
+                                            _isManager = value;
+                                          });
+                                        },
                                 ),
                               ),
                             ],
@@ -170,11 +224,13 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                         ),
                       );
                     }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedSkillLevel = newValue;
-                      });
-                    },
+                    onChanged: isLoaded
+                        ? null
+                        : (String? newValue) {
+                            setState(() {
+                              _selectedSkillLevel = newValue;
+                            });
+                          },
                     validator: (value) => value == null ? '급수를 선택하세요.' : null,
                     onSaved: (value) {
                       if (value != null) {
@@ -201,11 +257,13 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                         ),
                       );
                     }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedGender = newValue;
-                      });
-                    },
+                    onChanged: isLoaded
+                        ? null
+                        : (String? newValue) {
+                            setState(() {
+                              _selectedGender = newValue;
+                            });
+                          },
                     validator: (value) => value == null ? '성별을 선택하세요.' : null,
                     onSaved: (value) {
                       _selectedGender = value;
@@ -213,9 +271,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   ),
                   SizedBox(height: fieldSpacing),
                   ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minHeight: 60.0,
-                    ),
+                    constraints: const BoxConstraints(minHeight: 60.0),
                     child: MultiSelectForm(
                       title: '그룹 플레이어',
                       options: allPlayerNames,
@@ -322,6 +378,8 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                 'played': _playCount,
                 'waited': _waitCount,
                 'groups': _groups,
+                'loaded': isLoaded,
+                'player': _player,
               });
             }
           },

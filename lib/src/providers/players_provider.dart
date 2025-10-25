@@ -47,7 +47,9 @@ class PlayersProvider with ChangeNotifier {
   Future<void> _loadInitialAssignedPlayersCount() async {
     OptionsRepository optionsRepository = OptionsRepository.instance;
 
-    final int initialCount = optionsRepository.getOptions().numberOfSections;
+    final int initialCount = optionsRepository
+        .getOptions()
+        .numberOfSections;
     updateAssignedPlayersListCount(initialCount);
   }
 
@@ -84,13 +86,22 @@ class PlayersProvider with ChangeNotifier {
       groups: RealmList<ObjectId>(groups),
     );
     _playerService.addPlayer(newPlayer);
-    _players[newId] = newPlayer;
-    _unassignedPlayers.add(newPlayer);
+    addPlayerInCourt(newPlayer, groups);
 
-    if (groups.isNotEmpty) {
-      _playerService.updateGroupPlayers(_players, groups, newId);
-    }
     notifyListeners();
+  }
+
+  void addPlayerInCourt(Player player, List<ObjectId> groups) {
+    _players[player.id] = player;
+    _unassignedPlayers.add(player);
+    if (groups.isNotEmpty) {
+      _playerService.updateGroupPlayers(_players, groups, player.id);
+    }
+  }
+
+  void loadPlayer(Player player,List<ObjectId> groups) {
+    addPlayerInCourt(player, groups);
+    _playerService.updateGroups(player, groups);
   }
 
   void removePlayer(ObjectId playerId) {
@@ -157,6 +168,13 @@ class PlayersProvider with ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  List<Player> findPlayersByPrefix(String name, int count) {
+    RealmResults<Player> results = _playerService.findPlayersByPrefix(name);
+    int actualLimit = results.length < count ? results.length : count;
+    List<Player> limitedPlayers = results.take(actualLimit).toList();
+    return limitedPlayers;
   }
 
   void resetPlayerStats() {
@@ -279,7 +297,7 @@ class PlayersProvider with ChangeNotifier {
     if (!_unassignedPlayers.contains(unassignedPlayerToAssign)) return;
 
     Player? playerCurrentlyInCourt =
-        _assignedPlayers[targetCourtSectionIndex][targetCourtPlayerIndex];
+    _assignedPlayers[targetCourtSectionIndex][targetCourtPlayerIndex];
     _assignedPlayers[targetCourtSectionIndex][targetCourtPlayerIndex] =
         unassignedPlayerToAssign;
     _unassignedPlayers.remove(unassignedPlayerToAssign);
@@ -302,7 +320,7 @@ class PlayersProvider with ChangeNotifier {
       return;
 
     Player? playerToRemove =
-        _assignedPlayers[sectionIndex][playerIndexInSection];
+    _assignedPlayers[sectionIndex][playerIndexInSection];
 
     if (playerToRemove != null) {
       _assignedPlayers[sectionIndex][playerIndexInSection] = null;
@@ -335,8 +353,7 @@ class PlayersProvider with ChangeNotifier {
   }
 
   // 자동 매칭
-  void assignPlayersToCourt(
-    int sectionIndex, {
+  void assignPlayersToCourt(int sectionIndex, {
     required double skillWeight,
     required double genderWeight,
     required double waitedWeight,

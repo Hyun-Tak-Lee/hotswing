@@ -13,7 +13,7 @@ class PlayerRepository {
   static final PlayerRepository instance = PlayerRepository._();
 
   RealmResults<Player> findPlayersByPrefix(String name) {
-    final results = _realm.query<Player>("name BEGINWITH \$0", [name]);
+    final results = _realm.query<Player>("name BEGINSWITH \$0", [name]);
     return results;
   }
 

@@ -81,6 +81,10 @@ class PlayerService {
     );
   }
 
+  void updateGroups (Player player, List<ObjectId> groups){
+    _playerRepository.updatePlayer(player: player,groups: RealmList(groups));
+  }
+
   void resetStats(Player player) {
     _playerRepository.updatePlayer(
       player: player,
