@@ -13,16 +13,14 @@ class PlayersProvider with ChangeNotifier {
 
   final Random _random = Random();
 
-  final Map<int, Player> _players = {};
-  List<List<Player?>> _assignedPlayers = [];
-  List<Player> _unassignedPlayers = [];
-  int _nextPlayerId = 0;
+  final Map<ObjectId, Player> _players = {};
+  final List<List<Player?>> _assignedPlayers = [];
+  final List<Player> _unassignedPlayers = [];
 
   PlayersProvider() {
     final List<int> skillRates = skillLevelToRate.values.toList();
 
     for (int i = 1; i <= 32; i++) {
-      int id = i;
       String playerName = '플레이어 $i';
       String role = _random.nextBool() ? "manager" : "user";
       int playerRate = skillRates[_random.nextInt(skillRates.length)];
@@ -46,19 +44,18 @@ class PlayersProvider with ChangeNotifier {
   }
 
   Future<void> _loadInitialAssignedPlayersCount() async {
-    OptionsRepository options_repository = OptionsRepository.instance;
+    OptionsRepository optionsRepository = OptionsRepository.instance;
 
-    final int initialCount = options_repository.getOptions().numberOfSections;
+    final int initialCount = optionsRepository.getOptions().numberOfSections;
     updateAssignedPlayersListCount(initialCount);
   }
 
-  Map<int, Player> get players => Map.unmodifiable(_players);
+  Map<ObjectId, Player> get players => Map.unmodifiable(_players);
 
   Player? getPlayerById(int id) {
     return _players[id];
   }
 
-  //id 문제 해결 필요
   void addPlayer({
     required String name,
     required String role,
@@ -67,14 +64,14 @@ class PlayersProvider with ChangeNotifier {
     required int played,
     required int waited,
     required int lated,
-    required List<int> groups,
+    required List<ObjectId> groups,
   }) {
     if (name.length > 7) return;
     if (_players.values.any((player) => player.name == name)) return;
+    final ObjectId newId = ObjectId();
 
-    int newPlayerId = _nextPlayerId++;
     Player newPlayer = Player(
-      newPlayerId,
+      newId,
       name,
       role,
       rate,
@@ -83,18 +80,19 @@ class PlayersProvider with ChangeNotifier {
       waited: waited,
       lated: lated,
       gamesPlayedWith: {},
-      groups: RealmList(groups),
+      groups: RealmList<ObjectId>(groups),
     );
-    _players[newPlayerId] = newPlayer;
+    _playerService.addPlayer(newPlayer);
+    _players[newId] = newPlayer;
     _unassignedPlayers.add(newPlayer);
 
     if (groups.isNotEmpty) {
-      _playerService.updateGroupPlayers(_players, groups, newPlayerId);
+      _playerService.updateGroupPlayers(_players, groups, newId);
     }
     notifyListeners();
   }
 
-  void removePlayer(int playerId) {
+  void removePlayer(ObjectId playerId) {
     if (_players.containsKey(playerId)) {
       Player? playerToRemove = _players[playerId];
       if (playerToRemove == null) return;
@@ -119,14 +117,14 @@ class PlayersProvider with ChangeNotifier {
   }
 
   void updatePlayer({
-    required int playerId,
+    required ObjectId playerId,
     required String newName,
     required int newRate,
     required String newGender,
     required String newRole,
     required int newPlayed,
     required int newWaited,
-    required List<int> newGroups,
+    required List<ObjectId> newGroups,
   }) {
     if (newName.length > 7) return;
     if (!_players.containsKey(playerId)) return;
@@ -171,7 +169,6 @@ class PlayersProvider with ChangeNotifier {
     for (int i = 0; i < _assignedPlayers.length; i++) {
       _assignedPlayers[i] = [null, null, null, null];
     }
-    _nextPlayerId = 0;
     notifyListeners();
   }
 

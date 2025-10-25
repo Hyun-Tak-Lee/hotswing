@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:realm/realm.dart';
 
 class MultiSelectForm extends StatefulWidget {
   final String title;
   final List<String> options;
-  final List<int> optionsId;
-  final List<int> groupsOptionId;
-  final List<int> initialValue;
-  final Function(List<int>) onSelectionChanged;
-  final int? currentId;
+  final List<ObjectId> optionsId;
+  final List<ObjectId> groupsOptionId;
+  final List<ObjectId> initialValue;
+  final Function(List<ObjectId>) onSelectionChanged;
+  final ObjectId? currentId;
 
   const MultiSelectForm({
     Key? key,
@@ -25,7 +26,7 @@ class MultiSelectForm extends StatefulWidget {
 }
 
 class _MultiSelectFormState extends State<MultiSelectForm> {
-  late List<int> _selectedOptions;
+  late List<ObjectId> _selectedOptions;
   final int _maxSelection = 3;
 
   final LayerLink _layerLink = LayerLink();
@@ -58,7 +59,7 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
     super.dispose();
   }
 
-  void _onOptionChanged(int option, bool? isSelected) {
+  void _onOptionChanged(ObjectId option, bool? isSelected) {
     if (isSelected == true) {
       setState(() {
         _selectedOptions.add(option);
@@ -85,7 +86,7 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
     }
 
     List<Widget> selectedChips = [];
-    for (int selectedId in _selectedOptions) {
+    for (ObjectId selectedId in _selectedOptions) {
       int index = widget.optionsId.indexOf(selectedId);
       if (index != -1) {
         selectedChips.add(

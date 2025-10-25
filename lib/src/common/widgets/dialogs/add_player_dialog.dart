@@ -4,6 +4,7 @@ import 'package:hotswing/src/common/forms/multi_select_form.dart';
 import 'package:hotswing/src/common/utils/skill_utils.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
+import 'package:realm/realm.dart';
 
 class AddPlayerDialog extends StatefulWidget {
   final PlayersProvider? playersProvider;
@@ -23,7 +24,7 @@ class AddPlayerDialog extends StatefulWidget {
 
 class _AddPlayerDialogState extends State<AddPlayerDialog> {
   final _formKey = GlobalKey<FormState>();
-  int? _id;
+  ObjectId? _id;
   String? _name;
   int? _rate;
   String? _selectedGender;
@@ -32,7 +33,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   String? _selectedSkillLevel;
   int? _playCount;
   int? _waitCount;
-  List<int> _groups = [];
+  List<ObjectId> _groups = [];
 
   @override
   void initState() {
@@ -46,7 +47,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _isManager = widget.player!.role == "manager" ? true : false;
       _playCount = widget.player!.played;
       _waitCount = widget.player!.waited;
-      _groups = widget.player!.groups.toList();
+      _groups = widget.player!.groups;
     }
   }
 
@@ -70,13 +71,13 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
 
     final List<Player> allPlayers =
         widget.playersProvider?.players.values.toList() ?? [];
-    final List<int> allPlayerIds = allPlayers
+    final List<ObjectId> allPlayerIds = allPlayers
         .map((player) => player.id)
         .toList();
     final List<String> allPlayerNames = allPlayers
         .map((player) => player.name)
         .toList();
-    final List<int> allGroupedIds = allPlayers
+    final List<ObjectId> allGroupedIds = allPlayers
         .where((player) => player.groups.isNotEmpty)
         .map((player) => player.id)
         .toList();
@@ -311,7 +312,6 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               _formKey.currentState!.save();
-              // TODO: _selectedPlayers를 사용하여 그룹 정보 업데이트 필요
               Navigator.of(context).pop({
                 'name': _name,
                 'rate': _rate,

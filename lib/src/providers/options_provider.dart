@@ -26,13 +26,13 @@ class OptionsProvider with ChangeNotifier {
 
   @override
   void dispose() {
-    _realm.close();
     super.dispose();
   }
 
   void _loadOptions() {
-    OptionsRepository options_repository = OptionsRepository.instance;
-    _options = options_repository.getOptions();
+    OptionsRepository optionsRepository = OptionsRepository.instance;
+    _realm = optionsRepository.realm;
+    _options = optionsRepository.getOptions();
 
     notifyListeners();
   }

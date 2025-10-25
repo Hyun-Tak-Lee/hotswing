@@ -13,7 +13,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
   static var _defaultsSet = false;
 
   Player(
-    int id,
+    ObjectId id,
     String name,
     String role,
     int rate,
@@ -21,14 +21,16 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
     int played = 0,
     int waited = 0,
     int lated = 0,
+    bool activate = true,
     Map<String, int> gamesPlayedWith = const {},
-    Iterable<int> groups = const [],
+    Iterable<ObjectId> groups = const [],
   }) {
     if (!_defaultsSet) {
       _defaultsSet = RealmObjectBase.setDefaults<Player>({
         'played': 0,
         'waited': 0,
         'lated': 0,
+        'activate': true,
       });
     }
     RealmObjectBase.set(this, 'id', id);
@@ -39,20 +41,25 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.set(this, 'played', played);
     RealmObjectBase.set(this, 'waited', waited);
     RealmObjectBase.set(this, 'lated', lated);
+    RealmObjectBase.set(this, 'activate', activate);
     RealmObjectBase.set<RealmMap<int>>(
       this,
       'gamesPlayedWith',
       RealmMap<int>(gamesPlayedWith),
     );
-    RealmObjectBase.set<RealmList<int>>(this, 'groups', RealmList<int>(groups));
+    RealmObjectBase.set<RealmList<ObjectId>>(
+      this,
+      'groups',
+      RealmList<ObjectId>(groups),
+    );
   }
 
   Player._();
 
   @override
-  int get id => RealmObjectBase.get<int>(this, 'id') as int;
+  ObjectId get id => RealmObjectBase.get<ObjectId>(this, 'id') as ObjectId;
   @override
-  set id(int value) => RealmObjectBase.set(this, 'id', value);
+  set id(ObjectId value) => RealmObjectBase.set(this, 'id', value);
 
   @override
   String get name => RealmObjectBase.get<String>(this, 'name') as String;
@@ -90,6 +97,11 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
   set lated(int value) => RealmObjectBase.set(this, 'lated', value);
 
   @override
+  bool get activate => RealmObjectBase.get<bool>(this, 'activate') as bool;
+  @override
+  set activate(bool value) => RealmObjectBase.set(this, 'activate', value);
+
+  @override
   RealmMap<int> get gamesPlayedWith =>
       RealmObjectBase.get<int>(this, 'gamesPlayedWith') as RealmMap<int>;
   @override
@@ -97,10 +109,10 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       throw RealmUnsupportedSetError();
 
   @override
-  RealmList<int> get groups =>
-      RealmObjectBase.get<int>(this, 'groups') as RealmList<int>;
+  RealmList<ObjectId> get groups =>
+      RealmObjectBase.get<ObjectId>(this, 'groups') as RealmList<ObjectId>;
   @override
-  set groups(covariant RealmList<int> value) =>
+  set groups(covariant RealmList<ObjectId> value) =>
       throw RealmUnsupportedSetError();
 
   @override
@@ -124,6 +136,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       'played': played.toEJson(),
       'waited': waited.toEJson(),
       'lated': lated.toEJson(),
+      'activate': activate.toEJson(),
       'gamesPlayedWith': gamesPlayedWith.toEJson(),
       'groups': groups.toEJson(),
     };
@@ -149,11 +162,9 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
           played: fromEJson(ejson['played'], defaultValue: 0),
           waited: fromEJson(ejson['waited'], defaultValue: 0),
           lated: fromEJson(ejson['lated'], defaultValue: 0),
-          gamesPlayedWith: fromEJson(
-            ejson['gamesPlayedWith'],
-            defaultValue: const {},
-          ),
-          groups: fromEJson(ejson['groups'], defaultValue: const []),
+          activate: fromEJson(ejson['activate'], defaultValue: true),
+          gamesPlayedWith: fromEJson(ejson['gamesPlayedWith']),
+          groups: fromEJson(ejson['groups']),
         ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -163,7 +174,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.registerFactory(Player._);
     register(_toEJson, _fromEJson);
     return const SchemaObject(ObjectType.realmObject, Player, 'Player', [
-      SchemaProperty('id', RealmPropertyType.int, primaryKey: true),
+      SchemaProperty('id', RealmPropertyType.objectid, primaryKey: true),
       SchemaProperty('name', RealmPropertyType.string),
       SchemaProperty('role', RealmPropertyType.string),
       SchemaProperty('rate', RealmPropertyType.int),
@@ -171,6 +182,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       SchemaProperty('played', RealmPropertyType.int),
       SchemaProperty('waited', RealmPropertyType.int),
       SchemaProperty('lated', RealmPropertyType.int),
+      SchemaProperty('activate', RealmPropertyType.bool),
       SchemaProperty(
         'gamesPlayedWith',
         RealmPropertyType.int,
@@ -178,7 +190,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       ),
       SchemaProperty(
         'groups',
-        RealmPropertyType.int,
+        RealmPropertyType.objectid,
         collectionType: RealmCollectionType.list,
       ),
     ]);

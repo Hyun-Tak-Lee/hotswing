@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:hotswing/src/models/players/player.dart';
 
-
 class CourtAssignService {
   final Random _random = Random();
 

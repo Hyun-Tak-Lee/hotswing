@@ -1,22 +1,22 @@
 import 'package:hotswing/src/models/options/option.dart';
+import 'package:hotswing/src/repository/realms/realm.dart';
 import 'package:realm/realm.dart';
 
 class OptionsRepository {
-  late Realm _realm;
+  late Realm realm;
   late Options _options;
 
   OptionsRepository._() {
-    final config = Configuration.local([Options.schema]);
-    _realm = Realm(config);
+    realm = RealmProvider.instance.realm;
   }
 
   static final OptionsRepository instance = OptionsRepository._();
 
   Options getOptions() {
-    final allOptions = _realm.all<Options>();
+    final allOptions = realm.all<Options>();
     if (allOptions.isEmpty) {
-      _realm.write(() {
-        _options = _realm.add(
+      realm.write(() {
+        _options = realm.add(
           Options(
             0,
             // id
@@ -37,8 +37,8 @@ class OptionsRepository {
     } else {
       _options = allOptions.first;
       if (allOptions.length > 1) {
-        _realm.write(() {
-          _realm.deleteMany(allOptions.skip(1));
+        realm.write(() {
+          realm.deleteMany(allOptions.skip(1));
         });
       }
     }
@@ -46,8 +46,8 @@ class OptionsRepository {
   }
 
   void close() {
-    if (!_realm.isClosed) {
-      _realm.close();
+    if (!realm.isClosed) {
+      realm.close();
     }
   }
 }

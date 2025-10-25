@@ -5,7 +5,7 @@ part 'player.realm.dart';
 @RealmModel()
 class _Player {
   @PrimaryKey()
-  late int id;
+  late ObjectId id;
   late String name;
   late String role;
   late int rate;
@@ -13,6 +13,7 @@ class _Player {
   int played = 0;
   int waited = 0;
   int lated = 0;
-  Map<String, int> gamesPlayedWith = const {};
-  List<int> groups = const [];
+  bool activate = true;
+  late Map<String, int> gamesPlayedWith;
+  late List<ObjectId> groups;
 }
