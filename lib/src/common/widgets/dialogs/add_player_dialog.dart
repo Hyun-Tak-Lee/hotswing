@@ -62,7 +62,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     }
     List<Player> searchPlayers = widget.playersProvider.findPlayersByPrefix(
       textEditingValue.text,
-      5,
+      10,
     );
 
     return searchPlayers;
@@ -93,12 +93,12 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     final double contentPadding = isMobileSize ? 8.0 : 24.0;
     final double fieldSpacing = isMobileSize ? 16.0 : 32.0;
     final double dialogWidth = isMobileSize
-        ? screenWidth * 0.8
-        : screenWidth * 0.5;
+        ? screenWidth * 0.9
+        : screenWidth * 0.7;
     final double buttonFontSize = isMobileSize ? 16 : 28;
 
     final List<Player> allPlayers =
-        widget.playersProvider?.players.values.toList() ?? [];
+        widget.playersProvider.players.values.toList() ?? [];
     final List<ObjectId> allPlayerIds = allPlayers
         .map((player) => player.id)
         .toList();
@@ -111,9 +111,16 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         .toList();
 
     return AlertDialog(
-      title: Text(
-        '${isGuestMode ? '게스트' : '회원'} ${isEditMode ? '수정' : '추가'}',
-        style: TextStyle(fontSize: titleFontSize),
+      title: Container(
+        padding: EdgeInsets.only(left: isMobileSize ? 8 : 16),
+        decoration: BoxDecoration(
+          color: Color(0x99A0E9FF),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          '${isGuestMode ? '게스트' : '회원'} ${isEditMode ? '수정' : '추가'}',
+          style: TextStyle(fontSize: titleFontSize),
+        ),
       ),
       content: SingleChildScrollView(
         child: Form(

@@ -135,6 +135,18 @@ class PlayerRepository {
     }
   }
 
+  void deleteAllPlayers() {
+    try {
+      _realm.write(() {
+        _realm.deleteAll<Player>();
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+  }
+
   RealmResults<Player> getAllPlayers() {
     return _realm.all<Player>();
   }

@@ -1,0 +1,4 @@
+enum SortCriterion {
+  played,
+  name,
+}

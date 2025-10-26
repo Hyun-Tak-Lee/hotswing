@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
+import 'package:hotswing/src/enums/player_sort.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
@@ -17,6 +18,18 @@ class MainContent extends StatefulWidget {
 class _MainContentState extends State<MainContent> {
   bool _showCourtHighlight = false;
   Map<int, bool> _courtGameStartedState = {};
+
+  SortCriterion _sortCriterion = SortCriterion.played;
+  bool _sortAscending = true;
+
+  String _getSortCriterionText(SortCriterion criterion) {
+    switch (criterion) {
+      case SortCriterion.played:
+        return '경기';
+      case SortCriterion.name:
+        return '이름';
+    }
+  }
 
   void _updateCourtStateIfFull(BuildContext context, int courtIndex) {
     if (courtIndex == -1) return;
@@ -138,6 +151,26 @@ class _MainContentState extends State<MainContent> {
         return playedCompare;
       }
       return b.waited.compareTo(a.waited);
+    });
+
+    playerList.sort((a, b) {
+      int compareResult;
+      switch (_sortCriterion) {
+        case SortCriterion.played:
+          int playedCompare = (a.played + a.lated).compareTo(
+            b.played + b.lated,
+          );
+          if (playedCompare != 0) {
+            compareResult = playedCompare;
+          }
+          compareResult = b.waited.compareTo(a.waited);
+          break;
+        case SortCriterion.name:
+          compareResult = a.name.compareTo(b.name);
+          break;
+      }
+
+      return _sortAscending ? compareResult : -compareResult;
     });
 
     final List<List<Player?>> sectionData = playersProvider.assignedPlayers;
@@ -603,44 +636,126 @@ class _MainContentState extends State<MainContent> {
                   margin: const EdgeInsets.symmetric(horizontal: 10.0),
                   child: Center(
                     child: FractionallySizedBox(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: Column(
-                          children: playerList.asMap().entries.map<Widget>((
-                            entry,
-                          ) {
-                            int playerIndex = entry.key;
-                            Player player = entry.value;
-                            final String playerSectionId =
-                                'unassigned_$playerIndex';
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 4.0,
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8.0,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).canvasColor,
+                              border: Border(
+                                bottom: BorderSide(color: Colors.grey.shade300),
                               ),
-                              child: PlayerDropZone(
-                                sectionId: playerSectionId,
-                                player: player,
-                                section_index: -1,
-                                sub_index: playerIndex,
-                                onPlayerDropped:
-                                    (
-                                      data,
-                                      droppedOnPlayer,
-                                      targetId,
-                                      targetSectionIdx,
-                                      targetSubIdx,
-                                    ) => _handlePlayerDrop(
-                                      context,
-                                      data,
-                                      droppedOnPlayer,
-                                      targetId,
-                                      targetSectionIdx,
-                                      targetSubIdx,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "대기 선수",
+                                  style: TextStyle(
+                                    fontSize: widget.isMobileSize ? 16.0 : 18.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    DropdownButton<SortCriterion>(
+                                      value: _sortCriterion,
+                                      items: SortCriterion.values
+                                          .map((criterion) {
+                                        return DropdownMenuItem<SortCriterion>(
+                                          value: criterion,
+                                          child: Text(
+                                            _getSortCriterionText(criterion),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (SortCriterion? newValue) {
+                                        if (newValue != null) {
+                                          setState(() {
+                                            _sortCriterion = newValue;
+                                          });
+                                        }
+                                      },
+                                      underline: Container(),
+                                      style: TextStyle(
+                                        fontSize:
+                                        widget.isMobileSize ? 14.0 : 16.0,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.color,
+                                      ),
+                                      icon: Icon(
+                                        Icons.arrow_drop_down,
+                                        size: widget.isMobileSize ? 20.0 : 22.0,
+                                      ),
                                     ),
+                                    SizedBox(width: 4.0),
+                                    // 오름차순/내림차순 버튼
+                                    IconButton(
+                                      icon: Icon(
+                                        _sortAscending
+                                            ? Icons.arrow_upward
+                                            : Icons.arrow_downward,
+                                      ),
+                                      iconSize:
+                                      widget.isMobileSize ? 20.0 : 22.0,
+                                      padding: EdgeInsets.zero,
+                                      constraints: BoxConstraints(),
+                                      onPressed: () {
+                                        setState(() {
+                                          _sortAscending = !_sortAscending;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.vertical,
+                              child: Column(
+                                children: playerList
+                                    .asMap()
+                                    .entries
+                                    .map<Widget>((entry) {
+                                      int playerIndex = entry.key;
+                                      Player player = entry.value;
+                                      final String playerSectionId =
+                                          'unassigned_$playerIndex';
+                                      return PlayerDropZone(
+                                        sectionId: playerSectionId,
+                                        player: player,
+                                        section_index: -1,
+                                        sub_index: playerIndex,
+                                        onPlayerDropped:
+                                            (
+                                              data,
+                                              droppedOnPlayer,
+                                              targetId,
+                                              targetSectionIdx,
+                                              targetSubIdx,
+                                            ) => _handlePlayerDrop(
+                                              context,
+                                              data,
+                                              droppedOnPlayer,
+                                              targetId,
+                                              targetSectionIdx,
+                                              targetSubIdx,
+                                            ),
+                                      );
+                                    })
+                                    .toList(),
                               ),
-                            );
-                          }).toList(),
-                        ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

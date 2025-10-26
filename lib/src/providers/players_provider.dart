@@ -21,6 +21,7 @@ class PlayersProvider with ChangeNotifier {
   PlayersProvider() {
     final List<int> skillRates = skillLevelToRate.values.toList();
 
+    _playerService.deleteAllPlayers();
     for (int i = 1; i <= 32; i++) {
       String playerName = '플레이어 $i';
       String role = _random.nextBool() ? "manager" : "user";
@@ -47,9 +48,7 @@ class PlayersProvider with ChangeNotifier {
   Future<void> _loadInitialAssignedPlayersCount() async {
     OptionsRepository optionsRepository = OptionsRepository.instance;
 
-    final int initialCount = optionsRepository
-        .getOptions()
-        .numberOfSections;
+    final int initialCount = optionsRepository.getOptions().numberOfSections;
     updateAssignedPlayersListCount(initialCount);
   }
 
@@ -71,8 +70,8 @@ class PlayersProvider with ChangeNotifier {
   }) {
     if (name.length > 7) return;
     if (_players.values.any((player) => player.name == name)) return;
-    final ObjectId newId = ObjectId();
 
+    final ObjectId newId = ObjectId();
     Player newPlayer = Player(
       newId,
       name,
@@ -92,16 +91,24 @@ class PlayersProvider with ChangeNotifier {
   }
 
   void addPlayerInCourt(Player player, List<ObjectId> groups) {
-    _players[player.id] = player;
-    _unassignedPlayers.add(player);
+    if (!_players.containsKey(player.id)) {
+      _players[player.id] = player;
+    }
+    if (!unassignedPlayers.contains(player)) {
+      _unassignedPlayers.add(player);
+    }
+    if (player.groups.isNotEmpty) {
+      _playerService.removeGroupPlayers(_players, player.groups, player.id);
+    }
     if (groups.isNotEmpty) {
       _playerService.updateGroupPlayers(_players, groups, player.id);
     }
   }
 
-  void loadPlayer(Player player,List<ObjectId> groups) {
+  void loadPlayer(Player player, List<ObjectId> groups) {
     addPlayerInCourt(player, groups);
     _playerService.updateGroups(player, groups);
+    notifyListeners();
   }
 
   void removePlayer(ObjectId playerId) {
@@ -124,7 +131,6 @@ class PlayersProvider with ChangeNotifier {
       }
       _unassignedPlayers.remove(playerToRemove);
       _players.remove(playerId);
-      _playerService.deletePlayer(playerId);
       notifyListeners();
     }
   }
@@ -142,6 +148,16 @@ class PlayersProvider with ChangeNotifier {
     if (newName.length > 7) return;
     if (!_players.containsKey(playerId)) return;
     Player playerToUpdate = _players[playerId]!;
+
+    //기존 그룹 플레이어들의 그룹 제거
+    if (playerToUpdate.groups.isNotEmpty) {
+      _playerService.removeGroupPlayers(
+        _players,
+        playerToUpdate.groups,
+        playerId,
+      );
+    }
+
     _playerService.updatePlayer(
       playerToUpdate,
       newName,
@@ -154,14 +170,6 @@ class PlayersProvider with ChangeNotifier {
       newGroups,
     );
 
-    //기존 그룹 플레이어들의 그룹 제거
-    if (playerToUpdate.groups.isNotEmpty) {
-      _playerService.removeGroupPlayers(
-        _players,
-        playerToUpdate.groups,
-        playerId,
-      );
-    }
     // 자신 이외의 플레이어들도 그룹 생성
     if (newGroups.isNotEmpty) {
       _playerService.updateGroupPlayers(_players, newGroups, playerId);
@@ -179,10 +187,7 @@ class PlayersProvider with ChangeNotifier {
 
   void resetPlayerStats() {
     for (Player player in _players.values) {
-      player.played = 0;
-      player.waited = 0;
-      player.lated = 0;
-      player.gamesPlayedWith.clear();
+      _playerService.resetStats(player);
     }
     notifyListeners();
   }
@@ -196,28 +201,11 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<Player> getPlayers({int option = 0}) {
+  List<Player> getPlayers() {
     var playerList = _players.values.toList();
-    switch (option) {
-      case 0:
-        playerList.sort((a, b) {
-          int playedCompare = (a.played + a.lated).compareTo(
-            b.played + b.lated,
-          );
-          if (playedCompare != 0) {
-            return playedCompare;
-          }
-          return b.waited.compareTo(a.waited);
-        });
-        break;
-      case 1:
-        playerList.sort((a, b) {
-          return a.name.compareTo(b.name);
-        });
-        break;
-      default:
-        break;
-    }
+    playerList.sort((a, b) {
+      return a.name.compareTo(b.name);
+    });
 
     return playerList;
   }
@@ -297,7 +285,7 @@ class PlayersProvider with ChangeNotifier {
     if (!_unassignedPlayers.contains(unassignedPlayerToAssign)) return;
 
     Player? playerCurrentlyInCourt =
-    _assignedPlayers[targetCourtSectionIndex][targetCourtPlayerIndex];
+        _assignedPlayers[targetCourtSectionIndex][targetCourtPlayerIndex];
     _assignedPlayers[targetCourtSectionIndex][targetCourtPlayerIndex] =
         unassignedPlayerToAssign;
     _unassignedPlayers.remove(unassignedPlayerToAssign);
@@ -320,7 +308,7 @@ class PlayersProvider with ChangeNotifier {
       return;
 
     Player? playerToRemove =
-    _assignedPlayers[sectionIndex][playerIndexInSection];
+        _assignedPlayers[sectionIndex][playerIndexInSection];
 
     if (playerToRemove != null) {
       _assignedPlayers[sectionIndex][playerIndexInSection] = null;
@@ -341,7 +329,9 @@ class PlayersProvider with ChangeNotifier {
       Player? player = playersInCourt[i];
       if (player != null) {
         _playerService.playedFinish(player);
-        _playerService.addGamesPlayedWith(player, playersInCourt, played);
+        if (played == 1) {
+          _playerService.addGamesPlayedWith(player, playersInCourt, played);
+        }
 
         if (!_unassignedPlayers.contains(player)) {
           _unassignedPlayers.add(player);
@@ -353,7 +343,8 @@ class PlayersProvider with ChangeNotifier {
   }
 
   // 자동 매칭
-  void assignPlayersToCourt(int sectionIndex, {
+  void assignPlayersToCourt(
+    int sectionIndex, {
     required double skillWeight,
     required double genderWeight,
     required double waitedWeight,

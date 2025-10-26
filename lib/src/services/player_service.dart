@@ -95,6 +95,10 @@ class PlayerService {
     );
   }
 
+  void deleteAllPlayers(){
+    _playerRepository.deleteAllPlayers();
+  }
+
   void incrementWaited(Player player) {
     _playerRepository.updatePlayer(player: player, waited: player.waited + 1);
   }

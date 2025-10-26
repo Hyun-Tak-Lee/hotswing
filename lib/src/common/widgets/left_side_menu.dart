@@ -108,8 +108,8 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
   @override
   Widget build(BuildContext context) {
     final playersProvider = Provider.of<PlayersProvider>(context);
-    final players = playersProvider.getPlayers(option: 1);
-    final iconAndFontSize = widget.isMobileSize ? 24.0 : 48.0;
+    final players = playersProvider.getPlayers();
+    final iconAndFontSize = widget.isMobileSize ? 24.0 : 40.0;
 
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.75,
@@ -170,48 +170,87 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           ),
           ...players
               .map(
-                (player) => ListTile(
-                  tileColor: player.role == "manager"
+                (player) => Container(
+                  // 1. ListTile의 'tileColor' 역할을 합니다.
+                  color: player.role == "manager"
                       ? const Color(0x55FFF700)
                       : player.role == "user"
                       ? const Color(0x3300BFFF)
                       : null,
-                  title: Text(
-                    '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]} / ${player.groups.map((id) => playersProvider.players[id]?.name).toList()}',
-                    style: TextStyle(fontSize: iconAndFontSize),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        iconSize: iconAndFontSize,
-                        onPressed: () {
-                          _showAddPlayerDialog(
-                            playersProvider,
-                            false,
-                            existingPlayer: player,
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        iconSize: iconAndFontSize,
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext dialogContext) {
-                              return ConfirmationDialog(
-                                message: '"${player.name}" 님을 삭제하시겠습니까?',
-                                onConfirm: () {
-                                  playersProvider.removePlayer(player.id);
-                                },
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ],
+                  // 2. ListTile의 기본 여백과 유사하게 Padding을 줍니다.
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 12.0,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      // 아이콘과 텍스트를 세로 중앙 정렬
+                      children: [
+                        // 3. 텍스트 영역 (남은 공간을 모두 차지)
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]}',
+                                style: TextStyle(fontSize: iconAndFontSize),
+                              ),
+                              if (player.groups.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4.0),
+                                  child: Text(
+                                    player.groups
+                                        .map(
+                                          (id) =>
+                                              playersProvider.players[id]?.name,
+                                        )
+                                        .where((name) => name != null)
+                                        .join(' , '),
+                                    style: TextStyle(
+                                      fontSize: iconAndFontSize * 0.6,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        // 4. 아이콘 영역 (ListTile의 'trailing' 역할)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              iconSize: iconAndFontSize,
+                              onPressed: () {
+                                _showAddPlayerDialog(
+                                  playersProvider,
+                                  false,
+                                  existingPlayer: player,
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              iconSize: iconAndFontSize,
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext dialogContext) {
+                                    return ConfirmationDialog(
+                                      message: '"${player.name}" 님을 삭제하시겠습니까?',
+                                      onConfirm: () {
+                                        playersProvider.removePlayer(player.id);
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               )

@@ -44,7 +44,7 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
     double screenWidth = MediaQuery.of(context).size.width;
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
-    return isMobileSize ? 16 : 24;
+    return isMobileSize ? 8 : 16;
   }
 
   @override
