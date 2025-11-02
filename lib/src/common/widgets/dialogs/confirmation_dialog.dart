@@ -4,11 +4,7 @@ class ConfirmationDialog extends StatelessWidget {
   final String message;
   final VoidCallback onConfirm;
 
-  const ConfirmationDialog({
-    super.key,
-    required this.message,
-    required this.onConfirm,
-  });
+  const ConfirmationDialog({super.key, required this.message, required this.onConfirm});
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +25,7 @@ class ConfirmationDialog extends StatelessWidget {
               child: TextButton(
                 style: TextButton.styleFrom(
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12.0,
-                  ), // 버튼 내부 세로 여백 추가
+                  padding: const EdgeInsets.symmetric(vertical: 12.0), // 버튼 내부 세로 여백 추가
                 ),
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the dialog
@@ -48,9 +42,7 @@ class ConfirmationDialog extends StatelessWidget {
               child: TextButton(
                 style: TextButton.styleFrom(
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12.0,
-                  ), // 버튼 내부 세로 여백 추가
+                  padding: const EdgeInsets.symmetric(vertical: 12.0), // 버튼 내부 세로 여백 추가
                 ),
                 onPressed: () {
                   onConfirm();

@@ -5,8 +5,9 @@ import 'package:hotswing/src/common/widgets/main_content.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async {
   runApp(
     MultiProvider(
       providers: [
@@ -24,9 +25,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFB0E0E6)),
-      ),
+      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFB0E0E6))),
       home: const MyHomePage(),
     );
   }
@@ -84,9 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         drawer: LeftSideMenu(isMobileSize: isMobileSize),
         endDrawer: RightSideMenu(isMobileSize: isMobileSize),
-        body: MainContent(
-          isMobileSize: isMobileSize,
-        ),
+        body: MainContent(isMobileSize: isMobileSize),
       ),
     );
   }

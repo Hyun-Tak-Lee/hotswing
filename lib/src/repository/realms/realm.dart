@@ -8,7 +8,7 @@ class RealmProvider {
   RealmProvider._() {
     final config = Configuration.local(
       [Player.schema,Options.schema],
-      shouldDeleteIfMigrationNeeded: true,
+      // shouldDeleteIfMigrationNeeded: true,
     );
     _realm = Realm(config);
   }

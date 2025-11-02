@@ -6,34 +6,21 @@ import 'package:realm/realm.dart';
 class PlayerService {
   PlayerRepository _playerRepository = PlayerRepository.instance;
 
-  void updateGroupPlayers(
-    Map<ObjectId, Player> player,
-    List<ObjectId> groups,
-    ObjectId playerId,
-  ) {
+  void updateGroupPlayers(Map<ObjectId, Player> player, List<ObjectId> groups, ObjectId playerId) {
     final List<ObjectId> updateGroups = [playerId, ...groups];
 
     for (int i = 1; i < updateGroups.length; i++) {
       ObjectId currentPlayerId = updateGroups[i];
       final Player? currentPlayer = player[currentPlayerId];
       if (currentPlayer != null) {
-        final List<ObjectId> otherPlayerIds = updateGroups
-            .where((j) => j != currentPlayerId)
-            .toList();
+        final List<ObjectId> otherPlayerIds = updateGroups.where((j) => j != currentPlayerId).toList();
 
-        _playerRepository.updatePlayer(
-          player: currentPlayer,
-          groups: RealmList(otherPlayerIds),
-        );
+        _playerRepository.updatePlayer(player: currentPlayer, groups: RealmList(otherPlayerIds));
       }
     }
   }
 
-  void removeGroupPlayers(
-    Map<ObjectId, Player> player,
-    List<ObjectId> groups,
-    ObjectId playerId,
-  ) {
+  void removeGroupPlayers(Map<ObjectId, Player> player, List<ObjectId> groups, ObjectId playerId) {
     final List<ObjectId> updateGroups = [playerId, ...groups];
 
     for (int i = 1; i < updateGroups.length; i++) {
@@ -45,8 +32,26 @@ class PlayerService {
     }
   }
 
+  List<Player> findAllPlayers() {
+    return _playerRepository.getAllPlayers().toList();
+  }
+
+
   RealmResults<Player> findPlayersByPrefix(String name) {
     return _playerRepository.findPlayersByPrefix(name);
+  }
+
+  List<Player?> findPlayersByIds(List<ObjectId?> ids) {
+    final List<Player> findPlayers = _playerRepository.findPlayersByIds(ids).toList();
+    final Map<ObjectId, Player> playerMap = {
+      for (var player in findPlayers) player.id: player,
+    };
+    return ids.map((id) {
+      if (id==null){
+        return null;
+      }
+      return playerMap[id];
+    }).toList();
   }
 
   void addPlayer(Player player) {
@@ -81,21 +86,15 @@ class PlayerService {
     );
   }
 
-  void updateGroups (Player player, List<ObjectId> groups){
-    _playerRepository.updatePlayer(player: player,groups: RealmList(groups));
+  void updateGroups(Player player, List<ObjectId> groups) {
+    _playerRepository.updatePlayer(player: player, groups: RealmList(groups));
   }
 
   void resetStats(Player player) {
-    _playerRepository.updatePlayer(
-      player: player,
-      played: 0,
-      waited: 0,
-      lated: 0,
-      gamesPlayedWith: RealmMap<int>({}),
-    );
+    _playerRepository.updatePlayer(player: player, played: 0, waited: 0, lated: 0, gamesPlayedWith: RealmMap<int>({}));
   }
 
-  void deleteAllPlayers(){
+  void deleteAllPlayers() {
     _playerRepository.deleteAllPlayers();
   }
 
@@ -104,22 +103,10 @@ class PlayerService {
   }
 
   void playedFinish(Player player) {
-    _playerRepository.updatePlayer(
-      player: player,
-      played: player.played + 1,
-      waited: 0,
-    );
+    _playerRepository.updatePlayer(player: player, played: player.played + 1, waited: 0);
   }
 
-  void addGamesPlayedWith(
-    Player currentPlayer,
-    List<Player?> playersInCourt,
-    int games,
-  ) {
-    _playerRepository.updateGamesPlayedWith(
-      currentPlayer: currentPlayer,
-      playersInCourt: playersInCourt,
-      games: games,
-    );
+  void addGamesPlayedWith(Player currentPlayer, List<Player?> playersInCourt, int games) {
+    _playerRepository.updateGamesPlayedWith(currentPlayer: currentPlayer, playersInCourt: playersInCourt, games: games);
   }
 }

@@ -11,12 +11,7 @@ class AddPlayerDialog extends StatefulWidget {
   final Player? player;
   final bool isGuest;
 
-  const AddPlayerDialog({
-    super.key,
-    required this.playersProvider,
-    this.player,
-    this.isGuest = false,
-  });
+  const AddPlayerDialog({super.key, required this.playersProvider, this.player, this.isGuest = false});
 
   @override
   State<AddPlayerDialog> createState() => _AddPlayerDialogState();
@@ -60,10 +55,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     if (textEditingValue.text.isEmpty) {
       return const Iterable<Player>.empty();
     }
-    List<Player> searchPlayers = widget.playersProvider.findPlayersByPrefix(
-      textEditingValue.text,
-      10,
-    );
+    List<Player> searchPlayers = widget.playersProvider.findPlayersByPrefix(textEditingValue.text, 10);
 
     return searchPlayers;
   }
@@ -92,19 +84,12 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     final double switchLabelFontSize = isMobileSize ? 16 : 24;
     final double contentPadding = isMobileSize ? 8.0 : 24.0;
     final double fieldSpacing = isMobileSize ? 16.0 : 32.0;
-    final double dialogWidth = isMobileSize
-        ? screenWidth * 0.9
-        : screenWidth * 0.7;
+    final double dialogWidth = isMobileSize ? screenWidth * 0.9 : screenWidth * 0.7;
     final double buttonFontSize = isMobileSize ? 16 : 28;
 
-    final List<Player> allPlayers =
-        widget.playersProvider.players.values.toList() ?? [];
-    final List<ObjectId> allPlayerIds = allPlayers
-        .map((player) => player.id)
-        .toList();
-    final List<String> allPlayerNames = allPlayers
-        .map((player) => player.name)
-        .toList();
+    final List<Player> allPlayers = widget.playersProvider.players.values.toList() ?? [];
+    final List<ObjectId> allPlayerIds = allPlayers.map((player) => player.id).toList();
+    final List<String> allPlayerNames = allPlayers.map((player) => player.name).toList();
     final List<ObjectId> allGroupedIds = allPlayers
         .where((player) => player.groups.isNotEmpty)
         .map((player) => player.id)
@@ -113,10 +98,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     return AlertDialog(
       title: Container(
         padding: EdgeInsets.only(left: isMobileSize ? 8 : 16),
-        decoration: BoxDecoration(
-          color: Color(0x99A0E9FF),
-          borderRadius: BorderRadius.circular(12),
-        ),
+        decoration: BoxDecoration(color: Color(0x99A0E9FF), borderRadius: BorderRadius.circular(12)),
         child: Text(
           '${isGuestMode ? '게스트' : '회원'} ${isEditMode ? '수정' : '추가'}',
           style: TextStyle(fontSize: titleFontSize),
@@ -146,13 +128,11 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                             return _findPlayersByName(value);
                           },
                           onSelected: _loadPlayerAllForms,
-                          displayStringForOption: (Player player) =>
-                              player.name,
+                          displayStringForOption: (Player player) => player.name,
                           fieldViewBuilder:
                               (
                                 BuildContext context,
-                                TextEditingController
-                                fieldTextEditingController,
+                                TextEditingController fieldTextEditingController,
                                 FocusNode fieldFocusNode,
                                 VoidCallback onFieldSubmitted,
                               ) {
@@ -161,9 +141,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                                   focusNode: fieldFocusNode,
                                   decoration: InputDecoration(
                                     labelText: '이름',
-                                    labelStyle: TextStyle(
-                                      fontSize: labelFontSize,
-                                    ),
+                                    labelStyle: TextStyle(fontSize: labelFontSize),
                                   ),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
@@ -189,10 +167,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(
-                                '운영진',
-                                style: TextStyle(fontSize: switchLabelFontSize),
-                              ),
+                              Text('운영진', style: TextStyle(fontSize: switchLabelFontSize)),
                               SizedBox(width: isMobileSize ? 4 : 20),
                               Transform.scale(
                                 scale: isMobileSize ? 1.0 : 1.5,
@@ -225,10 +200,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     items: skillLevelToRate.keys.map((String level) {
                       return DropdownMenuItem<String>(
                         value: level,
-                        child: Text(
-                          level,
-                          style: TextStyle(fontSize: labelFontSize),
-                        ),
+                        child: Text(level, style: TextStyle(fontSize: labelFontSize)),
                       );
                     }).toList(),
                     onChanged: isLoaded
@@ -258,10 +230,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     items: _genders.map((String gender) {
                       return DropdownMenuItem<String>(
                         value: gender,
-                        child: Text(
-                          gender,
-                          style: TextStyle(fontSize: labelFontSize),
-                        ),
+                        child: Text(gender, style: TextStyle(fontSize: labelFontSize)),
                       );
                     }).toList(),
                     onChanged: isLoaded
@@ -307,9 +276,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                               labelStyle: TextStyle(fontSize: labelFontSize),
                             ),
                             keyboardType: TextInputType.number,
-                            inputFormatters: <TextInputFormatter>[
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
+                            inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return '플레이 횟수를 입력하세요.';
@@ -334,9 +301,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                               labelStyle: TextStyle(fontSize: labelFontSize),
                             ),
                             keyboardType: TextInputType.number,
-                            inputFormatters: <TextInputFormatter>[
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
+                            inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return '대기 횟수를 입력하세요.';
@@ -368,10 +333,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
           },
         ),
         TextButton(
-          child: Text(
-            isEditMode ? '수정' : '추가',
-            style: TextStyle(fontSize: buttonFontSize),
-          ),
+          child: Text(isEditMode ? '수정' : '추가', style: TextStyle(fontSize: buttonFontSize)),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               _formKey.currentState!.save();
@@ -379,9 +341,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                 'name': _name,
                 'rate': _rate,
                 'gender': _selectedGender,
-                'role': isGuestMode
-                    ? 'guest'
-                    : (_isManager ? "manager" : "user"),
+                'role': isGuestMode ? 'guest' : (_isManager ? "manager" : "user"),
                 'played': _playCount,
                 'waited': _waitCount,
                 'groups': _groups,

@@ -77,11 +77,7 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
     if (_selectedOptions.isEmpty) {
       return Text(
         widget.title,
-        style: TextStyle(
-          color: Colors.grey.shade700,
-          fontWeight: FontWeight.normal,
-          fontSize: _labelFontSize,
-        ),
+        style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.normal, fontSize: _labelFontSize),
       );
     }
 
@@ -91,10 +87,7 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
       if (index != -1) {
         selectedChips.add(
           Chip(
-            label: Text(
-              widget.options[index],
-              style: TextStyle(fontSize: _chipFontSize),
-            ),
+            label: Text(widget.options[index], style: TextStyle(fontSize: _chipFontSize)),
             onDeleted: () {
               _onOptionChanged(selectedId, false);
             },
@@ -164,24 +157,16 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
                       final optionId = widget.optionsId[index];
                       final isCurrentPlayer = optionId == widget.currentId;
                       final isSelected = _selectedOptions.contains(optionId);
-                      final isGrouped = widget.groupsOptionId.contains(
-                        optionId,
-                      );
-                      final isMaxSelected =
-                          _selectedOptions.length >= _maxSelection;
+                      final isGrouped = widget.groupsOptionId.contains(optionId);
+                      final isMaxSelected = _selectedOptions.length >= _maxSelection;
 
                       return CheckboxListTile(
-                        title: Text(
-                          option,
-                          style: TextStyle(fontSize: _labelFontSize),
-                        ),
+                        title: Text(option, style: TextStyle(fontSize: _labelFontSize)),
                         value: isSelected,
                         onChanged: (bool? selected) {
                           _onOptionChanged(optionId, selected);
                         },
-                        enabled:
-                            isSelected ||
-                            !(isMaxSelected || isGrouped || isCurrentPlayer),
+                        enabled: isSelected || !(isMaxSelected || isGrouped || isCurrentPlayer),
                       );
                     },
                   ),
@@ -204,9 +189,7 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
         child: ListTile(
           onTap: _toggleMenu,
           title: _buildSelectedOptionsTitle(),
-          trailing: Icon(
-            _isMenuOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-          ),
+          trailing: Icon(_isMenuOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down),
         ),
       ),
     );

@@ -25,19 +25,11 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
     super.dispose();
   }
 
-  Future<void> _showAddPlayerDialog(
-    PlayersProvider playersProvider,
-    bool isGuest, {
-    Player? existingPlayer,
-  }) async {
+  Future<void> _showAddPlayerDialog(PlayersProvider playersProvider, bool isGuest, {Player? existingPlayer}) async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AddPlayerDialog(
-          playersProvider: playersProvider,
-          player: existingPlayer,
-          isGuest: isGuest,
-        );
+        return AddPlayerDialog(playersProvider: playersProvider, player: existingPlayer, isGuest: isGuest);
       },
     );
     try {
@@ -58,16 +50,11 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
             newGroups: result['groups'] as List<ObjectId>,
           );
         } else if (result['loaded'] as bool) {
-          playersProvider.loadPlayer(
-            result['player'],
-            result['groups'] as List<ObjectId>,
-          );
+          playersProvider.loadPlayer(result['player'], result['groups'] as List<ObjectId>);
         } else {
           int latedValue = 0;
           if (playersProvider.unassignedPlayers.isNotEmpty) {
-            latedValue = playersProvider.unassignedPlayers
-                .map((p) => p.played)
-                .reduce(max);
+            latedValue = playersProvider.unassignedPlayers.map((p) => p.played).reduce(max);
           }
           playersProvider.addPlayer(
             name: result['name'] as String,
@@ -89,9 +76,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
   }
 
   // 모든 플레이어를 삭제하기 전에 확인 대화 상자를 표시하는 함수
-  Future<void> _showClearAllPlayersConfirmationDialog(
-    PlayersProvider playersProvider,
-  ) async {
+  Future<void> _showClearAllPlayersConfirmationDialog(PlayersProvider playersProvider) async {
     await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -129,19 +114,14 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '참여자 (${players.length}명)',
-                    style: TextStyle(fontSize: iconAndFontSize),
-                  ),
+                  Text('참여자 (${players.length}명)', style: TextStyle(fontSize: iconAndFontSize)),
                   Row(
                     children: [
                       IconButton(
                         icon: const Icon(Icons.delete_sweep),
                         iconSize: iconAndFontSize,
                         onPressed: () {
-                          _showClearAllPlayersConfirmationDialog(
-                            playersProvider,
-                          );
+                          _showClearAllPlayersConfirmationDialog(playersProvider);
                         },
                       ),
                       const SizedBox(width: 8),
@@ -179,10 +159,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                       : null,
                   // 2. ListTile의 기본 여백과 유사하게 Padding을 줍니다.
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 12.0,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       // 아이콘과 텍스트를 세로 중앙 정렬
@@ -201,15 +178,10 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                                   padding: const EdgeInsets.only(top: 4.0),
                                   child: Text(
                                     player.groups
-                                        .map(
-                                          (id) =>
-                                              playersProvider.players[id]?.name,
-                                        )
+                                        .map((id) => playersProvider.players[id]?.name)
                                         .where((name) => name != null)
                                         .join(' , '),
-                                    style: TextStyle(
-                                      fontSize: iconAndFontSize * 0.6,
-                                    ),
+                                    style: TextStyle(fontSize: iconAndFontSize * 0.6),
                                   ),
                                 ),
                             ],
@@ -223,11 +195,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                               icon: const Icon(Icons.edit),
                               iconSize: iconAndFontSize,
                               onPressed: () {
-                                _showAddPlayerDialog(
-                                  playersProvider,
-                                  false,
-                                  existingPlayer: player,
-                                );
+                                _showAddPlayerDialog(playersProvider, false, existingPlayer: player);
                               },
                             ),
                             IconButton(

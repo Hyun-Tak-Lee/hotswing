@@ -17,6 +17,11 @@ class PlayerRepository {
     return results;
   }
 
+  RealmResults<Player> findPlayersByIds(List<ObjectId?> ids) {
+    final results = _realm.query<Player>("id IN \$0", [ids]);
+    return results;
+  }
+
   void addPlayer(Player player) {
     try {
       _realm.write(() {
@@ -92,11 +97,9 @@ class PlayerRepository {
     try {
       _realm.write(() {
         for (Player? otherPlayerInCourt in playersInCourt) {
-          if (otherPlayerInCourt != null &&
-              otherPlayerInCourt.id != currentPlayer.id) {
+          if (otherPlayerInCourt != null && otherPlayerInCourt.id != currentPlayer.id) {
             final otherPlayerId = otherPlayerInCourt.id.toString();
-            final currentGames =
-                currentPlayer.gamesPlayedWith[otherPlayerId] ?? 0;
+            final currentGames = currentPlayer.gamesPlayedWith[otherPlayerId] ?? 0;
             currentPlayer.gamesPlayedWith[otherPlayerId] = currentGames + games;
           }
         }

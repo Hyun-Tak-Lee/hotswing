@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/skill_utils.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/repository/realms/options.dart';
+import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 import 'package:hotswing/src/services/court_assign_service.dart';
 import 'package:hotswing/src/services/player_service.dart';
 import 'package:realm/realm.dart';
@@ -19,30 +21,81 @@ class PlayersProvider with ChangeNotifier {
   final List<Player> _unassignedPlayers = [];
 
   PlayersProvider() {
-    final List<int> skillRates = skillLevelToRate.values.toList();
+    initialized();
 
-    _playerService.deleteAllPlayers();
-    for (int i = 1; i <= 32; i++) {
-      String playerName = '플레이어 $i';
-      String role = _random.nextBool() ? "manager" : "user";
-      int playerRate = skillRates[_random.nextInt(skillRates.length)];
-      String gender = _random.nextBool() ? '남' : '여';
-      int played = 0;
-      int waited = 0;
-      int lated = 0;
-      addPlayer(
-        name: playerName,
-        role: role,
-        rate: playerRate,
-        gender: gender,
-        played: played,
-        waited: waited,
-        lated: lated,
-        groups: [],
+    notifyListeners();
+  }
+
+  void initialized() async {
+    try {
+      await _loadInitialAssignedPlayersCount();
+      await _sharedPreferencesInit();
+      await _loadInitialPlayers();
+
+      final List<int> skillRates = skillLevelToRate.values.toList();
+      // _playerService.deleteAllPlayers();
+      // for (int i = 1; i <= 32; i++) {
+      //   String name = '플레이어 $i';
+      //   String role = _random.nextBool() ? "manager" : "user";
+      //   int rate = skillRates[_random.nextInt(skillRates.length)];
+      //   String gender = _random.nextBool() ? '남' : '여';
+      //   int played = 0;
+      //   int waited = 0;
+      //   int lated = 0;
+      //   final ObjectId newId = ObjectId();
+      //   Player newPlayer = Player(
+      //     newId,
+      //     name,
+      //     role,
+      //     rate,
+      //     gender,
+      //     played: played,
+      //     waited: waited,
+      //     lated: lated,
+      //     gamesPlayedWith: {},
+      //     groups: RealmList<ObjectId>([]),
+      //   );
+      //   _playerService.addPlayer(newPlayer);
+      //   addPlayerInCourt(newPlayer, []);
+      // }
+      // _saveLoadedPlayers();
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> _sharedPreferencesInit() async {
+    await SharedProvider().init();
+  }
+
+  Future<void> _loadInitialPlayers() async {
+    List<String> unassignedIds = await SharedProvider().getStringList("unassignedPlayers") ?? [];
+    List<ObjectId> unassignedObjectIds = unassignedIds.map((id) => ObjectId.fromHexString(id)).toList();
+    if (unassignedIds.isNotEmpty) {
+      _unassignedPlayers.clear();
+      _unassignedPlayers.addAll(_playerService.findPlayersByIds(unassignedObjectIds).whereType<Player>().toList());
+    }
+    List<String> assignedIds = await SharedProvider().getStringList("assignedPlayers") ?? [];
+    if (assignedIds.isNotEmpty) {
+      _assignedPlayers.clear();
+      _assignedPlayers.addAll(
+        assignedIds.map((encodedList) {
+          List<dynamic> decoded = jsonDecode(encodedList);
+          List<ObjectId?> singleCourt = decoded.map((id) => (id == "") ? null : ObjectId.fromHexString(id)).toList();
+          return _playerService.findPlayersByIds(singleCourt);
+        }).toList(),
       );
     }
+  }
 
-    _loadInitialAssignedPlayersCount();
+  Future<void> _saveLoadedPlayers() async {
+    final List<String> assignedPlayersIdListNested = _assignedPlayers
+        .map((innerList) => innerList.map((player) => player?.id.toString() ?? "").toList())
+        .map((idList) => jsonEncode(idList))
+        .toList();
+    final List<String> unassignedPlayersIdList = _unassignedPlayers.map((player) => player.id.toString()).toList();
+    await SharedProvider().saveStringList("assignedPlayers", assignedPlayersIdListNested);
+    await SharedProvider().saveStringList("unassignedPlayers", unassignedPlayersIdList);
   }
 
   Future<void> _loadInitialAssignedPlayersCount() async {
@@ -87,6 +140,7 @@ class PlayersProvider with ChangeNotifier {
     _playerService.addPlayer(newPlayer);
     addPlayerInCourt(newPlayer, groups);
 
+    _saveLoadedPlayers();
     notifyListeners();
   }
 
@@ -108,6 +162,8 @@ class PlayersProvider with ChangeNotifier {
   void loadPlayer(Player player, List<ObjectId> groups) {
     addPlayerInCourt(player, groups);
     _playerService.updateGroups(player, groups);
+
+    _saveLoadedPlayers();
     notifyListeners();
   }
 
@@ -116,11 +172,7 @@ class PlayersProvider with ChangeNotifier {
       Player? playerToRemove = _players[playerId];
       if (playerToRemove == null) return;
       if (playerToRemove.groups.isNotEmpty) {
-        _playerService.removeGroupPlayers(
-          _players,
-          playerToRemove.groups,
-          playerId,
-        );
+        _playerService.removeGroupPlayers(_players, playerToRemove.groups, playerId);
       }
       for (int i = 0; i < _assignedPlayers.length; i++) {
         for (int j = 0; j < _assignedPlayers[i].length; j++) {
@@ -131,6 +183,7 @@ class PlayersProvider with ChangeNotifier {
       }
       _unassignedPlayers.remove(playerToRemove);
       _players.remove(playerId);
+      _saveLoadedPlayers();
       notifyListeners();
     }
   }
@@ -151,11 +204,7 @@ class PlayersProvider with ChangeNotifier {
 
     //기존 그룹 플레이어들의 그룹 제거
     if (playerToUpdate.groups.isNotEmpty) {
-      _playerService.removeGroupPlayers(
-        _players,
-        playerToUpdate.groups,
-        playerId,
-      );
+      _playerService.removeGroupPlayers(_players, playerToUpdate.groups, playerId);
     }
 
     _playerService.updatePlayer(
@@ -175,6 +224,7 @@ class PlayersProvider with ChangeNotifier {
       _playerService.updateGroupPlayers(_players, newGroups, playerId);
     }
 
+    _saveLoadedPlayers();
     notifyListeners();
   }
 
@@ -237,6 +287,7 @@ class PlayersProvider with ChangeNotifier {
     for (var player in _unassignedPlayers) {
       _playerService.incrementWaited(player);
     }
+    _saveLoadedPlayers();
     notifyListeners();
   }
 
@@ -256,8 +307,7 @@ class PlayersProvider with ChangeNotifier {
         playerIndexInSection2 >= _assignedPlayers[sectionIndex2].length) {
       return;
     }
-    if (sectionIndex1 == sectionIndex2 &&
-        playerIndexInSection1 == playerIndexInSection2) {
+    if (sectionIndex1 == sectionIndex2 && playerIndexInSection1 == playerIndexInSection2) {
       return;
     }
 
@@ -267,6 +317,7 @@ class PlayersProvider with ChangeNotifier {
     _assignedPlayers[sectionIndex1][playerIndexInSection1] = player2;
     _assignedPlayers[sectionIndex2][playerIndexInSection2] = player1;
 
+    _saveLoadedPlayers();
     notifyListeners();
   }
 
@@ -278,16 +329,13 @@ class PlayersProvider with ChangeNotifier {
     if (targetCourtSectionIndex < 0 ||
         targetCourtSectionIndex >= _assignedPlayers.length ||
         targetCourtPlayerIndex < 0 ||
-        targetCourtPlayerIndex >=
-            _assignedPlayers[targetCourtSectionIndex].length) {
+        targetCourtPlayerIndex >= _assignedPlayers[targetCourtSectionIndex].length) {
       return;
     }
     if (!_unassignedPlayers.contains(unassignedPlayerToAssign)) return;
 
-    Player? playerCurrentlyInCourt =
-        _assignedPlayers[targetCourtSectionIndex][targetCourtPlayerIndex];
-    _assignedPlayers[targetCourtSectionIndex][targetCourtPlayerIndex] =
-        unassignedPlayerToAssign;
+    Player? playerCurrentlyInCourt = _assignedPlayers[targetCourtSectionIndex][targetCourtPlayerIndex];
+    _assignedPlayers[targetCourtSectionIndex][targetCourtPlayerIndex] = unassignedPlayerToAssign;
     _unassignedPlayers.remove(unassignedPlayerToAssign);
 
     if (playerCurrentlyInCourt != null) {
@@ -295,26 +343,23 @@ class PlayersProvider with ChangeNotifier {
         _unassignedPlayers.add(playerCurrentlyInCourt);
       }
     }
+
+    _saveLoadedPlayers();
     notifyListeners();
   }
 
-  void removePlayerFromCourt({
-    required int sectionIndex,
-    required int playerIndexInSection,
-  }) {
+  void removePlayerFromCourt({required int sectionIndex, required int playerIndexInSection}) {
     if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) return;
-    if (playerIndexInSection < 0 ||
-        playerIndexInSection >= _assignedPlayers[sectionIndex].length)
-      return;
+    if (playerIndexInSection < 0 || playerIndexInSection >= _assignedPlayers[sectionIndex].length) return;
 
-    Player? playerToRemove =
-        _assignedPlayers[sectionIndex][playerIndexInSection];
+    Player? playerToRemove = _assignedPlayers[sectionIndex][playerIndexInSection];
 
     if (playerToRemove != null) {
       _assignedPlayers[sectionIndex][playerIndexInSection] = null;
       if (!_unassignedPlayers.contains(playerToRemove)) {
         _unassignedPlayers.add(playerToRemove);
       }
+      _saveLoadedPlayers();
       notifyListeners();
     }
   }
@@ -339,6 +384,7 @@ class PlayersProvider with ChangeNotifier {
         _assignedPlayers[sectionIndex][i] = null;
       }
     }
+    _saveLoadedPlayers();
     notifyListeners();
   }
 
@@ -359,10 +405,7 @@ class PlayersProvider with ChangeNotifier {
       if (_assignedPlayers[sectionIndex][i] == null) {
         Player? playerToAssign = _courtService.findBestPlayerForCourt(
           unassignedPlayers: _unassignedPlayers,
-          currentPlayersOnCourt: _assignedPlayers[sectionIndex]
-              .where((p) => p != null)
-              .cast<Player>()
-              .toList(),
+          currentPlayersOnCourt: _assignedPlayers[sectionIndex].where((p) => p != null).cast<Player>().toList(),
           skillWeight: skillWeight,
           genderWeight: genderWeight,
           waitedWeight: waitedWeight,
@@ -377,12 +420,12 @@ class PlayersProvider with ChangeNotifier {
       }
     }
 
+    _saveLoadedPlayers();
     notifyListeners();
   }
 
   List<Player> get unassignedPlayers => List.unmodifiable(_unassignedPlayers);
 
   // 코트에 할당된 플레이어들의 수정 불가능한 목록 (리스트의 리스트 형태)을 반환합니다.
-  List<List<Player?>> get assignedPlayers =>
-      List.unmodifiable(_assignedPlayers);
+  List<List<Player?>> get assignedPlayers => List.unmodifiable(_assignedPlayers);
 }

@@ -23,21 +23,14 @@ class GamePlayedDialog extends StatelessWidget {
     final double titleFontSize = isMobileSize ? 20 : 32;
     final double contentFontSize = isMobileSize ? 16 : 28;
     final double buttonFontSize = isMobileSize ? 14 : 24;
-    final double dialogWidth = isMobileSize
-        ? screenWidth * 0.8
-        : screenWidth * 0.5;
-    final double dialogHeight = isMobileSize
-        ? screenHeight * 0.4
-        : screenHeight * 0.4;
+    final double dialogWidth = isMobileSize ? screenWidth * 0.8 : screenWidth * 0.5;
+    final double dialogHeight = isMobileSize ? screenHeight * 0.4 : screenHeight * 0.4;
 
     final sortedNotPlayedWithNames = List<String>.from(notPlayedWithNames)..sort();
     bool hasNotPlayedWith = notPlayedWithNames.isNotEmpty;
 
     return AlertDialog(
-      title: Text(
-        '${player.name}님과 함께 플레이한 사람',
-        style: TextStyle(fontSize: titleFontSize),
-      ),
+      title: Text('${player.name}님과 함께 플레이한 사람', style: TextStyle(fontSize: titleFontSize)),
       content: SizedBox(
         width: dialogWidth,
         height: dialogHeight,
@@ -61,10 +54,7 @@ class GamePlayedDialog extends StatelessWidget {
                 final entry = gamesPlayedWithMap.entries.elementAt(mapIndex);
                 return ListTile(
                   dense: true,
-                  title: Text(
-                    '${entry.key}: ${entry.value} 회',
-                    style: TextStyle(fontSize: contentFontSize),
-                  ),
+                  title: Text('${entry.key}: ${entry.value} 회', style: TextStyle(fontSize: contentFontSize)),
                 );
               }
             },
