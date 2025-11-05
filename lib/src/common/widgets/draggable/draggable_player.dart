@@ -10,14 +10,14 @@ import 'package:realm/realm.dart';
 class PlayerDragData {
   final Player player;
   final dynamic sourceSectionId;
-  final int section_index;
-  final int sub_index;
+  final int sectionIndex;
+  final int subIndex;
 
   PlayerDragData({
     required this.player,
     required this.sourceSectionId,
-    required this.section_index,
-    required this.sub_index,
+    required this.sectionIndex,
+    required this.subIndex,
   });
 }
 
@@ -25,8 +25,9 @@ class PlayerDragData {
 class DraggablePlayerItem extends StatelessWidget {
   final Player player;
   final dynamic sourceSectionId;
-  final int section_index;
-  final int sub_index;
+  final String sectionKind;
+  final int sectionIndex;
+  final int subIndex;
   final bool isDragEnabled;
   final VoidCallback? onDragStarted;
   final VoidCallback? onDragEnded;
@@ -35,8 +36,9 @@ class DraggablePlayerItem extends StatelessWidget {
     Key? key,
     required this.player,
     required this.sourceSectionId,
-    required this.section_index,
-    required this.sub_index,
+    required this.sectionKind,
+    required this.sectionIndex,
+    required this.subIndex,
     this.isDragEnabled = true,
     this.onDragStarted,
     this.onDragEnded,
@@ -142,8 +144,8 @@ class DraggablePlayerItem extends StatelessWidget {
       data: PlayerDragData(
         player: player,
         sourceSectionId: sourceSectionId,
-        section_index: section_index,
-        sub_index: sub_index,
+        sectionIndex: sectionIndex,
+        subIndex: subIndex,
       ),
       feedback: Material(
         color: Colors.transparent,
@@ -175,17 +177,17 @@ class DraggablePlayerItem extends StatelessWidget {
       // 드래그 중에는 순수 UI만 표시 (탭 기능 없음)
       childWhenDragging: Opacity(opacity: 0.5, child: playerItemDisplay),
       onDragStarted: () {
-        if (section_index != -1 && onDragStarted != null) {
+        if (sectionIndex != -1 && onDragStarted != null) {
           onDragStarted!();
         }
       },
       onDraggableCanceled: (velocity, offset) {
-        if (section_index != -1 && onDragEnded != null) {
+        if (sectionIndex != -1 && onDragEnded != null) {
           onDragEnded!();
         }
       },
       onDragCompleted: () {
-        if (section_index != -1 && onDragEnded != null) {
+        if (sectionIndex != -1 && onDragEnded != null) {
           onDragEnded!();
         }
       },
@@ -199,9 +201,10 @@ class DraggablePlayerItem extends StatelessWidget {
 class PlayerDropZone extends StatelessWidget {
   final dynamic sectionId;
   final Player? player;
-  final int section_index;
-  final int sub_index;
-  final Function(PlayerDragData data, Player? targetPlayer, dynamic targetSectionId, int section_index, int sub_index)
+  final String sectionKind;
+  final int sectionIndex;
+  final int subIndex;
+  final Function(PlayerDragData data, Player? targetPlayer, dynamic targetSectionId, int sectionIndex, int subIndex)
   onPlayerDropped;
   final bool isDropEnabled;
   final Color? backgroundColor;
@@ -212,8 +215,9 @@ class PlayerDropZone extends StatelessWidget {
     Key? key,
     required this.sectionId,
     this.player,
-    required this.section_index,
-    required this.sub_index,
+    required this.sectionKind,
+    required this.sectionIndex,
+    required this.subIndex,
     required this.onPlayerDropped,
     this.isDropEnabled = true,
     this.backgroundColor,
@@ -233,7 +237,7 @@ class PlayerDropZone extends StatelessWidget {
       },
       onAcceptWithDetails: (details) {
         if (isDropEnabled) {
-          onPlayerDropped(details.data, player, sectionId, section_index, sub_index);
+          onPlayerDropped(details.data, player, sectionId, sectionIndex, subIndex);
         }
       },
       builder: (context, candidateData, rejectedData) {
@@ -266,8 +270,9 @@ class PlayerDropZone extends StatelessWidget {
                 : DraggablePlayerItem(
                     player: player!,
                     sourceSectionId: sectionId,
-                    section_index: section_index,
-                    sub_index: sub_index,
+                    sectionKind: sectionKind,
+                    sectionIndex: sectionIndex,
+                    subIndex: subIndex,
                     onDragStarted: onDragStartedFromZone,
                     onDragEnded: onDragEndedFromZone,
                   ),

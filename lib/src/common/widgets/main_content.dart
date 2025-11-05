@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/widgets/courts/assigned_court.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
 import 'package:hotswing/src/enums/player_sort.dart';
 import 'package:hotswing/src/models/players/player.dart';
@@ -87,8 +88,8 @@ class _MainContentState extends State<MainContent> {
   ) {
     final playersProvider = Provider.of<PlayersProvider>(context, listen: false);
     final Player draggedPlayer = data.player;
-    final int sourceSectionIndex = data.section_index;
-    final int sourceSubIndex = data.sub_index;
+    final int sourceSectionIndex = data.sectionIndex;
+    final int sourceSubIndex = data.subIndex;
 
     // 사례 1: 할당되지 않은 목록에서 드래그한 경우
     if (sourceSectionIndex == -1) {
@@ -193,341 +194,40 @@ class _MainContentState extends State<MainContent> {
         children: <Widget>[
           Expanded(
             flex: 2,
-            child: Center(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                    children: sectionData.asMap().entries.map((entry) {
-                      int sectionIndex = entry.key;
-                      List<Player?> item = entry.value;
-                      bool isGameStarted = _courtGameStartedState[sectionIndex] ?? false;
-                      return Container(
-                        margin: const EdgeInsets.all(5.0),
-                        padding: const EdgeInsets.all(5.0),
-                        decoration: BoxDecoration(color: pastelBlue, borderRadius: BorderRadius.circular(20.0)),
-                        child: Column(
-                          // Outer Column for title + Stack
-                          children: [
-                            Row(
-                              // Title and buttons
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  '${sectionIndex + 1} 코트',
-                                  style: TextStyle(
-                                    fontSize: widget.isMobileSize ? 20.0 : 32.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(width: widget.isMobileSize ? 16.0 : 32.0),
-                                SizedBox(
-                                  width: widget.isMobileSize ? 40.0 : 50.0,
-                                  height: widget.isMobileSize ? 30.0 : 45.0,
-                                  child: FloatingActionButton(
-                                    elevation: 2.0,
-                                    onPressed: () {
-                                      playersProvider.movePlayersFromCourtToUnassigned(sectionIndex, 0);
-                                      setState(() {
-                                        _courtGameStartedState[sectionIndex] = false;
-                                      });
-                                    },
-                                    heroTag: 'refresh_fab_$sectionIndex',
-                                    child: Icon(Icons.refresh, size: widget.isMobileSize ? 18.0 : 24.0),
-                                  ),
-                                ),
-                                const SizedBox(width: 8.0),
-                                if (!isGameStarted)
-                                  SizedBox(
-                                    width: widget.isMobileSize ? 80.0 : 120.0,
-                                    height: widget.isMobileSize ? 30.0 : 45.0,
-                                    child: FloatingActionButton(
-                                      elevation: 2.0,
-                                      onPressed: () {
-                                        playersProvider.assignPlayersToCourt(
-                                          sectionIndex,
-                                          skillWeight: optionsProvider.skillWeight,
-                                          genderWeight: optionsProvider.genderWeight,
-                                          waitedWeight: optionsProvider.waitedWeight,
-                                          playedWeight: optionsProvider.playedWeight,
-                                          playedWithWeight: optionsProvider.playedWithWeight,
-                                        );
-                                        setState(() {
-                                          _courtGameStartedState[sectionIndex] = true;
-                                        });
-                                      },
-                                      heroTag: 'start_fab_$sectionIndex',
-                                      child: Text(
-                                        '자동 매칭',
-                                        style: TextStyle(fontSize: widget.isMobileSize ? 12.0 : 20.0),
-                                      ),
-                                    ),
-                                  )
-                                else // isGameStarted
-                                  SizedBox(
-                                    width: widget.isMobileSize ? 90.0 : 150.0,
-                                    height: widget.isMobileSize ? 30.0 : 45.0,
-                                    child: FloatingActionButton(
-                                      elevation: 2.0,
-                                      onPressed: () {
-                                        playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
-                                        playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
-                                        setState(() {
-                                          _courtGameStartedState[sectionIndex] = false;
-                                        });
-                                      },
-                                      heroTag: 'stop_fab_$sectionIndex',
-                                      child: Text(
-                                        '경기 종료',
-                                        style: TextStyle(fontSize: widget.isMobileSize ? 12.0 : 20.0),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 4.0),
-                            SizedBox(
-                              height: widget.isMobileSize ? 310.0 : 510.0,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: PlayerDropZone(
-                                              sectionId: '${sectionIndex}_0',
-                                              player: item.asMap().containsKey(0) ? item[0] : null,
-                                              section_index: sectionIndex,
-                                              sub_index: 0,
-                                              onPlayerDropped:
-                                                  (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                                      _handlePlayerDrop(
-                                                        context,
-                                                        data,
-                                                        droppedOnPlayer,
-                                                        targetId,
-                                                        targetSectionIdx,
-                                                        targetSubIdx,
-                                                      ),
-                                              onDragStartedFromZone: _onCourtPlayerDragStarted,
-                                              onDragEndedFromZone: _onCourtPlayerDragEnded,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: PlayerDropZone(
-                                              sectionId: '${sectionIndex}_1',
-                                              player: item.asMap().containsKey(1) ? item[1] : null,
-                                              section_index: sectionIndex,
-                                              sub_index: 1,
-                                              onPlayerDropped:
-                                                  (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                                      _handlePlayerDrop(
-                                                        context,
-                                                        data,
-                                                        droppedOnPlayer,
-                                                        targetId,
-                                                        targetSectionIdx,
-                                                        targetSubIdx,
-                                                      ),
-                                              onDragStartedFromZone: _onCourtPlayerDragStarted,
-                                              onDragEndedFromZone: _onCourtPlayerDragEnded,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: widget.isMobileSize ? 10.0 : 10.0),
-                                      SizedBox(height: widget.isMobileSize ? 10.0 : 10.0),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: PlayerDropZone(
-                                              sectionId: '${sectionIndex}_2',
-                                              player: item.asMap().containsKey(2) ? item[2] : null,
-                                              section_index: sectionIndex,
-                                              sub_index: 2,
-                                              onPlayerDropped:
-                                                  (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                                      _handlePlayerDrop(
-                                                        context,
-                                                        data,
-                                                        droppedOnPlayer,
-                                                        targetId,
-                                                        targetSectionIdx,
-                                                        targetSubIdx,
-                                                      ),
-                                              onDragStartedFromZone: _onCourtPlayerDragStarted,
-                                              onDragEndedFromZone: _onCourtPlayerDragEnded,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: PlayerDropZone(
-                                              sectionId: '${sectionIndex}_3',
-                                              player: item.asMap().containsKey(3) ? item[3] : null,
-                                              section_index: sectionIndex,
-                                              sub_index: 3,
-                                              onPlayerDropped:
-                                                  (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                                      _handlePlayerDrop(
-                                                        context,
-                                                        data,
-                                                        droppedOnPlayer,
-                                                        targetId,
-                                                        targetSectionIdx,
-                                                        targetSubIdx,
-                                                      ),
-                                              onDragStartedFromZone: _onCourtPlayerDragStarted,
-                                              onDragEndedFromZone: _onCourtPlayerDragEnded,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  // Indicators
-                                  Align(
-                                    alignment: FractionalOffset(0.5, 0.20),
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: isMobileSize ? 5.0 : 15.0,
-                                        vertical: isMobileSize ? 3.0 : 5.0,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: playedWithColor, // 변경된 부분
-                                        borderRadius: BorderRadius.circular(16.0),
-                                      ),
-                                      child: Text(
-                                        getGamesPlayedWith(item, 0, 1),
-                                        style: TextStyle(
-                                          fontSize: isMobileSize ? 16.0 : 28.0,
-                                          color: playedWithTextColor,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Align(
-                                    alignment: FractionalOffset(0.5, 0.80),
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: isMobileSize ? 5.0 : 15.0,
-                                        vertical: isMobileSize ? 3.0 : 5.0,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: playedWithColor, // 변경된 부분
-                                        borderRadius: BorderRadius.circular(16.0),
-                                      ),
-                                      child: Text(
-                                        getGamesPlayedWith(item, 2, 3),
-                                        style: TextStyle(
-                                          fontSize: isMobileSize ? 16.0 : 28.0,
-                                          color: playedWithTextColor,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Align(
-                                    alignment: FractionalOffset(0.05, 0.5),
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: isMobileSize ? 5.0 : 15.0,
-                                        vertical: isMobileSize ? 3.0 : 5.0,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: playedWithColor, // 변경된 부분
-                                        borderRadius: BorderRadius.circular(16.0),
-                                      ),
-                                      child: Text(
-                                        getGamesPlayedWith(item, 0, 2),
-                                        style: TextStyle(
-                                          fontSize: isMobileSize ? 16.0 : 28.0,
-                                          color: playedWithTextColor,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Align(
-                                    alignment: FractionalOffset(0.95, 0.5),
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: isMobileSize ? 5.0 : 15.0,
-                                        vertical: isMobileSize ? 3.0 : 5.0,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: playedWithColor, // 변경된 부분
-                                        borderRadius: BorderRadius.circular(16.0),
-                                      ),
-                                      child: Text(
-                                        getGamesPlayedWith(item, 1, 3),
-                                        style: TextStyle(
-                                          fontSize: isMobileSize ? 16.0 : 28.0,
-                                          color: playedWithTextColor,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Align(
-                                    alignment: FractionalOffset(isMobileSize ? 0.25 : 0.35, 0.5),
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: isMobileSize ? 5.0 : 15.0,
-                                            vertical: isMobileSize ? 3.0 : 5.0,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: playedWithColor,
-                                            borderRadius: BorderRadius.circular(16.0),
-                                          ),
-                                          child: Text(
-                                            '1⇄4 ' + getGamesPlayedWith(item, 0, 3),
-                                            style: TextStyle(
-                                              fontSize: isMobileSize ? 16.0 : 28.0,
-                                              color: playedWithTextColor,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Align(
-                                    alignment: FractionalOffset(isMobileSize ? 0.75 : 0.65, 0.5),
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: isMobileSize ? 5.0 : 15.0,
-                                            vertical: isMobileSize ? 3.0 : 5.0,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: playedWithColor,
-                                            borderRadius: BorderRadius.circular(16.0),
-                                          ),
-                                          child: Text(
-                                            '2⇄3 ' + getGamesPlayedWith(item, 1, 2),
-                                            style: TextStyle(
-                                              fontSize: isMobileSize ? 16.0 : 28.0,
-                                              color: playedWithTextColor,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
+            child: CourtSectionsView(
+              isMobileSize: widget.isMobileSize,
+              sectionData: sectionData,
+              courtGameStartedState: _courtGameStartedState,
+              getGamesPlayedWith: getGamesPlayedWith,
+              onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
+              onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
+              onPlayerDrop: _handlePlayerDrop,
+              onRefreshCourt: (sectionIndex) {
+                playersProvider.movePlayersFromCourtToUnassigned(sectionIndex, 0);
+                setState(() {
+                  _courtGameStartedState[sectionIndex] = false;
+                });
+              },
+              onAutoMatch: (sectionIndex) {
+                playersProvider.assignPlayersToCourt(
+                  sectionIndex,
+                  skillWeight: optionsProvider.skillWeight,
+                  genderWeight: optionsProvider.genderWeight,
+                  waitedWeight: optionsProvider.waitedWeight,
+                  playedWeight: optionsProvider.playedWeight,
+                  playedWithWeight: optionsProvider.playedWithWeight,
+                );
+                setState(() {
+                  _courtGameStartedState[sectionIndex] = true;
+                });
+              },
+              onEndGame: (sectionIndex) {
+                playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
+                playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
+                setState(() {
+                  _courtGameStartedState[sectionIndex] = false;
+                });
+              },
             ),
           ),
           const VerticalDivider(width: 1.0, color: Colors.grey),
@@ -609,10 +309,11 @@ class _MainContentState extends State<MainContent> {
                                   Player player = entry.value;
                                   final String playerSectionId = 'unassigned_$playerIndex';
                                   return PlayerDropZone(
-                                    sectionId: playerSectionId,
                                     player: player,
-                                    section_index: -1,
-                                    sub_index: playerIndex,
+                                    sectionId: playerSectionId,
+                                    sectionKind: 'unassigned',
+                                    sectionIndex: -1,
+                                    subIndex: playerIndex,
                                     onPlayerDropped:
                                         (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
                                             _handlePlayerDrop(
@@ -638,7 +339,7 @@ class _MainContentState extends State<MainContent> {
                     child: DragTarget<PlayerDragData>(
                       onWillAcceptWithDetails: (details) {
                         final data = details.data;
-                        return data.section_index != -1;
+                        return data.sectionIndex != -1;
                       },
                       onAcceptWithDetails: (details) {
                         final data = details.data;
