@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned_court.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
+import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/enums/player_sort.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
@@ -83,16 +84,18 @@ class _MainContentState extends State<MainContent> {
     PlayerDragData data,
     Player? targetPlayer,
     dynamic targetSectionId,
+    String targetSectionKind,
     int targetSectionIndex,
     int targetSubIndex,
   ) {
     final playersProvider = Provider.of<PlayersProvider>(context, listen: false);
     final Player draggedPlayer = data.player;
+    final String sourceSectionKind = data.sectionKind;
     final int sourceSectionIndex = data.sectionIndex;
     final int sourceSubIndex = data.subIndex;
 
     // 사례 1: 할당되지 않은 목록에서 드래그한 경우
-    if (sourceSectionIndex == -1) {
+    if (sourceSectionKind == PlayerSectionKind.unassigned.value) {
       if (targetSectionIndex != -1) {
         playersProvider.exchangeUnassignedPlayerWithCourtPlayer(
           unassignedPlayerToAssign: draggedPlayer,
@@ -103,8 +106,8 @@ class _MainContentState extends State<MainContent> {
     }
     // 사례 2: 코트 슬롯에서 드래그한 경우
     else {
-      // 사례 2a: 다른 코트 슬롯에 놓은 경우
-      if (targetSectionIndex != -1) {
+      // 사례 2a: 다른 assigned 코트 슬롯에 놓은 경우
+      if (targetSectionKind == PlayerSectionKind.assigned.value) {
         if (sourceSectionIndex == targetSectionIndex && sourceSubIndex == targetSubIndex) {
           return;
         }
@@ -152,10 +155,6 @@ class _MainContentState extends State<MainContent> {
     double screenHeight = MediaQuery.of(context).size.height;
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
-
-    final Color pastelBlue = Color(0x9987CEFA);
-    final Color playedWithColor = Color(0xFF89A7DA);
-    final Color playedWithTextColor = Color(0xFFFFEB3B);
 
     final optionsProvider = Provider.of<OptionsProvider>(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
@@ -311,19 +310,26 @@ class _MainContentState extends State<MainContent> {
                                   return PlayerDropZone(
                                     player: player,
                                     sectionId: playerSectionId,
-                                    sectionKind: 'unassigned',
+                                    sectionKind: PlayerSectionKind.unassigned.value,
                                     sectionIndex: -1,
                                     subIndex: playerIndex,
                                     onPlayerDropped:
-                                        (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                            _handlePlayerDrop(
-                                              context,
-                                              data,
-                                              droppedOnPlayer,
-                                              targetId,
-                                              targetSectionIdx,
-                                              targetSubIdx,
-                                            ),
+                                        (
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          sectionKind,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ) => _handlePlayerDrop(
+                                          context,
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          sectionKind,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ),
                                   );
                                 }).toList(),
                               ),
@@ -343,7 +349,7 @@ class _MainContentState extends State<MainContent> {
                       },
                       onAcceptWithDetails: (details) {
                         final data = details.data;
-                        _handlePlayerDrop(context, data, null, 'unassigned_area_delete_overlay', -1, -1);
+                        _handlePlayerDrop(context, data, null, 'unassigned_area_delete_overlay', 'drop', -1, -1);
                       },
                       builder: (BuildContext context, List<PlayerDragData?> candidateData, List<dynamic> rejectedData) {
                         final bool isHovering = candidateData.isNotEmpty;

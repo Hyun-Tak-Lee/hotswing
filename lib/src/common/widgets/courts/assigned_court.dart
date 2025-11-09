@@ -3,6 +3,7 @@
 //
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
+import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/models/players/player.dart';
 
 class CourtSectionsView extends StatelessWidget {
@@ -12,7 +13,7 @@ class CourtSectionsView extends StatelessWidget {
   final Function(int) onRefreshCourt;
   final Function(int) onAutoMatch;
   final Function(int) onEndGame;
-  final Function(BuildContext, PlayerDragData, Player?, dynamic, int, int) onPlayerDrop;
+  final Function(BuildContext, PlayerDragData, Player?, dynamic, String, int, int) onPlayerDrop;
   final VoidCallback onCourtPlayerDragStarted;
   final VoidCallback onCourtPlayerDragEnded;
   final String Function(List<Player?>, int, int) getGamesPlayedWith;
@@ -113,19 +114,26 @@ class CourtSectionsView extends StatelessWidget {
                                     child: PlayerDropZone(
                                       sectionId: '${sectionIndex}_0',
                                       player: item.asMap().containsKey(0) ? item[0] : null,
-                                      sectionKind: 'assigned',
+                                      sectionKind: PlayerSectionKind.assigned.value,
                                       sectionIndex: sectionIndex,
                                       subIndex: 0,
                                       onPlayerDropped:
-                                          (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                              onPlayerDrop(
-                                                context,
-                                                data,
-                                                droppedOnPlayer,
-                                                targetId,
-                                                targetSectionIdx,
-                                                targetSubIdx,
-                                              ),
+                                          (
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            sectionKind,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ) => onPlayerDrop(
+                                            context,
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            sectionKind,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ),
                                       onDragStartedFromZone: onCourtPlayerDragStarted,
                                       onDragEndedFromZone: onCourtPlayerDragEnded,
                                     ),
@@ -134,19 +142,26 @@ class CourtSectionsView extends StatelessWidget {
                                     child: PlayerDropZone(
                                       sectionId: '${sectionIndex}_1',
                                       player: item.asMap().containsKey(1) ? item[1] : null,
-                                      sectionKind: 'assigned',
+                                      sectionKind: PlayerSectionKind.assigned.value,
                                       sectionIndex: sectionIndex,
                                       subIndex: 1,
                                       onPlayerDropped:
-                                          (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                              onPlayerDrop(
-                                                context,
-                                                data,
-                                                droppedOnPlayer,
-                                                targetId,
-                                                targetSectionIdx,
-                                                targetSubIdx,
-                                              ),
+                                          (
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            sectionKind,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ) => onPlayerDrop(
+                                            context,
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            sectionKind,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ),
                                       onDragStartedFromZone: onCourtPlayerDragStarted,
                                       onDragEndedFromZone: onCourtPlayerDragEnded,
                                     ),
@@ -162,18 +177,25 @@ class CourtSectionsView extends StatelessWidget {
                                       sectionId: '${sectionIndex}_2',
                                       player: item.asMap().containsKey(2) ? item[2] : null,
                                       sectionIndex: sectionIndex,
-                                      sectionKind: 'assigned',
+                                      sectionKind: PlayerSectionKind.assigned.value,
                                       subIndex: 2,
                                       onPlayerDropped:
-                                          (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                              onPlayerDrop(
-                                                context,
-                                                data,
-                                                droppedOnPlayer,
-                                                targetId,
-                                                targetSectionIdx,
-                                                targetSubIdx,
-                                              ),
+                                          (
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            sectionKind,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ) => onPlayerDrop(
+                                            context,
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            sectionKind,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ),
                                       onDragStartedFromZone: onCourtPlayerDragStarted,
                                       onDragEndedFromZone: onCourtPlayerDragEnded,
                                     ),
@@ -182,19 +204,26 @@ class CourtSectionsView extends StatelessWidget {
                                     child: PlayerDropZone(
                                       sectionId: '${sectionIndex}_3',
                                       player: item.asMap().containsKey(3) ? item[3] : null,
-                                      sectionKind: 'assigned',
+                                      sectionKind: PlayerSectionKind.assigned.value,
                                       sectionIndex: sectionIndex,
                                       subIndex: 3,
                                       onPlayerDropped:
-                                          (data, droppedOnPlayer, targetId, targetSectionIdx, targetSubIdx) =>
-                                              onPlayerDrop(
-                                                context,
-                                                data,
-                                                droppedOnPlayer,
-                                                targetId,
-                                                targetSectionIdx,
-                                                targetSubIdx,
-                                              ),
+                                          (
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            sectionKind,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ) => onPlayerDrop(
+                                            context,
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            sectionKind,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ),
 
                                       onDragStartedFromZone: onCourtPlayerDragStarted,
                                       onDragEndedFromZone: onCourtPlayerDragEnded,

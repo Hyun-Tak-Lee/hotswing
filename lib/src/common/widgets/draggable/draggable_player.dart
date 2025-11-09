@@ -10,12 +10,14 @@ import 'package:realm/realm.dart';
 class PlayerDragData {
   final Player player;
   final dynamic sourceSectionId;
+  final String sectionKind;
   final int sectionIndex;
   final int subIndex;
 
   PlayerDragData({
     required this.player,
     required this.sourceSectionId,
+    required this.sectionKind,
     required this.sectionIndex,
     required this.subIndex,
   });
@@ -144,6 +146,7 @@ class DraggablePlayerItem extends StatelessWidget {
       data: PlayerDragData(
         player: player,
         sourceSectionId: sourceSectionId,
+        sectionKind: sectionKind,
         sectionIndex: sectionIndex,
         subIndex: subIndex,
       ),
@@ -204,7 +207,7 @@ class PlayerDropZone extends StatelessWidget {
   final String sectionKind;
   final int sectionIndex;
   final int subIndex;
-  final Function(PlayerDragData data, Player? targetPlayer, dynamic targetSectionId, int sectionIndex, int subIndex)
+  final Function(PlayerDragData data, Player? targetPlayer, dynamic targetSectionId,String sectionKind, int sectionIndex, int subIndex)
   onPlayerDropped;
   final bool isDropEnabled;
   final Color? backgroundColor;
@@ -237,7 +240,7 @@ class PlayerDropZone extends StatelessWidget {
       },
       onAcceptWithDetails: (details) {
         if (isDropEnabled) {
-          onPlayerDropped(details.data, player, sectionId, sectionIndex, subIndex);
+          onPlayerDropped(details.data, player, sectionId,sectionKind, sectionIndex, subIndex);
         }
       },
       builder: (context, candidateData, rejectedData) {
