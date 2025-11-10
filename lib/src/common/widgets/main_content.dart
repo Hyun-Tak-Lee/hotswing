@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned_court.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
-import 'package:hotswing/src/enums/player_sort.dart';
+import 'package:hotswing/src/enums/widget_feature.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
@@ -24,6 +24,8 @@ class _MainContentState extends State<MainContent> {
 
   SortCriterion _sortCriterion = SortCriterion.played;
   bool _sortAscending = true;
+
+  CourtViewSection selectedView = CourtViewSection.assignedView;
 
   @override
   void initState() {
@@ -193,40 +195,98 @@ class _MainContentState extends State<MainContent> {
         children: <Widget>[
           Expanded(
             flex: 2,
-            child: CourtSectionsView(
-              isMobileSize: widget.isMobileSize,
-              sectionData: sectionData,
-              courtGameStartedState: _courtGameStartedState,
-              getGamesPlayedWith: getGamesPlayedWith,
-              onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
-              onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
-              onPlayerDrop: _handlePlayerDrop,
-              onRefreshCourt: (sectionIndex) {
-                playersProvider.movePlayersFromCourtToUnassigned(sectionIndex, 0);
-                setState(() {
-                  _courtGameStartedState[sectionIndex] = false;
-                });
-              },
-              onAutoMatch: (sectionIndex) {
-                playersProvider.assignPlayersToCourt(
-                  sectionIndex,
-                  skillWeight: optionsProvider.skillWeight,
-                  genderWeight: optionsProvider.genderWeight,
-                  waitedWeight: optionsProvider.waitedWeight,
-                  playedWeight: optionsProvider.playedWeight,
-                  playedWithWeight: optionsProvider.playedWithWeight,
-                );
-                setState(() {
-                  _courtGameStartedState[sectionIndex] = true;
-                });
-              },
-              onEndGame: (sectionIndex) {
-                playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
-                playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
-                setState(() {
-                  _courtGameStartedState[sectionIndex] = false;
-                });
-              },
+            child: Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  margin: const EdgeInsets.symmetric(horizontal: 10.0,vertical: 4.0),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).canvasColor,
+                    border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "보기 옵션",
+                        style: TextStyle(
+                          fontSize: widget.isMobileSize ? 16.0 : 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SegmentedButton<CourtViewSection>(
+                        segments: <ButtonSegment<CourtViewSection>>[
+                          ButtonSegment<CourtViewSection>(
+                            value: CourtViewSection.assignedView,
+                            label: Text(
+                              '경기 코트',
+                              style: TextStyle(fontSize: widget.isMobileSize ? 14.0 : 16.0),
+                            ),
+                          ),
+                          ButtonSegment<CourtViewSection>(
+                            value: CourtViewSection.standbyView,
+                            label: Text(
+                              '대기 코트',
+                              style: TextStyle(fontSize: widget.isMobileSize ? 14.0 : 16.0),
+                            ),
+                          ),
+                        ],
+                        selected: <CourtViewSection>{selectedView},
+                        onSelectionChanged: (Set<CourtViewSection> newSelection) {
+                          setState(() {
+                            selectedView = newSelection.first;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+
+                Expanded(
+                  child: CourtSectionsView(
+                    isMobileSize: widget.isMobileSize,
+                    sectionData: sectionData,
+                    courtGameStartedState: _courtGameStartedState,
+                    getGamesPlayedWith: getGamesPlayedWith,
+                    onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
+                    onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
+                    onPlayerDrop: _handlePlayerDrop,
+                    onRefreshCourt: (sectionIndex) {
+                      playersProvider.movePlayersFromCourtToUnassigned(sectionIndex, 0);
+                      setState(() {
+                        _courtGameStartedState[sectionIndex] = false;
+                      });
+                    },
+                    onAutoMatch: (sectionIndex) {
+                      playersProvider.assignPlayersToCourt(
+                        sectionIndex,
+                        skillWeight: optionsProvider.skillWeight,
+                        genderWeight: optionsProvider.genderWeight,
+                        waitedWeight: optionsProvider.waitedWeight,
+                        playedWeight: optionsProvider.playedWeight,
+                        playedWithWeight: optionsProvider.playedWithWeight,
+                      );
+                      setState(() {
+                        _courtGameStartedState[sectionIndex] = true;
+                      });
+                    },
+                    onEndGame: (sectionIndex) {
+                      playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
+                      playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
+                      setState(() {
+                        _courtGameStartedState[sectionIndex] = false;
+                      });
+                    },
+                  ),
+
+                  // 참고: 나중에 _selectedView 값에 따라 다른 위젯을 보여줄 수 있습니다.
+                  // child: _selectedView == CourtViewSection.view1
+                  //     ? CourtSectionsView(...)
+                  //     : Center(child: Text('두 번째 뷰 영역')),
+                ),
+              ],
             ),
           ),
           const VerticalDivider(width: 1.0, color: Colors.grey),
@@ -235,7 +295,7 @@ class _MainContentState extends State<MainContent> {
             child: Stack(
               children: [
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 10.0),
+                  margin: const EdgeInsets.symmetric(horizontal: 10.0,vertical: 4.0),
                   child: Center(
                     child: FractionallySizedBox(
                       child: Column(
@@ -282,7 +342,6 @@ class _MainContentState extends State<MainContent> {
                                       icon: Icon(Icons.arrow_drop_down, size: widget.isMobileSize ? 20.0 : 22.0),
                                     ),
                                     SizedBox(width: 4.0),
-                                    // 오름차순/내림차순 버튼
                                     IconButton(
                                       icon: Icon(_sortAscending ? Icons.arrow_upward : Icons.arrow_downward),
                                       iconSize: widget.isMobileSize ? 20.0 : 22.0,
