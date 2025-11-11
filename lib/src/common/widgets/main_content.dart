@@ -17,6 +17,8 @@ class MainContent extends StatefulWidget {
   State<MainContent> createState() => _MainContentState();
 }
 
+
+
 class _MainContentState extends State<MainContent> {
   late PlayersProvider _playersProvider;
   bool _showCourtHighlight = false;
@@ -151,6 +153,38 @@ class _MainContentState extends State<MainContent> {
     return gamesCount?.toString() ?? '0';
   }
 
+  Widget _buildViewButton(String label, CourtViewSection value) {
+    final bool isSelected = (selectedView == value);
+
+    final buttonTextStyle = TextStyle(
+      fontSize: widget.isMobileSize ? 14.0 : 16.0,
+    );
+
+    final buttonStyle = ButtonStyle(
+      padding: WidgetStateProperty.all(
+        const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      ),
+      textStyle: WidgetStateProperty.all(buttonTextStyle),
+      visualDensity: VisualDensity.compact,
+    );
+
+    return isSelected
+        ? ElevatedButton(
+      style: buttonStyle,
+      onPressed: null,
+      child: Text(label),
+    )
+        : OutlinedButton(
+      style: buttonStyle,
+      onPressed: () {
+        setState(() {
+          selectedView = value;
+        });
+      },
+      child: Text(label),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -200,45 +234,26 @@ class _MainContentState extends State<MainContent> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  margin: const EdgeInsets.symmetric(horizontal: 10.0,vertical: 4.0),
+                  margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
                   decoration: BoxDecoration(
                     color: Theme.of(context).canvasColor,
                     border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "보기 옵션",
-                        style: TextStyle(
-                          fontSize: widget.isMobileSize ? 16.0 : 18.0,
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: _buildViewButton(
+                          '경기 코트',
+                          CourtViewSection.assignedView,
                         ),
                       ),
-                      SegmentedButton<CourtViewSection>(
-                        segments: <ButtonSegment<CourtViewSection>>[
-                          ButtonSegment<CourtViewSection>(
-                            value: CourtViewSection.assignedView,
-                            label: Text(
-                              '경기 코트',
-                              style: TextStyle(fontSize: widget.isMobileSize ? 14.0 : 16.0),
-                            ),
-                          ),
-                          ButtonSegment<CourtViewSection>(
-                            value: CourtViewSection.standbyView,
-                            label: Text(
-                              '대기 코트',
-                              style: TextStyle(fontSize: widget.isMobileSize ? 14.0 : 16.0),
-                            ),
-                          ),
-                        ],
-                        selected: <CourtViewSection>{selectedView},
-                        onSelectionChanged: (Set<CourtViewSection> newSelection) {
-                          setState(() {
-                            selectedView = newSelection.first;
-                          });
-                        },
+                      const SizedBox(width: 8.0),
+                      Expanded(
+                        child: _buildViewButton(
+                          '대기 코트',
+                          CourtViewSection.standbyView,
+                        ),
                       ),
                     ],
                   ),
