@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
@@ -18,6 +19,7 @@ class PlayersProvider with ChangeNotifier {
 
   final Map<ObjectId, Player> _players = {};
   final List<List<Player?>> _assignedPlayers = [];
+  final List<List<Player?>> _standbyPlayers = [];
   final List<Player> _unassignedPlayers = [];
 
   PlayersProvider() {
@@ -86,6 +88,17 @@ class PlayersProvider with ChangeNotifier {
         }).toList(),
       );
     }
+    List<String> standbyIds = await SharedProvider().getStringList("standbyPlayers") ?? [];
+    if (standbyIds.isNotEmpty) {
+      _standbyPlayers.clear();
+      _standbyPlayers.addAll(
+        standbyIds.map((encodedList) {
+          List<dynamic> decoded = jsonDecode(encodedList);
+          List<ObjectId?> singleCourt = decoded.map((id) => (id == "") ? null : ObjectId.fromHexString(id)).toList();
+          return _playerService.findPlayersByIds(singleCourt);
+        }).toList(),
+      );
+    }
   }
 
   Future<void> _saveLoadedPlayers() async {
@@ -93,8 +106,13 @@ class PlayersProvider with ChangeNotifier {
         .map((innerList) => innerList.map((player) => player?.id.toString() ?? "").toList())
         .map((idList) => jsonEncode(idList))
         .toList();
+    final List<String> standbyPlayersIdListNested = _standbyPlayers
+        .map((innerList) => innerList.map((player) => player?.id.toString() ?? "").toList())
+        .map((idList) => jsonEncode(idList))
+        .toList();
     final List<String> unassignedPlayersIdList = _unassignedPlayers.map((player) => player.id.toString()).toList();
     await SharedProvider().saveStringList("assignedPlayers", assignedPlayersIdListNested);
+    await SharedProvider().saveStringList("standbyPlayers", standbyPlayersIdListNested);
     await SharedProvider().saveStringList("unassignedPlayers", unassignedPlayersIdList);
   }
 
@@ -296,7 +314,9 @@ class PlayersProvider with ChangeNotifier {
     required int playerIndexInSection1,
     required int sectionIndex2,
     required int playerIndexInSection2,
+    required String targetCourtKind,
   }) {
+    dynamic targetCourtPlayers = targetCourtKind == "assigned" ? _assignedPlayers : _standbyPlayers;
     if (sectionIndex1 < 0 ||
         sectionIndex1 >= _assignedPlayers.length ||
         playerIndexInSection1 < 0 ||
@@ -325,6 +345,7 @@ class PlayersProvider with ChangeNotifier {
     required Player unassignedPlayerToAssign,
     required int targetCourtSectionIndex,
     required int targetCourtPlayerIndex,
+    required String targetCourtKind,
   }) {
     if (targetCourtSectionIndex < 0 ||
         targetCourtSectionIndex >= _assignedPlayers.length ||
@@ -428,4 +449,5 @@ class PlayersProvider with ChangeNotifier {
 
   // 코트에 할당된 플레이어들의 수정 불가능한 목록 (리스트의 리스트 형태)을 반환합니다.
   List<List<Player?>> get assignedPlayers => List.unmodifiable(_assignedPlayers);
+  List<List<Player?>> get standbyPlayers => List.unmodifiable(_standbyPlayers);
 }

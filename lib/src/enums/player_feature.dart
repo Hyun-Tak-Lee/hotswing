@@ -10,6 +10,7 @@ enum PlayerRole{
 enum PlayerSectionKind{
   unassigned("unassigned"),
   assigned("assigned"),
+  standby("standby"),
   drop("drop");
 
   final String value;

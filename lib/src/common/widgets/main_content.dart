@@ -35,7 +35,7 @@ class _MainContentState extends State<MainContent> {
     _playersProvider = Provider.of<PlayersProvider>(context, listen: false);
     _playersProvider.addListener(_syncCourtStates);
 
-    // 4. 첫 빌드 완료 후 초기 상태 동기화 실행
+    // 첫 빌드 완료 후 초기 상태 동기화 실행
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _syncCourtStates();
     });
@@ -105,13 +105,14 @@ class _MainContentState extends State<MainContent> {
           unassignedPlayerToAssign: draggedPlayer,
           targetCourtSectionIndex: targetSectionIndex,
           targetCourtPlayerIndex: targetSubIndex,
+          targetCourtKind: targetSectionKind,
         );
       }
     }
     // 사례 2: 코트 슬롯에서 드래그한 경우
     else {
       // 사례 2a: 다른 assigned 코트 슬롯에 놓은 경우
-      if (targetSectionKind == PlayerSectionKind.assigned.value) {
+      if (targetSectionKind != PlayerSectionKind.unassigned.value) {
         if (sourceSectionIndex == targetSectionIndex && sourceSubIndex == targetSubIndex) {
           return;
         }
@@ -120,6 +121,7 @@ class _MainContentState extends State<MainContent> {
           playerIndexInSection1: sourceSubIndex,
           sectionIndex2: targetSectionIndex,
           playerIndexInSection2: targetSubIndex,
+          targetCourtKind: sourceSectionKind,
         );
       }
       // 사례 2b: 할당되지 않은 목록에 놓은 경우
@@ -222,6 +224,8 @@ class _MainContentState extends State<MainContent> {
     });
 
     final List<List<Player?>> sectionData = playersProvider.assignedPlayers;
+    final List<List<Player?>> standbyCourts = playersProvider.standbyPlayers;
+
 
     return Center(
       child: Row(
@@ -260,46 +264,81 @@ class _MainContentState extends State<MainContent> {
                 ),
 
                 Expanded(
-                  child: CourtSectionsView(
-                    isMobileSize: widget.isMobileSize,
-                    sectionData: sectionData,
-                    courtGameStartedState: _courtGameStartedState,
-                    getGamesPlayedWith: getGamesPlayedWith,
-                    onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
-                    onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
-                    onPlayerDrop: _handlePlayerDrop,
-                    onRefreshCourt: (sectionIndex) {
-                      playersProvider.movePlayersFromCourtToUnassigned(sectionIndex, 0);
-                      setState(() {
-                        _courtGameStartedState[sectionIndex] = false;
-                      });
-                    },
-                    onAutoMatch: (sectionIndex) {
-                      playersProvider.assignPlayersToCourt(
-                        sectionIndex,
-                        skillWeight: optionsProvider.skillWeight,
-                        genderWeight: optionsProvider.genderWeight,
-                        waitedWeight: optionsProvider.waitedWeight,
-                        playedWeight: optionsProvider.playedWeight,
-                        playedWithWeight: optionsProvider.playedWithWeight,
-                      );
-                      setState(() {
-                        _courtGameStartedState[sectionIndex] = true;
-                      });
-                    },
-                    onEndGame: (sectionIndex) {
-                      playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
-                      playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
-                      setState(() {
-                        _courtGameStartedState[sectionIndex] = false;
-                      });
-                    },
-                  ),
+                  child: switch (selectedView) {
+                    CourtViewSection.assignedView => CourtSectionsView(
+                      // '경기 코트' 뷰
+                      isMobileSize: widget.isMobileSize,
+                      sectionData: sectionData,
+                      courtGameStartedState: _courtGameStartedState,
+                      getGamesPlayedWith: getGamesPlayedWith,
+                      onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
+                      onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
+                      onPlayerDrop: _handlePlayerDrop,
+                      onRefreshCourt: (sectionIndex) {
+                        playersProvider.movePlayersFromCourtToUnassigned(sectionIndex, 0);
+                        setState(() {
+                          _courtGameStartedState[sectionIndex] = false;
+                        });
+                      },
+                      onAutoMatch: (sectionIndex) {
+                        playersProvider.assignPlayersToCourt(
+                          sectionIndex,
+                          skillWeight: optionsProvider.skillWeight,
+                          genderWeight: optionsProvider.genderWeight,
+                          waitedWeight: optionsProvider.waitedWeight,
+                          playedWeight: optionsProvider.playedWeight,
+                          playedWithWeight: optionsProvider.playedWithWeight,
+                        );
+                        setState(() {
+                          _courtGameStartedState[sectionIndex] = true;
+                        });
+                      },
+                      onEndGame: (sectionIndex) {
+                        playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
+                        playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
+                        setState(() {
+                          _courtGameStartedState[sectionIndex] = false;
+                        });
+                      },
+                    ),
 
-                  // 참고: 나중에 _selectedView 값에 따라 다른 위젯을 보여줄 수 있습니다.
-                  // child: _selectedView == CourtViewSection.view1
-                  //     ? CourtSectionsView(...)
-                  //     : Center(child: Text('두 번째 뷰 영역')),
+                    CourtViewSection.standbyView => CourtSectionsView(
+                      // '대기 코트' 뷰
+                      isMobileSize: widget.isMobileSize,
+                      sectionData: standbyCourts,
+                      courtGameStartedState: _courtGameStartedState,
+                      getGamesPlayedWith: getGamesPlayedWith,
+                      onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
+                      onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
+                      onPlayerDrop: _handlePlayerDrop,
+                      onRefreshCourt: (sectionIndex) {
+                        playersProvider.movePlayersFromCourtToUnassigned(sectionIndex, 0);
+                        setState(() {
+                          _courtGameStartedState[sectionIndex] = false;
+                        });
+                      },
+                      onAutoMatch: (sectionIndex) {
+                        playersProvider.assignPlayersToCourt(
+                          sectionIndex,
+                          skillWeight: optionsProvider.skillWeight,
+                          genderWeight: optionsProvider.genderWeight,
+                          waitedWeight: optionsProvider.waitedWeight,
+                          playedWeight: optionsProvider.playedWeight,
+                          playedWithWeight: optionsProvider.playedWithWeight,
+                        );
+                        setState(() {
+                          _courtGameStartedState[sectionIndex] = true;
+                        });
+                      },
+                      onEndGame: (sectionIndex) {
+                        playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
+                        playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
+                        setState(() {
+                          _courtGameStartedState[sectionIndex] = false;
+                        });
+                      },
+                    ),
+                  },
                 ),
               ],
             ),
