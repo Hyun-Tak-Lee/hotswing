@@ -316,26 +316,27 @@ class PlayersProvider with ChangeNotifier {
     required int playerIndexInSection2,
     required String targetCourtKind,
   }) {
-    dynamic targetCourtPlayers = targetCourtKind == "assigned" ? _assignedPlayers : _standbyPlayers;
+    List<List<Player?>> targetCourtPlayers = targetCourtKind == "assigned" ? _assignedPlayers : _standbyPlayers;
+
     if (sectionIndex1 < 0 ||
-        sectionIndex1 >= _assignedPlayers.length ||
+        sectionIndex1 >= targetCourtPlayers.length ||
         playerIndexInSection1 < 0 ||
-        playerIndexInSection1 >= _assignedPlayers[sectionIndex1].length ||
+        playerIndexInSection1 >= targetCourtPlayers[sectionIndex1].length ||
         sectionIndex2 < 0 ||
-        sectionIndex2 >= _assignedPlayers.length ||
+        sectionIndex2 >= targetCourtPlayers.length ||
         playerIndexInSection2 < 0 ||
-        playerIndexInSection2 >= _assignedPlayers[sectionIndex2].length) {
+        playerIndexInSection2 >= targetCourtPlayers[sectionIndex2].length) {
       return;
     }
     if (sectionIndex1 == sectionIndex2 && playerIndexInSection1 == playerIndexInSection2) {
       return;
     }
 
-    Player? player1 = _assignedPlayers[sectionIndex1][playerIndexInSection1];
-    Player? player2 = _assignedPlayers[sectionIndex2][playerIndexInSection2];
+    Player? player1 = targetCourtPlayers[sectionIndex1][playerIndexInSection1];
+    Player? player2 = targetCourtPlayers[sectionIndex2][playerIndexInSection2];
 
-    _assignedPlayers[sectionIndex1][playerIndexInSection1] = player2;
-    _assignedPlayers[sectionIndex2][playerIndexInSection2] = player1;
+    targetCourtPlayers[sectionIndex1][playerIndexInSection1] = player2;
+    targetCourtPlayers[sectionIndex2][playerIndexInSection2] = player1;
 
     _saveLoadedPlayers();
     notifyListeners();
@@ -347,16 +348,18 @@ class PlayersProvider with ChangeNotifier {
     required int targetCourtPlayerIndex,
     required String targetCourtKind,
   }) {
+    List<List<Player?>> targetCourtPlayers = targetCourtKind == "assigned" ? _assignedPlayers : _standbyPlayers;
+
     if (targetCourtSectionIndex < 0 ||
-        targetCourtSectionIndex >= _assignedPlayers.length ||
+        targetCourtSectionIndex >= targetCourtPlayers.length ||
         targetCourtPlayerIndex < 0 ||
-        targetCourtPlayerIndex >= _assignedPlayers[targetCourtSectionIndex].length) {
+        targetCourtPlayerIndex >= targetCourtPlayers[targetCourtSectionIndex].length) {
       return;
     }
     if (!_unassignedPlayers.contains(unassignedPlayerToAssign)) return;
 
-    Player? playerCurrentlyInCourt = _assignedPlayers[targetCourtSectionIndex][targetCourtPlayerIndex];
-    _assignedPlayers[targetCourtSectionIndex][targetCourtPlayerIndex] = unassignedPlayerToAssign;
+    Player? playerCurrentlyInCourt = targetCourtPlayers[targetCourtSectionIndex][targetCourtPlayerIndex];
+    targetCourtPlayers[targetCourtSectionIndex][targetCourtPlayerIndex] = unassignedPlayerToAssign;
     _unassignedPlayers.remove(unassignedPlayerToAssign);
 
     if (playerCurrentlyInCourt != null) {
@@ -369,14 +372,20 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void removePlayerFromCourt({required int sectionIndex, required int playerIndexInSection}) {
-    if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) return;
-    if (playerIndexInSection < 0 || playerIndexInSection >= _assignedPlayers[sectionIndex].length) return;
+  void removePlayerFromCourt({
+    required int sectionIndex,
+    required int playerIndexInSection,
+    required String targetCourtKind,
+  }) {
+    List<List<Player?>> targetCourtPlayers = targetCourtKind == "assigned" ? _assignedPlayers : _standbyPlayers;
 
-    Player? playerToRemove = _assignedPlayers[sectionIndex][playerIndexInSection];
+    if (sectionIndex < 0 || sectionIndex >= targetCourtPlayers.length) return;
+    if (playerIndexInSection < 0 || playerIndexInSection >= targetCourtPlayers[sectionIndex].length) return;
+
+    Player? playerToRemove = targetCourtPlayers[sectionIndex][playerIndexInSection];
 
     if (playerToRemove != null) {
-      _assignedPlayers[sectionIndex][playerIndexInSection] = null;
+      targetCourtPlayers[sectionIndex][playerIndexInSection] = null;
       if (!_unassignedPlayers.contains(playerToRemove)) {
         _unassignedPlayers.add(playerToRemove);
       }
@@ -385,11 +394,13 @@ class PlayersProvider with ChangeNotifier {
     }
   }
 
-  void movePlayersFromCourtToUnassigned(int sectionIndex, [int played = 1]) {
-    if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) {
+  void movePlayersFromCourtToUnassigned({required int sectionIndex, required String targetCourtKind, int played = 1}) {
+    List<List<Player?>> targetCourtPlayers = targetCourtKind == "assigned" ? _assignedPlayers : _standbyPlayers;
+
+    if (sectionIndex < 0 || sectionIndex >= targetCourtPlayers.length) {
       return;
     }
-    List<Player?> playersInCourt = List.from(_assignedPlayers[sectionIndex]);
+    List<Player?> playersInCourt = List.from(targetCourtPlayers[sectionIndex]);
 
     for (int i = 0; i < playersInCourt.length; i++) {
       Player? player = playersInCourt[i];
@@ -402,7 +413,7 @@ class PlayersProvider with ChangeNotifier {
         if (!_unassignedPlayers.contains(player)) {
           _unassignedPlayers.add(player);
         }
-        _assignedPlayers[sectionIndex][i] = null;
+        targetCourtPlayers[sectionIndex][i] = null;
       }
     }
     _saveLoadedPlayers();
@@ -411,22 +422,25 @@ class PlayersProvider with ChangeNotifier {
 
   // 자동 매칭
   void assignPlayersToCourt(
-    int sectionIndex, {
-    required double skillWeight,
-    required double genderWeight,
-    required double waitedWeight,
-    required double playedWeight,
-    required double playedWithWeight,
-  }) {
-    if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) return;
+      int sectionIndex, {
+        required double skillWeight,
+        required double genderWeight,
+        required double waitedWeight,
+        required double playedWeight,
+        required double playedWithWeight,
+        required String targetCourtKind,
+      }) {
+    List<List<Player?>> targetCourtPlayers = targetCourtKind == "assigned" ? _assignedPlayers : _standbyPlayers;
+
+    if (sectionIndex < 0 || sectionIndex >= targetCourtPlayers.length) return;
 
     for (int i = 0; i < 4; i++) {
       if (_unassignedPlayers.isEmpty) break;
 
-      if (_assignedPlayers[sectionIndex][i] == null) {
+      if (targetCourtPlayers[sectionIndex][i] == null) {
         Player? playerToAssign = _courtService.findBestPlayerForCourt(
           unassignedPlayers: _unassignedPlayers,
-          currentPlayersOnCourt: _assignedPlayers[sectionIndex].where((p) => p != null).cast<Player>().toList(),
+          currentPlayersOnCourt: targetCourtPlayers[sectionIndex].where((p) => p != null).cast<Player>().toList(),
           skillWeight: skillWeight,
           genderWeight: genderWeight,
           waitedWeight: waitedWeight,
@@ -435,7 +449,7 @@ class PlayersProvider with ChangeNotifier {
         );
 
         if (playerToAssign != null) {
-          _assignedPlayers[sectionIndex][i] = playerToAssign;
+          targetCourtPlayers[sectionIndex][i] = playerToAssign;
           _unassignedPlayers.remove(playerToAssign);
         }
       }
@@ -449,5 +463,6 @@ class PlayersProvider with ChangeNotifier {
 
   // 코트에 할당된 플레이어들의 수정 불가능한 목록 (리스트의 리스트 형태)을 반환합니다.
   List<List<Player?>> get assignedPlayers => List.unmodifiable(_assignedPlayers);
+
   List<List<Player?>> get standbyPlayers => List.unmodifiable(_standbyPlayers);
 }

@@ -17,8 +17,6 @@ class MainContent extends StatefulWidget {
   State<MainContent> createState() => _MainContentState();
 }
 
-
-
 class _MainContentState extends State<MainContent> {
   late PlayersProvider _playersProvider;
   bool _showCourtHighlight = false;
@@ -112,7 +110,7 @@ class _MainContentState extends State<MainContent> {
     // 사례 2: 코트 슬롯에서 드래그한 경우
     else {
       // 사례 2a: 다른 assigned 코트 슬롯에 놓은 경우
-      if (targetSectionKind != PlayerSectionKind.unassigned.value) {
+      if ([PlayerSectionKind.unassigned.value,PlayerSectionKind.drop].contains(targetSectionKind) ) {
         if (sourceSectionIndex == targetSectionIndex && sourceSubIndex == targetSubIndex) {
           return;
         }
@@ -126,7 +124,11 @@ class _MainContentState extends State<MainContent> {
       }
       // 사례 2b: 할당되지 않은 목록에 놓은 경우
       else {
-        playersProvider.removePlayerFromCourt(sectionIndex: sourceSectionIndex, playerIndexInSection: sourceSubIndex);
+        playersProvider.removePlayerFromCourt(
+          sectionIndex: sourceSectionIndex,
+          playerIndexInSection: sourceSubIndex,
+          targetCourtKind: sourceSectionKind,
+        );
       }
     }
   }
@@ -158,33 +160,25 @@ class _MainContentState extends State<MainContent> {
   Widget _buildViewButton(String label, CourtViewSection value) {
     final bool isSelected = (selectedView == value);
 
-    final buttonTextStyle = TextStyle(
-      fontSize: widget.isMobileSize ? 14.0 : 16.0,
-    );
+    final buttonTextStyle = TextStyle(fontSize: widget.isMobileSize ? 14.0 : 16.0);
 
     final buttonStyle = ButtonStyle(
-      padding: WidgetStateProperty.all(
-        const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-      ),
+      padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0)),
       textStyle: WidgetStateProperty.all(buttonTextStyle),
       visualDensity: VisualDensity.compact,
     );
 
     return isSelected
-        ? ElevatedButton(
-      style: buttonStyle,
-      onPressed: null,
-      child: Text(label),
-    )
+        ? ElevatedButton(style: buttonStyle, onPressed: null, child: Text(label))
         : OutlinedButton(
-      style: buttonStyle,
-      onPressed: () {
-        setState(() {
-          selectedView = value;
-        });
-      },
-      child: Text(label),
-    );
+            style: buttonStyle,
+            onPressed: () {
+              setState(() {
+                selectedView = value;
+              });
+            },
+            child: Text(label),
+          );
   }
 
   @override
@@ -226,7 +220,6 @@ class _MainContentState extends State<MainContent> {
     final List<List<Player?>> sectionData = playersProvider.assignedPlayers;
     final List<List<Player?>> standbyCourts = playersProvider.standbyPlayers;
 
-
     return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -246,19 +239,9 @@ class _MainContentState extends State<MainContent> {
                   ),
                   child: Row(
                     children: [
-                      Expanded(
-                        child: _buildViewButton(
-                          '경기 코트',
-                          CourtViewSection.assignedView,
-                        ),
-                      ),
+                      Expanded(child: _buildViewButton('경기 코트', CourtViewSection.assignedView)),
                       const SizedBox(width: 8.0),
-                      Expanded(
-                        child: _buildViewButton(
-                          '대기 코트',
-                          CourtViewSection.standbyView,
-                        ),
-                      ),
+                      Expanded(child: _buildViewButton('대기 코트', CourtViewSection.standbyView)),
                     ],
                   ),
                 ),
@@ -275,7 +258,11 @@ class _MainContentState extends State<MainContent> {
                       onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
                       onPlayerDrop: _handlePlayerDrop,
                       onRefreshCourt: (sectionIndex) {
-                        playersProvider.movePlayersFromCourtToUnassigned(sectionIndex, 0);
+                        playersProvider.movePlayersFromCourtToUnassigned(
+                          sectionIndex: sectionIndex,
+                          targetCourtKind: PlayerSectionKind.assigned.value,
+                          played: 0,
+                        );
                         setState(() {
                           _courtGameStartedState[sectionIndex] = false;
                         });
@@ -288,6 +275,7 @@ class _MainContentState extends State<MainContent> {
                           waitedWeight: optionsProvider.waitedWeight,
                           playedWeight: optionsProvider.playedWeight,
                           playedWithWeight: optionsProvider.playedWithWeight,
+                          targetCourtKind: PlayerSectionKind.assigned.value,
                         );
                         setState(() {
                           _courtGameStartedState[sectionIndex] = true;
@@ -295,7 +283,10 @@ class _MainContentState extends State<MainContent> {
                       },
                       onEndGame: (sectionIndex) {
                         playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
-                        playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
+                        playersProvider.movePlayersFromCourtToUnassigned(
+                          sectionIndex: sectionIndex,
+                          targetCourtKind: PlayerSectionKind.assigned.value,
+                        );
                         setState(() {
                           _courtGameStartedState[sectionIndex] = false;
                         });
@@ -312,7 +303,11 @@ class _MainContentState extends State<MainContent> {
                       onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
                       onPlayerDrop: _handlePlayerDrop,
                       onRefreshCourt: (sectionIndex) {
-                        playersProvider.movePlayersFromCourtToUnassigned(sectionIndex, 0);
+                        playersProvider.movePlayersFromCourtToUnassigned(
+                          sectionIndex: sectionIndex,
+                          targetCourtKind: PlayerSectionKind.standby.value,
+                          played: 0,
+                        );
                         setState(() {
                           _courtGameStartedState[sectionIndex] = false;
                         });
@@ -325,6 +320,7 @@ class _MainContentState extends State<MainContent> {
                           waitedWeight: optionsProvider.waitedWeight,
                           playedWeight: optionsProvider.playedWeight,
                           playedWithWeight: optionsProvider.playedWithWeight,
+                          targetCourtKind: PlayerSectionKind.standby.value,
                         );
                         setState(() {
                           _courtGameStartedState[sectionIndex] = true;
@@ -332,7 +328,10 @@ class _MainContentState extends State<MainContent> {
                       },
                       onEndGame: (sectionIndex) {
                         playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
-                        playersProvider.movePlayersFromCourtToUnassigned(sectionIndex);
+                        playersProvider.movePlayersFromCourtToUnassigned(
+                          sectionIndex: sectionIndex,
+                          targetCourtKind: PlayerSectionKind.standby.value,
+                        );
                         setState(() {
                           _courtGameStartedState[sectionIndex] = false;
                         });
@@ -349,7 +348,7 @@ class _MainContentState extends State<MainContent> {
             child: Stack(
               children: [
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 10.0,vertical: 4.0),
+                  margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
                   child: Center(
                     child: FractionallySizedBox(
                       child: Column(
