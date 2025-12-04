@@ -95,6 +95,17 @@ class CourtSectionsView extends StatelessWidget {
                               child: Text('경기 종료', style: TextStyle(fontSize: isMobileSize ? 12.0 : 20.0)),
                             ),
                           ),
+                        const SizedBox(width: 8.0),
+                        SizedBox(
+                          width: isMobileSize ? 40.0 : 50.0,
+                          height: isMobileSize ? 30.0 : 45.0,
+                          child: FloatingActionButton(
+                            elevation: 2.0,
+                            onPressed: () => onEndGame(sectionIndex),
+                            heroTag: 'refresh_fab_$sectionIndex',
+                            child: Icon(Icons.add, size: isMobileSize ? 18.0 : 24.0),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4.0),

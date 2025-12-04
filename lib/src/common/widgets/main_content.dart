@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned_court.dart';
+import 'package:hotswing/src/common/widgets/courts/standby_court.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
@@ -110,7 +111,7 @@ class _MainContentState extends State<MainContent> {
     // 사례 2: 코트 슬롯에서 드래그한 경우
     else {
       // 사례 2a: 다른 assigned 코트 슬롯에 놓은 경우
-      if ([PlayerSectionKind.unassigned.value,PlayerSectionKind.drop].contains(targetSectionKind) ) {
+      if ([PlayerSectionKind.unassigned.value, PlayerSectionKind.drop].contains(targetSectionKind)) {
         if (sourceSectionIndex == targetSectionIndex && sourceSubIndex == targetSubIndex) {
           return;
         }
@@ -160,7 +161,8 @@ class _MainContentState extends State<MainContent> {
   Widget _buildViewButton(String label, CourtViewSection value) {
     final bool isSelected = (selectedView == value);
 
-    final buttonTextStyle = TextStyle(fontSize: widget.isMobileSize ? 14.0 : 16.0);
+    final buttonTextStyle = TextStyle(fontSize: widget.isMobileSize ? 14.0 : 32.0);
+    final Color deepBlue = Color(0x99008BD1);
 
     final buttonStyle = ButtonStyle(
       padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0)),
@@ -168,17 +170,29 @@ class _MainContentState extends State<MainContent> {
       visualDensity: VisualDensity.compact,
     );
 
-    return isSelected
-        ? ElevatedButton(style: buttonStyle, onPressed: null, child: Text(label))
-        : OutlinedButton(
-            style: buttonStyle,
-            onPressed: () {
-              setState(() {
-                selectedView = value;
-              });
-            },
-            child: Text(label),
-          );
+    if (isSelected) {
+      return ElevatedButton(
+        style: buttonStyle.copyWith(
+          backgroundColor: WidgetStateProperty.all<Color>(deepBlue),
+          foregroundColor: WidgetStateProperty.all<Color>(Theme.of(context).colorScheme.onPrimary),
+        ),
+        onPressed: null,
+        child: Text(label),
+      );
+    } else {
+      return OutlinedButton(
+        style: buttonStyle.copyWith(
+          side: WidgetStateProperty.all<BorderSide>(BorderSide(color: deepBlue, width: 1.5)),
+          foregroundColor: WidgetStateProperty.all<Color>(Theme.of(context).colorScheme.primary),
+        ),
+        onPressed: () {
+          setState(() {
+            selectedView = value;
+          });
+        },
+        child: Text(label),
+      );
+    }
   }
 
   @override
@@ -293,7 +307,7 @@ class _MainContentState extends State<MainContent> {
                       },
                     ),
 
-                    CourtViewSection.standbyView => CourtSectionsView(
+                    CourtViewSection.standbyView => StandbyCourtSectionsView(
                       // '대기 코트' 뷰
                       isMobileSize: widget.isMobileSize,
                       sectionData: standbyCourts,
@@ -326,16 +340,8 @@ class _MainContentState extends State<MainContent> {
                           _courtGameStartedState[sectionIndex] = true;
                         });
                       },
-                      onEndGame: (sectionIndex) {
-                        playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
-                        playersProvider.movePlayersFromCourtToUnassigned(
-                          sectionIndex: sectionIndex,
-                          targetCourtKind: PlayerSectionKind.standby.value,
-                        );
-                        setState(() {
-                          _courtGameStartedState[sectionIndex] = false;
-                        });
-                      },
+                      onAddStandByCourt: _playersProvider.addStandByPlayers,
+                      onRemoveStandByCourt: (sectionIndex) => _playersProvider.removeStandByPlayers(sectionIndex),
                     ),
                   },
                 ),

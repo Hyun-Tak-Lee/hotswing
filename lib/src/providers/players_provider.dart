@@ -278,6 +278,41 @@ class PlayersProvider with ChangeNotifier {
     return playerList;
   }
 
+  void addStandByPlayers(){
+    _standbyPlayers.add([null, null, null, null]);
+    _saveLoadedPlayers();
+    notifyListeners();
+  }
+
+  void removeStandByPlayers(int index){
+    final removedList = _standbyPlayers.removeAt(index);
+
+    for (var player in removedList) {
+      if (player != null) {
+        _unassignedPlayers.add(player);
+      }
+    }
+
+    _saveLoadedPlayers();
+    notifyListeners();
+  }
+
+  void popStandByPlayers(int assignedIndex) {
+    if (assignedIndex < 0 || assignedIndex >= _assignedPlayers.length) {
+      return;
+    }
+
+    if (_standbyPlayers.isNotEmpty) {
+      final List<Player?> playerToAssign = _standbyPlayers.first;
+      final bool isFullTeam = playerToAssign.every((player) => player != null);
+      if (isFullTeam) {
+        _assignedPlayers[assignedIndex] = _standbyPlayers.removeAt(0);
+        _saveLoadedPlayers();
+        notifyListeners();
+      }
+    }
+  }
+
   void updateAssignedPlayersListCount(int newCount) {
     if (newCount < 0) {
       return;
