@@ -36,18 +36,15 @@ class PlayerService {
     return _playerRepository.getAllPlayers().toList();
   }
 
-
   RealmResults<Player> findPlayersByPrefix(String name) {
     return _playerRepository.findPlayersByPrefix(name);
   }
 
   List<Player?> findPlayersByIds(List<ObjectId?> ids) {
     final List<Player> findPlayers = _playerRepository.findPlayersByIds(ids).toList();
-    final Map<ObjectId, Player> playerMap = {
-      for (var player in findPlayers) player.id: player,
-    };
+    final Map<ObjectId, Player> playerMap = {for (var player in findPlayers) player.id: player};
     return ids.map((id) {
-      if (id==null){
+      if (id == null) {
         return null;
       }
       return playerMap[id];
@@ -84,6 +81,10 @@ class PlayerService {
       lated: lated,
       groups: RealmList(groups),
     );
+  }
+
+  void updateActivate(Player player, bool activate) {
+    _playerRepository.updatePlayer(player: player, activate: activate);
   }
 
   void updateGroups(Player player, List<ObjectId> groups) {

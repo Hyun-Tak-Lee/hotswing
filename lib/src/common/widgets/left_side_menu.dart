@@ -152,7 +152,9 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
               .map(
                 (player) => Container(
                   // 1. ListTile의 'tileColor' 역할을 합니다.
-                  color: player.role == "manager"
+                  color: player.activate == false
+                      ? const Color(0x55333333)
+                      : player.role == "manager"
                       ? const Color(0x55FFF700)
                       : player.role == "user"
                       ? const Color(0x3300BFFF)
@@ -191,6 +193,13 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            IconButton(
+                              icon: const Icon(Icons.block),
+                              iconSize: iconAndFontSize,
+                              onPressed: () {
+                                playersProvider.toggleIsActivate(player);
+                              },
+                            ),
                             IconButton(
                               icon: const Icon(Icons.edit),
                               iconSize: iconAndFontSize,

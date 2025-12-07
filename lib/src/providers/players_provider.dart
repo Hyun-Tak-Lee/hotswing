@@ -258,6 +258,12 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleIsActivate(Player player){
+    _playerService.updateActivate(player, !player.activate);
+    _saveLoadedPlayers();
+    notifyListeners();
+  }
+
   List<Player> findPlayersByPrefix(String name, int count) {
     RealmResults<Player> results = _playerService.findPlayersByPrefix(name);
     int actualLimit = results.length < count ? results.length : count;
