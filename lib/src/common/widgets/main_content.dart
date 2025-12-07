@@ -329,9 +329,6 @@ class _MainContentState extends State<MainContent> {
                           targetCourtKind: PlayerSectionKind.standby.value,
                           played: 0,
                         );
-                        setState(() {
-                          _courtGameStartedState[sectionIndex] = false;
-                        });
                       },
                       onAutoMatch: (sectionIndex) {
                         playersProvider.assignPlayersToCourt(
@@ -343,9 +340,6 @@ class _MainContentState extends State<MainContent> {
                           playedWithWeight: optionsProvider.playedWithWeight,
                           targetCourtKind: PlayerSectionKind.standby.value,
                         );
-                        setState(() {
-                          _courtGameStartedState[sectionIndex] = true;
-                        });
                       },
                       onAddStandByCourt: _playersProvider.addStandByPlayers,
                       onRemoveStandByCourt: (sectionIndex) => _playersProvider.removeStandByPlayers(sectionIndex),
