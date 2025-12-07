@@ -34,7 +34,7 @@ class PlayersProvider with ChangeNotifier {
       await _sharedPreferencesInit();
       await _loadInitialPlayers();
 
-      final List<int> skillRates = skillLevelToRate.values.toList();
+      // final List<int> skillRates = skillLevelToRate.values.toList();
       // _playerService.deleteAllPlayers();
       // for (int i = 1; i <= 32; i++) {
       //   String name = '플레이어 $i';
@@ -54,13 +54,14 @@ class PlayersProvider with ChangeNotifier {
       //     played: played,
       //     waited: waited,
       //     lated: lated,
+      //     activate: true,
       //     gamesPlayedWith: {},
       //     groups: RealmList<ObjectId>([]),
       //   );
       //   _playerService.addPlayer(newPlayer);
       //   addPlayerInCourt(newPlayer, []);
       // }
-      // _saveLoadedPlayers();
+      _saveLoadedPlayers();
     } finally {
       notifyListeners();
     }
@@ -71,6 +72,15 @@ class PlayersProvider with ChangeNotifier {
   }
 
   Future<void> _loadInitialPlayers() async {
+    List<String> playerIds = await SharedProvider().getStringList("players") ?? [];
+    if (playerIds.isNotEmpty) {
+      _players.clear();
+      List<ObjectId> playerObjectIds = playerIds.map((id) => ObjectId.fromHexString(id)).toList();
+      List<Player> loadedPlayers = _playerService.findPlayersByIds(playerObjectIds).whereType<Player>().toList();
+      for (var player in loadedPlayers) {
+        _players[player.id] = player;
+      }
+    }
     List<String> unassignedIds = await SharedProvider().getStringList("unassignedPlayers") ?? [];
     List<ObjectId> unassignedObjectIds = unassignedIds.map((id) => ObjectId.fromHexString(id)).toList();
     if (unassignedIds.isNotEmpty) {
@@ -102,6 +112,7 @@ class PlayersProvider with ChangeNotifier {
   }
 
   Future<void> _saveLoadedPlayers() async {
+    final List<String> playerIdLists = _players.keys.map((key) => key.toString()).toList();
     final List<String> assignedPlayersIdListNested = _assignedPlayers
         .map((innerList) => innerList.map((player) => player?.id.toString() ?? "").toList())
         .map((idList) => jsonEncode(idList))
@@ -114,6 +125,7 @@ class PlayersProvider with ChangeNotifier {
     await SharedProvider().saveStringList("assignedPlayers", assignedPlayersIdListNested);
     await SharedProvider().saveStringList("standbyPlayers", standbyPlayersIdListNested);
     await SharedProvider().saveStringList("unassignedPlayers", unassignedPlayersIdList);
+    await SharedProvider().saveStringList("players", playerIdLists);
   }
 
   Future<void> _loadInitialAssignedPlayersCount() async {
@@ -278,13 +290,13 @@ class PlayersProvider with ChangeNotifier {
     return playerList;
   }
 
-  void addStandByPlayers(){
+  void addStandByPlayers() {
     _standbyPlayers.add([null, null, null, null]);
     _saveLoadedPlayers();
     notifyListeners();
   }
 
-  void removeStandByPlayers(int index){
+  void removeStandByPlayers(int index) {
     final removedList = _standbyPlayers.removeAt(index);
 
     for (var player in removedList) {
@@ -299,6 +311,11 @@ class PlayersProvider with ChangeNotifier {
 
   void popStandByPlayers(int assignedIndex) {
     if (assignedIndex < 0 || assignedIndex >= _assignedPlayers.length) {
+      return;
+    }
+
+    final List<Player?> currentAssignedTeam = _assignedPlayers[assignedIndex];
+    if (currentAssignedTeam.any((player) => player != null)) {
       return;
     }
 
@@ -457,14 +474,14 @@ class PlayersProvider with ChangeNotifier {
 
   // 자동 매칭
   void assignPlayersToCourt(
-      int sectionIndex, {
-        required double skillWeight,
-        required double genderWeight,
-        required double waitedWeight,
-        required double playedWeight,
-        required double playedWithWeight,
-        required String targetCourtKind,
-      }) {
+    int sectionIndex, {
+    required double skillWeight,
+    required double genderWeight,
+    required double waitedWeight,
+    required double playedWeight,
+    required double playedWithWeight,
+    required String targetCourtKind,
+  }) {
     List<List<Player?>> targetCourtPlayers = targetCourtKind == "assigned" ? _assignedPlayers : _standbyPlayers;
 
     if (sectionIndex < 0 || sectionIndex >= targetCourtPlayers.length) return;

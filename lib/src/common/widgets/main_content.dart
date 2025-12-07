@@ -111,7 +111,7 @@ class _MainContentState extends State<MainContent> {
     // 사례 2: 코트 슬롯에서 드래그한 경우
     else {
       // 사례 2a: 다른 assigned 코트 슬롯에 놓은 경우
-      if ([PlayerSectionKind.unassigned.value, PlayerSectionKind.drop].contains(targetSectionKind)) {
+      if (![PlayerSectionKind.unassigned.value, PlayerSectionKind.drop.value].contains(targetSectionKind)) {
         if (sourceSectionIndex == targetSectionIndex && sourceSubIndex == targetSubIndex) {
           return;
         }
@@ -304,6 +304,9 @@ class _MainContentState extends State<MainContent> {
                         setState(() {
                           _courtGameStartedState[sectionIndex] = false;
                         });
+                      },
+                      onPopStandByCourt: (sectionIndex) {
+                        _playersProvider.popStandByPlayers(sectionIndex);
                       },
                     ),
 

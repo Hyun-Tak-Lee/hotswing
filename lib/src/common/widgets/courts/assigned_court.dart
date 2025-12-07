@@ -10,6 +10,7 @@ class CourtSectionsView extends StatelessWidget {
   final Function(int) onRefreshCourt;
   final Function(int) onAutoMatch;
   final Function(int) onEndGame;
+  final Function(int) onPopStandByCourt;
   final Function(BuildContext, PlayerDragData, Player?, dynamic, String, int, int) onPlayerDrop;
   final VoidCallback onCourtPlayerDragStarted;
   final VoidCallback onCourtPlayerDragEnded;
@@ -23,6 +24,7 @@ class CourtSectionsView extends StatelessWidget {
     required this.onRefreshCourt,
     required this.onAutoMatch,
     required this.onEndGame,
+    required this.onPopStandByCourt,
     required this.onPlayerDrop,
     required this.onCourtPlayerDragStarted,
     required this.onCourtPlayerDragEnded,
@@ -50,10 +52,8 @@ class CourtSectionsView extends StatelessWidget {
                 padding: const EdgeInsets.all(5.0),
                 decoration: BoxDecoration(color: pastelBlue, borderRadius: BorderRadius.circular(20.0)),
                 child: Column(
-                  // Outer Column for title + Stack
                   children: [
                     Row(
-                      // Title and buttons
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -101,7 +101,7 @@ class CourtSectionsView extends StatelessWidget {
                           height: isMobileSize ? 30.0 : 45.0,
                           child: FloatingActionButton(
                             elevation: 2.0,
-                            onPressed: () => onEndGame(sectionIndex),
+                            onPressed: () => onPopStandByCourt(sectionIndex),
                             heroTag: 'refresh_fab_$sectionIndex',
                             child: Icon(Icons.add, size: isMobileSize ? 18.0 : 24.0),
                           ),
