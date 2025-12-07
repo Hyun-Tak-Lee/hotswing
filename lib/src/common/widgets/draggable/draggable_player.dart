@@ -207,7 +207,14 @@ class PlayerDropZone extends StatelessWidget {
   final String sectionKind;
   final int sectionIndex;
   final int subIndex;
-  final Function(PlayerDragData data, Player? targetPlayer, dynamic targetSectionId,String sectionKind, int sectionIndex, int subIndex)
+  final Function(
+    PlayerDragData data,
+    Player? targetPlayer,
+    dynamic targetSectionId,
+    String sectionKind,
+    int sectionIndex,
+    int subIndex,
+  )
   onPlayerDropped;
   final bool isDropEnabled;
   final Color? backgroundColor;
@@ -240,13 +247,17 @@ class PlayerDropZone extends StatelessWidget {
       },
       onAcceptWithDetails: (details) {
         if (isDropEnabled) {
-          onPlayerDropped(details.data, player, sectionId,sectionKind, sectionIndex, subIndex);
+          onPlayerDropped(details.data, player, sectionId, sectionKind, sectionIndex, subIndex);
         }
       },
       builder: (context, candidateData, rejectedData) {
         bool isHovering = candidateData.isNotEmpty && isDropEnabled;
 
-        Color determinedDefaultBgColor = player != null && player!.role == "manager"
+        Color determinedDefaultBgColor = player == null
+            ? const Color(0x66FFFFFF)
+            : !player!.activate
+            ? const Color(0x55333333)
+            : player!.role == "manager"
             ? const Color(0x77FFF700)
             : const Color(0x66FFFFFF);
         Color hoveringBgColor = const Color(0x88F0FFFF);

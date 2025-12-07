@@ -279,6 +279,7 @@ class PlayersProvider with ChangeNotifier {
   }
 
   void clearPlayers() {
+    // 게스트 유저 삭제
     _players.clear();
     _unassignedPlayers.clear();
     for (int i = 0; i < _assignedPlayers.length; i++) {
@@ -497,7 +498,7 @@ class PlayersProvider with ChangeNotifier {
 
       if (targetCourtPlayers[sectionIndex][i] == null) {
         Player? playerToAssign = _courtService.findBestPlayerForCourt(
-          unassignedPlayers: _unassignedPlayers,
+          unassignedPlayers: _unassignedPlayers.where((player) => player.activate == true).toList(),
           currentPlayersOnCourt: targetCourtPlayers[sectionIndex].where((p) => p != null).cast<Player>().toList(),
           skillWeight: skillWeight,
           genderWeight: genderWeight,

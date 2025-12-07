@@ -217,6 +217,10 @@ class _MainContentState extends State<MainContent> {
       int compareResult;
       switch (_sortCriterion) {
         case SortCriterion.played:
+          int activateCompare = (b.activate ? 1: 0).compareTo(a.activate? 1:0);
+          if (activateCompare != 0) {
+            return activateCompare;
+          }
           int playedCompare = (a.played + a.lated).compareTo(b.played + b.lated);
           if (playedCompare != 0) {
             compareResult = playedCompare;

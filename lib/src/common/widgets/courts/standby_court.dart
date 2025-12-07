@@ -377,7 +377,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                 ),
               ),
               // 하단 여백 추가
-              const SizedBox(height: 20.0),
+              SizedBox(height: isMobileSize ?  300.0 : 600.0),
             ],
           ),
         ),
