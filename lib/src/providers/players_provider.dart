@@ -191,6 +191,7 @@ class PlayersProvider with ChangeNotifier {
 
   void loadPlayer(Player player, List<ObjectId> groups) {
     addPlayerInCourt(player, groups);
+    _playerService.resetStats(player);
     _playerService.updateGroups(player, groups);
 
     _saveLoadedPlayers();

@@ -119,45 +119,77 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     children: [
                       Flexible(
                         flex: isMobileSize ? 1 : 2,
-                        child: Autocomplete<Player>(
-                          initialValue: TextEditingValue(text: _name ?? ''),
-                          optionsBuilder: (TextEditingValue value) {
-                            if (isEditMode) {
-                              return const Iterable<Player>.empty();
-                            }
-                            return _findPlayersByName(value);
-                          },
-                          onSelected: _loadPlayerAllForms,
-                          displayStringForOption: (Player player) => player.name,
-                          fieldViewBuilder:
-                              (
-                                BuildContext context,
-                                TextEditingController fieldTextEditingController,
-                                FocusNode fieldFocusNode,
-                                VoidCallback onFieldSubmitted,
-                              ) {
-                                return TextFormField(
-                                  controller: fieldTextEditingController,
-                                  focusNode: fieldFocusNode,
-                                  decoration: InputDecoration(
-                                    labelText: '이름',
-                                    labelStyle: TextStyle(fontSize: labelFontSize),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return '이름을 입력하세요';
-                                    }
-                                    if (value.length > 7) {
-                                      return '이름은 7자 이하로 입력해주세요';
-                                    }
-                                    return null;
-                                  },
-                                  onSaved: (value) {
-                                    _name = value;
-                                  },
-                                  onFieldSubmitted: (_) => onFieldSubmitted(),
-                                );
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return Autocomplete<Player>(
+                              initialValue: TextEditingValue(text: _name ?? ''),
+                              optionsBuilder: (TextEditingValue value) {
+                                if (isEditMode) return const Iterable<Player>.empty();
+                                return _findPlayersByName(value);
                               },
+                              onSelected: _loadPlayerAllForms,
+                              displayStringForOption: (Player player) => player.name,
+                              optionsViewBuilder:
+                                  (
+                                    BuildContext context,
+                                    AutocompleteOnSelected<Player> onSelected,
+                                    Iterable<Player> options,
+                                  ) {
+                                    return Align(
+                                      alignment: Alignment.topLeft,
+                                      child: Material(
+                                        elevation: 4.0,
+                                        child: SizedBox(
+                                          width: constraints.maxWidth,
+                                          child: ListView.builder(
+                                            padding: EdgeInsets.zero,
+                                            shrinkWrap: true,
+                                            itemCount: options.length,
+                                            itemBuilder: (BuildContext context, int index) {
+                                              final Player option = options.elementAt(index);
+                                              final skillLevel = rateToSkillLevel[option.rate] ?? '${option.rate}';
+
+                                              return ListTile(
+                                                title: Text('${option.name} ($skillLevel)'),
+                                                onTap: () => onSelected(option),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                              fieldViewBuilder:
+                                  (
+                                    BuildContext context,
+                                    TextEditingController fieldTextEditingController,
+                                    FocusNode fieldFocusNode,
+                                    VoidCallback onFieldSubmitted,
+                                  ) {
+                                    return TextFormField(
+                                      controller: fieldTextEditingController,
+                                      focusNode: fieldFocusNode,
+                                      decoration: InputDecoration(
+                                        labelText: '이름',
+                                        labelStyle: TextStyle(fontSize: labelFontSize),
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return '이름을 입력하세요';
+                                        }
+                                        if (value.length > 7) {
+                                          return '이름은 7자 이하로 입력해주세요';
+                                        }
+                                        return null;
+                                      },
+                                      onSaved: (value) {
+                                        _name = value;
+                                      },
+                                      onFieldSubmitted: (_) => onFieldSubmitted(),
+                                    );
+                                  },
+                            );
+                          },
                         ),
                       ),
                       if (!isGuestMode)
