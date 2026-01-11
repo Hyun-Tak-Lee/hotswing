@@ -174,6 +174,9 @@ class CourtAssignService {
       }
       playedWithFactor = playedWithFactor / currentPlayersOnCourt.length;
     }
+    if (currentPlayersOnCourt.length == 1) {
+      playedWithFactor = 1.0;
+    }
     double playedWithScore = 1.0 - playedWithFactor;
 
     // 최종 점수 = 각 점수 * 가중치의 합
