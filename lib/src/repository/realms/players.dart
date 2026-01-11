@@ -98,7 +98,7 @@ class PlayerRepository {
       _realm.write(() {
         for (Player? otherPlayerInCourt in playersInCourt) {
           if (otherPlayerInCourt != null && otherPlayerInCourt.id != currentPlayer.id) {
-            final otherPlayerId = otherPlayerInCourt.id.toString();
+            final otherPlayerId = otherPlayerInCourt.id.hexString;
             final currentGames = currentPlayer.gamesPlayedWith[otherPlayerId] ?? 0;
             currentPlayer.gamesPlayedWith[otherPlayerId] = currentGames + games;
           }

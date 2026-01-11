@@ -154,7 +154,7 @@ class _MainContentState extends State<MainContent> {
     final player2 = list[index2];
     if (player1 == null || player2 == null) return '0';
 
-    final gamesCount = player1.gamesPlayedWith[player2.id];
+    final gamesCount = player1.gamesPlayedWith[player2.id.hexString];
     return gamesCount?.toString() ?? '0';
   }
 

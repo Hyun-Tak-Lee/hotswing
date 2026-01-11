@@ -170,10 +170,9 @@ class CourtAssignService {
     double playedWithFactor = 0;
     if (currentPlayersOnCourt.isNotEmpty) {
       for (Player pInCourt in currentPlayersOnCourt) {
-        playedWithFactor += pow((player.gamesPlayedWith[pInCourt.id] ?? 0) * 0.5, 1.1);
+        playedWithFactor += pow((player.gamesPlayedWith[pInCourt.id.hexString] ?? 0) * 0.5, 1.2);
       }
       playedWithFactor = playedWithFactor / currentPlayersOnCourt.length;
-      playedWithFactor = min(4.0, playedWithFactor);
     }
     double playedWithScore = 1.0 - playedWithFactor;
 
