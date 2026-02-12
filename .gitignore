@@ -48,3 +48,7 @@ app.*.map.json
 
 # Antigravity AI assistant
 .gemini/
+
+# Environment variables (contains sensitive data)
+.env
+

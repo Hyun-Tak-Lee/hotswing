@@ -29,7 +29,6 @@ class PlayersProvider with ChangeNotifier {
   void initialized() async {
     try {
       await _loadInitialAssignedPlayersCount();
-      await _sharedPreferencesInit();
       await _loadInitialPlayers();
 
       // final List<int> skillRates = skillLevelToRate.values.toList();
@@ -63,10 +62,6 @@ class PlayersProvider with ChangeNotifier {
     } finally {
       notifyListeners();
     }
-  }
-
-  Future<void> _sharedPreferencesInit() async {
-    await SharedProvider().init();
   }
 
   Future<void> _loadInitialPlayers() async {
