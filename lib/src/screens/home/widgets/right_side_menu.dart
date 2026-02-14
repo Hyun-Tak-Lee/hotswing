@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
-import 'dialogs/confirmation_dialog.dart';
+import '../../../common/widgets/dialogs/confirmation_dialog.dart';
 
 class RightSideMenu extends StatelessWidget {
   const RightSideMenu({super.key, required this.isMobileSize});
@@ -25,7 +25,10 @@ class RightSideMenu extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: iconAndFontSize, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: iconAndFontSize,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -33,9 +36,15 @@ class RightSideMenu extends StatelessWidget {
               Text(leftText, style: TextStyle(fontSize: iconAndFontSize * 0.8)),
               Text(
                 value.toStringAsFixed(1),
-                style: TextStyle(fontSize: iconAndFontSize * 0.9, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: iconAndFontSize * 0.9,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              Text(rightText, style: TextStyle(fontSize: iconAndFontSize * 0.8)),
+              Text(
+                rightText,
+                style: TextStyle(fontSize: iconAndFontSize * 0.8),
+              ),
             ],
           ),
           Slider(
@@ -55,12 +64,16 @@ class RightSideMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final optionsProvider = Provider.of<OptionsProvider>(context);
-    final playersProvider = Provider.of<PlayersProvider>(context, listen: false);
+    final playersProvider = Provider.of<PlayersProvider>(
+      context,
+      listen: false,
+    );
     final iconAndFontSize = isMobileSize ? 24.0 : 48.0;
-    final switchScale = isMobileSize ? 1.0 : 1.5;
 
     return Drawer(
-      width: isMobileSize ? MediaQuery.of(context).size.width * 0.75 : MediaQuery.of(context).size.width * 0.60,
+      width: isMobileSize
+          ? MediaQuery.of(context).size.width * 0.75
+          : MediaQuery.of(context).size.width * 0.60,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
@@ -100,7 +113,9 @@ class RightSideMenu extends StatelessWidget {
                     message: '모든 참여자의 플레이 정보들을 초기화 하시겠습니까?',
                     onConfirm: () {
                       playersProvider.resetPlayerStats();
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('플레이 정보가 초기화되었습니다')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('플레이 정보가 초기화되었습니다')),
+                      );
                     },
                   );
                 },
@@ -113,7 +128,10 @@ class RightSideMenu extends StatelessWidget {
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('코트 수: ${optionsProvider.numberOfSections}', style: TextStyle(fontSize: iconAndFontSize)),
+                Text(
+                  '코트 수: ${optionsProvider.numberOfSections}',
+                  style: TextStyle(fontSize: iconAndFontSize),
+                ),
                 Slider(
                   value: optionsProvider.numberOfSections.toDouble(),
                   min: 1,
@@ -123,7 +141,9 @@ class RightSideMenu extends StatelessWidget {
                   onChanged: (double value) {
                     int newNumberOfSections = value.round();
                     optionsProvider.setNumberOfSections(newNumberOfSections);
-                    playersProvider.updateAssignedPlayersListCount(newNumberOfSections);
+                    playersProvider.updateAssignedPlayersListCount(
+                      newNumberOfSections,
+                    );
                   },
                   activeColor: Colors.blueAccent,
                 ),

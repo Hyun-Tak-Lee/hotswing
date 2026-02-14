@@ -91,7 +91,10 @@ class _MainContentState extends State<MainContent> {
     int targetSectionIndex,
     int targetSubIndex,
   ) {
-    final playersProvider = Provider.of<PlayersProvider>(context, listen: false);
+    final playersProvider = Provider.of<PlayersProvider>(
+      context,
+      listen: false,
+    );
     final Player draggedPlayer = data.player;
     final String sourceSectionKind = data.sectionKind;
     final int sourceSectionIndex = data.sectionIndex;
@@ -111,8 +114,12 @@ class _MainContentState extends State<MainContent> {
     // 사례 2: 코트 슬롯에서 드래그한 경우
     else {
       // 사례 2a: 다른 assigned 코트 슬롯에 놓은 경우
-      if (![PlayerSectionKind.unassigned.value, PlayerSectionKind.drop.value].contains(targetSectionKind)) {
-        if (sourceSectionIndex == targetSectionIndex && sourceSubIndex == targetSubIndex) {
+      if (![
+        PlayerSectionKind.unassigned.value,
+        PlayerSectionKind.drop.value,
+      ].contains(targetSectionKind)) {
+        if (sourceSectionIndex == targetSectionIndex &&
+            sourceSubIndex == targetSubIndex) {
           return;
         }
         playersProvider.exchangePlayersInCourts(
@@ -161,11 +168,15 @@ class _MainContentState extends State<MainContent> {
   Widget _buildViewButton(String label, CourtViewSection value) {
     final bool isSelected = (selectedView == value);
 
-    final buttonTextStyle = TextStyle(fontSize: widget.isMobileSize ? 14.0 : 32.0);
+    final buttonTextStyle = TextStyle(
+      fontSize: widget.isMobileSize ? 14.0 : 32.0,
+    );
     final Color deepBlue = Color(0x99008BD1);
 
     final buttonStyle = ButtonStyle(
-      padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0)),
+      padding: WidgetStateProperty.all(
+        const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      ),
       textStyle: WidgetStateProperty.all(buttonTextStyle),
       visualDensity: VisualDensity.compact,
     );
@@ -174,7 +185,9 @@ class _MainContentState extends State<MainContent> {
       return ElevatedButton(
         style: buttonStyle.copyWith(
           backgroundColor: WidgetStateProperty.all<Color>(deepBlue),
-          foregroundColor: WidgetStateProperty.all<Color>(Theme.of(context).colorScheme.onPrimary),
+          foregroundColor: WidgetStateProperty.all<Color>(
+            Theme.of(context).colorScheme.onPrimary,
+          ),
         ),
         onPressed: null,
         child: Text(label),
@@ -182,8 +195,12 @@ class _MainContentState extends State<MainContent> {
     } else {
       return OutlinedButton(
         style: buttonStyle.copyWith(
-          side: WidgetStateProperty.all<BorderSide>(BorderSide(color: deepBlue, width: 1.5)),
-          foregroundColor: WidgetStateProperty.all<Color>(Theme.of(context).colorScheme.primary),
+          side: WidgetStateProperty.all<BorderSide>(
+            BorderSide(color: deepBlue, width: 1.5),
+          ),
+          foregroundColor: WidgetStateProperty.all<Color>(
+            Theme.of(context).colorScheme.primary,
+          ),
         ),
         onPressed: () {
           setState(() {
@@ -197,11 +214,6 @@ class _MainContentState extends State<MainContent> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-    const double tabletThreshold = 600.0;
-    final isMobileSize = screenWidth < tabletThreshold;
-
     final optionsProvider = Provider.of<OptionsProvider>(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
     final playerList = List<Player>.from(playersProvider.unassignedPlayers);
@@ -217,11 +229,15 @@ class _MainContentState extends State<MainContent> {
       int compareResult;
       switch (_sortCriterion) {
         case SortCriterion.played:
-          int activateCompare = (b.activate ? 1: 0).compareTo(a.activate? 1:0);
+          int activateCompare = (b.activate ? 1 : 0).compareTo(
+            a.activate ? 1 : 0,
+          );
           if (activateCompare != 0) {
             return activateCompare;
           }
-          int playedCompare = (a.played + a.lated).compareTo(b.played + b.lated);
+          int playedCompare = (a.played + a.lated).compareTo(
+            b.played + b.lated,
+          );
           if (playedCompare != 0) {
             compareResult = playedCompare;
           }
@@ -248,18 +264,36 @@ class _MainContentState extends State<MainContent> {
               children: [
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 10.0,
+                    vertical: 4.0,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).canvasColor,
-                    border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey.shade300),
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
-                      Expanded(child: _buildViewButton('경기 코트', CourtViewSection.assignedView)),
+                      Expanded(
+                        child: _buildViewButton(
+                          '경기 코트',
+                          CourtViewSection.assignedView,
+                        ),
+                      ),
                       const SizedBox(width: 8.0),
-                      Expanded(child: _buildViewButton('대기 코트', CourtViewSection.standbyView)),
+                      Expanded(
+                        child: _buildViewButton(
+                          '대기 코트',
+                          CourtViewSection.standbyView,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -300,7 +334,8 @@ class _MainContentState extends State<MainContent> {
                         });
                       },
                       onEndGame: (sectionIndex) {
-                        playersProvider.incrementWaitedTimeForAllUnassignedPlayers();
+                        playersProvider
+                            .incrementWaitedTimeForAllUnassignedPlayers();
                         playersProvider.movePlayersFromCourtToUnassigned(
                           sectionIndex: sectionIndex,
                           targetCourtKind: PlayerSectionKind.assigned.value,
@@ -342,7 +377,8 @@ class _MainContentState extends State<MainContent> {
                         );
                       },
                       onAddStandByCourt: _playersProvider.addStandByPlayers,
-                      onRemoveStandByCourt: (sectionIndex) => _playersProvider.removeStandByPlayers(sectionIndex),
+                      onRemoveStandByCourt: (sectionIndex) =>
+                          _playersProvider.removeStandByPlayers(sectionIndex),
                     ),
                   },
                 ),
@@ -355,16 +391,24 @@ class _MainContentState extends State<MainContent> {
             child: Stack(
               children: [
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 10.0,
+                    vertical: 4.0,
+                  ),
                   child: Center(
                     child: FractionallySizedBox(
                       child: Column(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8.0,
+                            ),
                             decoration: BoxDecoration(
                               color: Theme.of(context).canvasColor,
-                              border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+                              border: Border(
+                                bottom: BorderSide(color: Colors.grey.shade300),
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -381,10 +425,14 @@ class _MainContentState extends State<MainContent> {
                                   children: [
                                     DropdownButton<SortCriterion>(
                                       value: _sortCriterion,
-                                      items: SortCriterion.values.map((criterion) {
+                                      items: SortCriterion.values.map((
+                                        criterion,
+                                      ) {
                                         return DropdownMenuItem<SortCriterion>(
                                           value: criterion,
-                                          child: Text(_getSortCriterionText(criterion)),
+                                          child: Text(
+                                            _getSortCriterionText(criterion),
+                                          ),
                                         );
                                       }).toList(),
                                       onChanged: (SortCriterion? newValue) {
@@ -396,15 +444,28 @@ class _MainContentState extends State<MainContent> {
                                       },
                                       underline: Container(),
                                       style: TextStyle(
-                                        fontSize: widget.isMobileSize ? 14.0 : 16.0,
-                                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                                        fontSize: widget.isMobileSize
+                                            ? 14.0
+                                            : 16.0,
+                                        color: Theme.of(
+                                          context,
+                                        ).textTheme.bodyLarge?.color,
                                       ),
-                                      icon: Icon(Icons.arrow_drop_down, size: widget.isMobileSize ? 20.0 : 22.0),
+                                      icon: Icon(
+                                        Icons.arrow_drop_down,
+                                        size: widget.isMobileSize ? 20.0 : 22.0,
+                                      ),
                                     ),
                                     SizedBox(width: 4.0),
                                     IconButton(
-                                      icon: Icon(_sortAscending ? Icons.arrow_upward : Icons.arrow_downward),
-                                      iconSize: widget.isMobileSize ? 20.0 : 22.0,
+                                      icon: Icon(
+                                        _sortAscending
+                                            ? Icons.arrow_upward
+                                            : Icons.arrow_downward,
+                                      ),
+                                      iconSize: widget.isMobileSize
+                                          ? 20.0
+                                          : 22.0,
                                       padding: EdgeInsets.zero,
                                       constraints: BoxConstraints(),
                                       onPressed: () {
@@ -422,35 +483,41 @@ class _MainContentState extends State<MainContent> {
                             child: SingleChildScrollView(
                               scrollDirection: Axis.vertical,
                               child: Column(
-                                children: playerList.asMap().entries.map<Widget>((entry) {
-                                  int playerIndex = entry.key;
-                                  Player player = entry.value;
-                                  final String playerSectionId = 'unassigned_$playerIndex';
-                                  return PlayerDropZone(
-                                    player: player,
-                                    sectionId: playerSectionId,
-                                    sectionKind: PlayerSectionKind.unassigned.value,
-                                    sectionIndex: -1,
-                                    subIndex: playerIndex,
-                                    onPlayerDropped:
-                                        (
-                                          data,
-                                          droppedOnPlayer,
-                                          targetId,
-                                          sectionKind,
-                                          targetSectionIdx,
-                                          targetSubIdx,
-                                        ) => _handlePlayerDrop(
-                                          context,
-                                          data,
-                                          droppedOnPlayer,
-                                          targetId,
-                                          sectionKind,
-                                          targetSectionIdx,
-                                          targetSubIdx,
-                                        ),
-                                  );
-                                }).toList(),
+                                children: playerList
+                                    .asMap()
+                                    .entries
+                                    .map<Widget>((entry) {
+                                      int playerIndex = entry.key;
+                                      Player player = entry.value;
+                                      final String playerSectionId =
+                                          'unassigned_$playerIndex';
+                                      return PlayerDropZone(
+                                        player: player,
+                                        sectionId: playerSectionId,
+                                        sectionKind:
+                                            PlayerSectionKind.unassigned.value,
+                                        sectionIndex: -1,
+                                        subIndex: playerIndex,
+                                        onPlayerDropped:
+                                            (
+                                              data,
+                                              droppedOnPlayer,
+                                              targetId,
+                                              sectionKind,
+                                              targetSectionIdx,
+                                              targetSubIdx,
+                                            ) => _handlePlayerDrop(
+                                              context,
+                                              data,
+                                              droppedOnPlayer,
+                                              targetId,
+                                              sectionKind,
+                                              targetSectionIdx,
+                                              targetSubIdx,
+                                            ),
+                                      );
+                                    })
+                                    .toList(),
                               ),
                             ),
                           ),
@@ -468,20 +535,41 @@ class _MainContentState extends State<MainContent> {
                       },
                       onAcceptWithDetails: (details) {
                         final data = details.data;
-                        _handlePlayerDrop(context, data, null, 'unassigned_area_delete_overlay', 'drop', -1, -1);
-                      },
-                      builder: (BuildContext context, List<PlayerDragData?> candidateData, List<dynamic> rejectedData) {
-                        final bool isHovering = candidateData.isNotEmpty;
-                        return Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10.0),
-                          decoration: BoxDecoration(
-                            color: isHovering ? Colors.black.withAlpha(50) : Colors.black.withAlpha(25),
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          alignment: Alignment.center,
-                          child: Icon(Icons.delete, color: Colors.white, size: widget.isMobileSize ? 30.0 : 50.0),
+                        _handlePlayerDrop(
+                          context,
+                          data,
+                          null,
+                          'unassigned_area_delete_overlay',
+                          'drop',
+                          -1,
+                          -1,
                         );
                       },
+                      builder:
+                          (
+                            BuildContext context,
+                            List<PlayerDragData?> candidateData,
+                            List<dynamic> rejectedData,
+                          ) {
+                            final bool isHovering = candidateData.isNotEmpty;
+                            return Container(
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 10.0,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isHovering
+                                    ? Colors.black.withAlpha(50)
+                                    : Colors.black.withAlpha(25),
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.delete,
+                                color: Colors.white,
+                                size: widget.isMobileSize ? 30.0 : 50.0,
+                              ),
+                            );
+                          },
                     ),
                   ),
               ],
