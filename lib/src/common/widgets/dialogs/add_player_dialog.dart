@@ -223,20 +223,26 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       elevation: 4.0,
                       child: SizedBox(
                         width: constraints.maxWidth,
-                        child: ListView.builder(
-                          padding: EdgeInsets.zero,
-                          shrinkWrap: true,
-                          itemCount: options.length,
-                          itemBuilder: (context, index) {
-                            final option = options.elementAt(index);
-                            final skillLevel =
-                                rateToSkillLevel[option.rate] ??
-                                '${option.rate}';
-                            return ListTile(
-                              title: Text('${option.name} ($skillLevel)'),
-                              onTap: () => onSelected(option),
-                            );
+                        child: TapRegion(
+                          groupId: const ValueKey('player_name_input'),
+                          onTapOutside: (event) {
+                            FocusManager.instance.primaryFocus?.unfocus();
                           },
+                          child: ListView.builder(
+                            padding: EdgeInsets.zero,
+                            shrinkWrap: true,
+                            itemCount: options.length,
+                            itemBuilder: (context, index) {
+                              final option = options.elementAt(index);
+                              final skillLevel =
+                                  rateToSkillLevel[option.rate] ??
+                                  '${option.rate}';
+                              return ListTile(
+                                title: Text('${option.name} ($skillLevel)'),
+                                onTap: () => onSelected(option),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -244,27 +250,41 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                 },
                 fieldViewBuilder:
                     (context, controller, focusNode, onFieldSubmitted) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: InputDecoration(
-                          labelText: '이름',
-                          labelStyle: labelStyle,
-                          border: const OutlineInputBorder(),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                      return TapRegion(
+                        groupId: const ValueKey('player_name_input'),
+                        child: TextFormField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          decoration: InputDecoration(
+                            labelText: '이름',
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                              },
+                              icon: const Icon(Icons.check),
+                            ),
                           ),
+                          style: labelStyle,
+                          maxLength: 10,
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(10),
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return '이름을 입력하세요';
+                            }
+                            if (value.length > 10) return '이름은 10자 이하로 입력해주세요';
+                            return null;
+                          },
+                          onSaved: (value) => _name = value,
+                          onFieldSubmitted: (_) => onFieldSubmitted(),
                         ),
-                        style: labelStyle,
-                        validator: (value) {
-                          if (value == null || value.isEmpty)
-                            return '이름을 입력하세요';
-                          if (value.length > 7) return '이름은 7자 이하로 입력해주세요';
-                          return null;
-                        },
-                        onSaved: (value) => _name = value,
-                        onFieldSubmitted: (_) => onFieldSubmitted(),
                       );
                     },
               );

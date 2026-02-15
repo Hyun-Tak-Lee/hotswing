@@ -32,9 +32,8 @@ class PlayersProvider with ChangeNotifier {
       await _loadInitialPlayers();
 
       // final List<int> skillRates = skillLevelToRate.values.toList();
-      // _playerService.deleteAllPlayers();
       // for (int i = 1; i <= 32; i++) {
-      //   String name = '플레이어 $i';
+      //   String name = 'user$i';
       //   String role = _random.nextBool() ? "manager" : "user";
       //   int rate = skillRates[_random.nextInt(skillRates.length)];
       //   String gender = _random.nextBool() ? '남' : '여';
@@ -183,7 +182,7 @@ class PlayersProvider with ChangeNotifier {
     required int lated,
     required List<ObjectId> groups,
   }) {
-    if (name.length > 7) return;
+    if (name.length > 10) return;
     if (_players.values.any((player) => player.name == name)) return;
 
     final ObjectId newId = ObjectId();
@@ -265,7 +264,7 @@ class PlayersProvider with ChangeNotifier {
     required int newWaited,
     required List<ObjectId> newGroups,
   }) {
-    if (newName.length > 7) return;
+    if (newName.length > 10) return;
     if (!_players.containsKey(playerId)) return;
     Player playerToUpdate = _players[playerId]!;
 

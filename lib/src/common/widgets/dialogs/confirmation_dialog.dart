@@ -2,12 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 
 class ConfirmationDialog extends StatelessWidget {
+  final String? title;
   final String message;
+  final String confirmText;
+  final String cancelText;
+  final bool isDestructive;
   final VoidCallback onConfirm;
 
   const ConfirmationDialog({
     super.key,
+    this.title,
     required this.message,
+    this.confirmText = '확인',
+    this.cancelText = '취소',
+    this.isDestructive = false,
     required this.onConfirm,
   });
 
@@ -19,21 +27,34 @@ class ConfirmationDialog extends StatelessWidget {
         ? MediaQuery.of(context).size.width * 0.8
         : 450.0;
 
+    final titleStyle = ResponsiveUtils.getResponsiveStyle(
+      context,
+      textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+    );
     final messageStyle = ResponsiveUtils.getResponsiveStyle(
       context,
-      textTheme.titleLarge,
+      textTheme.bodyLarge,
     );
     final buttonStyle = ResponsiveUtils.getResponsiveStyle(
       context,
       textTheme.titleMedium,
     );
+    final destructiveButtonStyle = buttonStyle?.copyWith(color: Colors.red);
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.0)),
       contentPadding: EdgeInsets.zero,
       actionsPadding: EdgeInsets.zero,
+      title: title != null
+          ? Text(title!, style: titleStyle, textAlign: TextAlign.center)
+          : null,
       content: Container(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.only(
+          left: 24.0,
+          right: 24.0,
+          top: 12.0, // title이 있을 경우 간격 조정 필요하지만 단순화
+          bottom: 24.0,
+        ),
         width: dialogWidth,
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: Colors.grey.shade400)),
@@ -58,12 +79,11 @@ class ConfirmationDialog extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('취소', style: buttonStyle),
+                  child: Text(cancelText, style: buttonStyle),
                 ),
               ),
               SizedBox(
                 height: kMinInteractiveDimension,
-                // 머티리얼 디자인 최소 터치 타겟 크기
                 child: VerticalDivider(
                   thickness: 1,
                   color: Colors.grey.shade400,
@@ -85,7 +105,10 @@ class ConfirmationDialog extends StatelessWidget {
                     onConfirm();
                     Navigator.of(context).pop();
                   },
-                  child: Text('확인', style: buttonStyle),
+                  child: Text(
+                    confirmText,
+                    style: isDestructive ? destructiveButtonStyle : buttonStyle,
+                  ),
                 ),
               ),
             ],

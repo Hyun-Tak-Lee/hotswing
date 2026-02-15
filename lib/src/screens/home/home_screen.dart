@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import './widgets/left_side_menu.dart';
 import './widgets/right_side_menu.dart';
 import './widgets/main_content.dart';
@@ -15,11 +16,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    const double tabletThreshold = 600.0;
-    final isMobileSize = screenWidth < tabletThreshold;
-    final double iconSize = isMobileSize ? 24.0 : 76.0;
-    final double appBarHeight = isMobileSize ? kToolbarHeight : 92.0;
+    final isTablet = ResponsiveUtils.isTablet(context);
+    // 하위 위젯 호환성을 위해 유지 (추후 리팩토링 가능)
+    final isMobileSize = !isTablet;
+
+    final double iconSize = isTablet ? 76.0 : 24.0;
+    final double appBarHeight = isTablet ? 92.0 : kToolbarHeight;
 
     return Container(
       decoration: const BoxDecoration(

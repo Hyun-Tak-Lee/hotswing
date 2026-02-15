@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hotswing/src/screens/home/home_screen.dart';
+import 'package:hotswing/src/screens/main/main_wrapper.dart';
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
@@ -12,7 +12,7 @@ class MainApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFB0E0E6)),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const MainWrapper(),
     );
   }
 }

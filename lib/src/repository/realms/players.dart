@@ -97,9 +97,11 @@ class PlayerRepository {
     try {
       _realm.write(() {
         for (Player? otherPlayerInCourt in playersInCourt) {
-          if (otherPlayerInCourt != null && otherPlayerInCourt.id != currentPlayer.id) {
+          if (otherPlayerInCourt != null &&
+              otherPlayerInCourt.id != currentPlayer.id) {
             final otherPlayerId = otherPlayerInCourt.id.hexString;
-            final currentGames = currentPlayer.gamesPlayedWith[otherPlayerId] ?? 0;
+            final currentGames =
+                currentPlayer.gamesPlayedWith[otherPlayerId] ?? 0;
             currentPlayer.gamesPlayedWith[otherPlayerId] = currentGames + games;
           }
         }
@@ -142,6 +144,57 @@ class PlayerRepository {
     try {
       _realm.write(() {
         _realm.deleteAll<Player>();
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+  }
+
+  RealmResults<Player> getPlayers({
+    required Set<String> roleValues,
+    required Set<String> genderValues,
+    String? sortField,
+    bool sortAscending = true,
+  }) {
+    List<String> conditions = [];
+    List<Object> args = [];
+    int argIndex = 0;
+
+    if (roleValues.isNotEmpty) {
+      String roleCondition = roleValues
+          .map((_) => 'role == \$${argIndex++}')
+          .join(' OR ');
+      conditions.add('($roleCondition)');
+      args.addAll(roleValues);
+    }
+
+    if (genderValues.isNotEmpty) {
+      String genderCondition = genderValues
+          .map((_) => 'gender == \$${argIndex++}')
+          .join(' OR ');
+      conditions.add('($genderCondition)');
+      args.addAll(genderValues);
+    }
+
+    String queryString = conditions.isEmpty
+        ? 'TRUEPREDICATE'
+        : conditions.join(' AND ');
+
+    if (sortField != null) {
+      queryString += ' SORT($sortField ${sortAscending ? 'ASC' : 'DESC'})';
+    }
+
+    return _realm.query<Player>(queryString, args);
+  }
+
+  void deletePlayers(List<ObjectId> ids) {
+    try {
+      _realm.write(() {
+        // Realm query for 'id IN $0' with list of ids
+        final playersToDelete = _realm.query<Player>("id IN \$0", [ids]);
+        _realm.deleteMany(playersToDelete);
       });
     } catch (e) {
       if (kDebugMode) {

@@ -1,13 +1,14 @@
-enum PlayerRole{
-  manager("manager"),
-  user("user"),
-  guest("guest");
+enum PlayerRole {
+  manager("manager", "매니저"),
+  user("user", "회원"),
+  guest("guest", "게스트");
 
   final String value;
-  const PlayerRole(this.value);
+  final String label;
+  const PlayerRole(this.value, this.label);
 }
 
-enum PlayerSectionKind{
+enum PlayerSectionKind {
   unassigned("unassigned"),
   assigned("assigned"),
   standby("standby"),
