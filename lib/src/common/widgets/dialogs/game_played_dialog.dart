@@ -15,38 +15,45 @@ class GamePlayedDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-    const double tabletThreshold = 600.0;
-    final isMobileSize = screenWidth < tabletThreshold;
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
+    final screenHeight = mediaQuery.size.height;
+    final isMobile = screenWidth < 600;
 
-    final double titleFontSize = isMobileSize ? 20 : 32;
-    final double contentFontSize = isMobileSize ? 16 : 28;
-    final double buttonFontSize = isMobileSize ? 14 : 24;
-    final double dialogWidth = isMobileSize ? screenWidth * 0.8 : screenWidth * 0.5;
-    final double dialogHeight = isMobileSize ? screenHeight * 0.4 : screenHeight * 0.4;
+    final textTheme = Theme.of(context).textTheme;
+    final double dialogWidth = isMobile ? screenWidth * 0.9 : 500.0;
+    final double dialogHeight = isMobile ? screenHeight * 0.5 : 400.0;
 
-    final sortedNotPlayedWithNames = List<String>.from(notPlayedWithNames)..sort();
-    bool hasNotPlayedWith = notPlayedWithNames.isNotEmpty;
+    final sortedNotPlayedWithNames = List<String>.from(notPlayedWithNames)
+      ..sort();
+    final bool hasNotPlayedWith = notPlayedWithNames.isNotEmpty;
 
     return AlertDialog(
-      title: Text('${player.name}님과 함께 플레이한 사람', style: TextStyle(fontSize: titleFontSize)),
+      title: Text(
+        '${player.name}님과 함께 플레이한 사람',
+        style: textTheme.headlineSmall,
+      ),
       content: SizedBox(
         width: dialogWidth,
         height: dialogHeight,
         child: Scrollbar(
           thumbVisibility: true,
-          child: ListView.builder(
-            shrinkWrap: true,
+          child: ListView.separated(
             itemCount: gamesPlayedWithMap.length + (hasNotPlayedWith ? 1 : 0),
+            separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (BuildContext context, int index) {
               if (hasNotPlayedWith && index == 0) {
-                // Display notPlayedWithNames first if it exists
                 return ListTile(
                   dense: true,
                   title: Text(
-                    '기록 없음: \n${sortedNotPlayedWithNames.join(', ')}',
-                    style: TextStyle(fontSize: contentFontSize),
+                    '기록 없음',
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(
+                    sortedNotPlayedWithNames.join(', '),
+                    style: textTheme.bodyMedium,
                   ),
                 );
               } else {
@@ -54,7 +61,11 @@ class GamePlayedDialog extends StatelessWidget {
                 final entry = gamesPlayedWithMap.entries.elementAt(mapIndex);
                 return ListTile(
                   dense: true,
-                  title: Text('${entry.key}: ${entry.value} 회', style: TextStyle(fontSize: contentFontSize)),
+                  title: Text(entry.key, style: textTheme.bodyLarge),
+                  trailing: Text(
+                    '${entry.value} 회',
+                    style: textTheme.bodyLarge,
+                  ),
                 );
               }
             },
@@ -63,7 +74,7 @@ class GamePlayedDialog extends StatelessWidget {
       ),
       actions: <Widget>[
         TextButton(
-          child: Text('닫기', style: TextStyle(fontSize: buttonFontSize)),
+          child: Text('닫기', style: textTheme.titleMedium),
           onPressed: () {
             Navigator.of(context).pop();
           },

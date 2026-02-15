@@ -11,7 +11,12 @@ class AddPlayerDialog extends StatefulWidget {
   final Player? player;
   final bool isGuest;
 
-  const AddPlayerDialog({super.key, required this.playersProvider, this.player, this.isGuest = false});
+  const AddPlayerDialog({
+    super.key,
+    required this.playersProvider,
+    this.player,
+    this.isGuest = false,
+  });
 
   @override
   State<AddPlayerDialog> createState() => _AddPlayerDialogState();
@@ -41,7 +46,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _rate = widget.player!.rate;
       _selectedSkillLevel = rateToSkillLevel[widget.player!.rate];
       _selectedGender = widget.player!.gender;
-      _isManager = widget.player!.role == "manager" ? true : false;
+      _isManager = widget.player!.role == "manager";
       _playCount = widget.player!.played;
       _waitCount = widget.player!.waited;
       _groups = widget.player!.groups;
@@ -55,9 +60,10 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     if (textEditingValue.text.isEmpty) {
       return const Iterable<Player>.empty();
     }
-    List<Player> searchPlayers = widget.playersProvider.findPlayersByPrefix(textEditingValue.text, 10);
-
-    return searchPlayers;
+    return widget.playersProvider.findPlayersByPrefix(
+      textEditingValue.text,
+      10,
+    );
   }
 
   void _loadPlayerAllForms(Player player) {
@@ -67,321 +73,343 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _name = player.name;
       _selectedSkillLevel = rateToSkillLevel[player.rate];
       _selectedGender = player.gender;
-      _isManager = player.role == "manager" ? true : false;
+      _isManager = player.role == "manager";
     });
+  }
+
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      String role = "user";
+      if (widget.isGuest || (widget.player?.role == 'guest')) {
+        role = 'guest';
+      } else if (_isManager) {
+        role = "manager";
+      }
+
+      Navigator.of(context).pop({
+        'name': _name,
+        'rate': _rate,
+        'gender': _selectedGender,
+        'role': role,
+        'played': _playCount,
+        'waited': _waitCount,
+        'groups': _groups,
+        'loaded': isLoaded,
+        'player': _player,
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    const double tabletThreshold = 600.0;
-    final isMobileSize = screenWidth < tabletThreshold;
     final bool isEditMode = widget.player != null;
     final bool isGuestMode = widget.isGuest || (widget.player?.role == 'guest');
 
-    final double titleFontSize = isMobileSize ? 24 : 40;
-    final double labelFontSize = isMobileSize ? 20 : 32;
-    final double switchLabelFontSize = isMobileSize ? 16 : 24;
-    final double contentPadding = isMobileSize ? 8.0 : 24.0;
-    final double fieldSpacing = isMobileSize ? 16.0 : 32.0;
-    final double dialogWidth = isMobileSize ? screenWidth * 0.9 : screenWidth * 0.7;
-    final double buttonFontSize = isMobileSize ? 16 : 28;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 기존 constraints를 사용하여 "모바일" 크기인지 확인합니다.
+        // 하지만 이것은 Dialog 내부이므로 constraints가 더 느슨할 수 있습니다.
+        // 전체 디바이스 유형을 확인하려면 context의 MediaQuery를 확인하는 것이 더 안전합니다.
+        final mediaWidth = MediaQuery.of(context).size.width;
+        final bool isMobile = mediaWidth < 600;
 
-    final List<Player> allPlayers = widget.playersProvider.players.values.toList() ?? [];
-    final List<ObjectId> allPlayerIds = allPlayers.map((player) => player.id).toList();
-    final List<String> allPlayerNames = allPlayers.map((player) => player.name).toList();
-    final List<ObjectId> allGroupedIds = allPlayers
-        .where((player) => player.groups.isNotEmpty)
-        .map((player) => player.id)
-        .toList();
+        final textTheme = Theme.of(context).textTheme;
+        final double dialogWidth = isMobile ? mediaWidth * 0.9 : 500.0;
+        final double fieldSpacing = isMobile ? 16.0 : 24.0;
 
-    return AlertDialog(
-      title: Container(
-        padding: EdgeInsets.only(left: isMobileSize ? 8 : 16),
-        decoration: BoxDecoration(color: Color(0x99A0E9FF), borderRadius: BorderRadius.circular(12)),
-        child: Text(
-          '${isGuestMode ? '게스트' : '회원'} ${isEditMode ? '수정' : '추가'}',
-          style: TextStyle(fontSize: titleFontSize),
-        ),
-      ),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Padding(
-            padding: EdgeInsets.all(contentPadding),
+        return AlertDialog(
+          titlePadding: EdgeInsets.zero,
+          title: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            decoration: const BoxDecoration(
+              color: Color(0x99A0E9FF),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+            ),
+            child: Text(
+              '${isGuestMode ? '게스트' : '회원'} ${isEditMode ? '수정' : '추가'}',
+              style: textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          content: SingleChildScrollView(
             child: SizedBox(
               width: dialogWidth,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        flex: isMobileSize ? 1 : 2,
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return Autocomplete<Player>(
-                              initialValue: TextEditingValue(text: _name ?? ''),
-                              optionsBuilder: (TextEditingValue value) {
-                                if (isEditMode) return const Iterable<Player>.empty();
-                                return _findPlayersByName(value);
-                              },
-                              onSelected: _loadPlayerAllForms,
-                              displayStringForOption: (Player player) => player.name,
-                              optionsViewBuilder:
-                                  (
-                                    BuildContext context,
-                                    AutocompleteOnSelected<Player> onSelected,
-                                    Iterable<Player> options,
-                                  ) {
-                                    return Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Material(
-                                        elevation: 4.0,
-                                        child: SizedBox(
-                                          width: constraints.maxWidth,
-                                          child: ListView.builder(
-                                            padding: EdgeInsets.zero,
-                                            shrinkWrap: true,
-                                            itemCount: options.length,
-                                            itemBuilder: (BuildContext context, int index) {
-                                              final Player option = options.elementAt(index);
-                                              final skillLevel = rateToSkillLevel[option.rate] ?? '${option.rate}';
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    _buildNameAndManagerSection(
+                      isMobile,
+                      isEditMode,
+                      isGuestMode,
+                      textTheme,
+                    ),
+                    SizedBox(height: fieldSpacing),
+                    _buildSkillLevelField(isMobile, textTheme),
+                    SizedBox(height: fieldSpacing),
+                    _buildGenderField(isMobile, textTheme),
+                    SizedBox(height: fieldSpacing),
+                    _buildGroupPlayerField(isMobile, textTheme),
+                    if (isEditMode) ...[
+                      SizedBox(height: fieldSpacing),
+                      _buildStatsRow(isMobile, textTheme),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('취소', style: textTheme.titleMedium),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton(
+              onPressed: _submit,
+              child: Text(
+                isEditMode ? '수정' : '추가',
+                style: textTheme.titleMedium,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-                                              return ListTile(
-                                                title: Text('${option.name} ($skillLevel)'),
-                                                onTap: () => onSelected(option),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                              fieldViewBuilder:
-                                  (
-                                    BuildContext context,
-                                    TextEditingController fieldTextEditingController,
-                                    FocusNode fieldFocusNode,
-                                    VoidCallback onFieldSubmitted,
-                                  ) {
-                                    return TextFormField(
-                                      controller: fieldTextEditingController,
-                                      focusNode: fieldFocusNode,
-                                      decoration: InputDecoration(
-                                        labelText: '이름',
-                                        labelStyle: TextStyle(fontSize: labelFontSize),
-                                      ),
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return '이름을 입력하세요';
-                                        }
-                                        if (value.length > 7) {
-                                          return '이름은 7자 이하로 입력해주세요';
-                                        }
-                                        return null;
-                                      },
-                                      onSaved: (value) {
-                                        _name = value;
-                                      },
-                                      onFieldSubmitted: (_) => onFieldSubmitted(),
-                                    );
-                                  },
+  Widget _buildNameAndManagerSection(
+    bool isMobile,
+    bool isEditMode,
+    bool isGuestMode,
+    TextTheme textTheme,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          flex: 2,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Autocomplete<Player>(
+                initialValue: TextEditingValue(text: _name ?? ''),
+                optionsBuilder: (TextEditingValue value) {
+                  if (isEditMode) return const Iterable<Player>.empty();
+                  return _findPlayersByName(value);
+                },
+                onSelected: _loadPlayerAllForms,
+                displayStringForOption: (Player player) => player.name,
+                optionsViewBuilder: (context, onSelected, options) {
+                  return Align(
+                    alignment: Alignment.topLeft,
+                    child: Material(
+                      elevation: 4.0,
+                      child: SizedBox(
+                        width: constraints.maxWidth,
+                        child: ListView.builder(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          itemCount: options.length,
+                          itemBuilder: (context, index) {
+                            final option = options.elementAt(index);
+                            final skillLevel =
+                                rateToSkillLevel[option.rate] ??
+                                '${option.rate}';
+                            return ListTile(
+                              title: Text('${option.name} ($skillLevel)'),
+                              onTap: () => onSelected(option),
                             );
                           },
                         ),
                       ),
-                      if (!isGuestMode)
-                        Flexible(
-                          flex: isMobileSize ? 1 : 1,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text('운영진', style: TextStyle(fontSize: switchLabelFontSize)),
-                              SizedBox(width: isMobileSize ? 4 : 20),
-                              Transform.scale(
-                                scale: isMobileSize ? 1.0 : 1.5,
-                                child: Switch(
-                                  value: _isManager,
-                                  onChanged: isLoaded
-                                      ? null
-                                      : (bool value) {
-                                          setState(() {
-                                            _isManager = value;
-                                          });
-                                        },
-                                ),
-                              ),
-                            ],
+                    ),
+                  );
+                },
+                fieldViewBuilder:
+                    (context, controller, focusNode, onFieldSubmitted) {
+                      return TextFormField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        decoration: InputDecoration(
+                          labelText: '이름',
+                          labelStyle: textTheme.bodyLarge,
+                          border: const OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
                           ),
                         ),
-                    ],
-                  ),
-                  SizedBox(height: fieldSpacing),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: '급수',
-                      labelStyle: TextStyle(fontSize: labelFontSize),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                    isDense: false,
-                    value: _selectedSkillLevel,
-                    itemHeight: isMobileSize ? 48.0 : 80.0,
-                    items: skillLevelToRate.keys.map((String level) {
-                      return DropdownMenuItem<String>(
-                        value: level,
-                        child: Text(level, style: TextStyle(fontSize: labelFontSize)),
+                        style: textTheme.bodyLarge,
+                        validator: (value) {
+                          if (value == null || value.isEmpty)
+                            return '이름을 입력하세요';
+                          if (value.length > 7) return '이름은 7자 이하로 입력해주세요';
+                          return null;
+                        },
+                        onSaved: (value) => _name = value,
+                        onFieldSubmitted: (_) => onFieldSubmitted(),
                       );
-                    }).toList(),
-                    onChanged: isLoaded
-                        ? null
-                        : (String? newValue) {
-                            setState(() {
-                              _selectedSkillLevel = newValue;
-                            });
-                          },
-                    validator: (value) => value == null ? '급수를 선택하세요.' : null,
-                    onSaved: (value) {
-                      if (value != null) {
-                        _rate = skillLevelToRate[value];
-                      }
                     },
-                  ),
-                  SizedBox(height: fieldSpacing),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: '성별',
-                      labelStyle: TextStyle(fontSize: labelFontSize),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                    isDense: false,
-                    value: _selectedGender,
-                    itemHeight: isMobileSize ? 48.0 : 80.0,
-                    items: _genders.map((String gender) {
-                      return DropdownMenuItem<String>(
-                        value: gender,
-                        child: Text(gender, style: TextStyle(fontSize: labelFontSize)),
-                      );
-                    }).toList(),
-                    onChanged: isLoaded
-                        ? null
-                        : (String? newValue) {
-                            setState(() {
-                              _selectedGender = newValue;
-                            });
-                          },
-                    validator: (value) => value == null ? '성별을 선택하세요.' : null,
-                    onSaved: (value) {
-                      _selectedGender = value;
-                    },
-                  ),
-                  SizedBox(height: fieldSpacing),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 60.0),
-                    child: MultiSelectForm(
-                      title: '그룹 플레이어',
-                      options: allPlayerNames,
-                      optionsId: allPlayerIds,
-                      groupsOptionId: allGroupedIds,
-                      initialValue: _groups,
-                      currentId: _id,
-                      onSelectionChanged: (selectedOptions) {
-                        setState(() {
-                          _groups = selectedOptions;
-                        });
-                      },
-                    ),
-                  ),
-                  if (isEditMode) ...[
-                    SizedBox(height: fieldSpacing),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Flexible(
-                          flex: 1,
-                          child: TextFormField(
-                            initialValue: _playCount?.toString(),
-                            decoration: InputDecoration(
-                              labelText: '플레이 횟수',
-                              labelStyle: TextStyle(fontSize: labelFontSize),
-                            ),
-                            keyboardType: TextInputType.number,
-                            inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return '플레이 횟수를 입력하세요.';
-                              }
-                              if (int.tryParse(value) == null) {
-                                return '숫자만 입력해주세요.';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) {
-                              _playCount = int.tryParse(value ?? '0');
-                            },
-                          ),
-                        ),
-                        SizedBox(width: fieldSpacing), // Horizontal spacing
-                        Flexible(
-                          flex: 1,
-                          child: TextFormField(
-                            initialValue: _waitCount?.toString(),
-                            decoration: InputDecoration(
-                              labelText: '대기 횟수',
-                              labelStyle: TextStyle(fontSize: labelFontSize),
-                            ),
-                            keyboardType: TextInputType.number,
-                            inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return '대기 횟수를 입력하세요.';
-                              }
-                              if (int.tryParse(value) == null) {
-                                return '숫자만 입력해주세요.';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) {
-                              _waitCount = int.tryParse(value ?? '0');
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
+              );
+            },
           ),
         ),
+        if (!isGuestMode) ...[
+          const SizedBox(width: 16),
+          Text('운영진', style: textTheme.bodyLarge),
+          Switch(
+            value: _isManager,
+            onChanged: isLoaded
+                ? null
+                : (value) {
+                    setState(() {
+                      _isManager = value;
+                    });
+                  },
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSkillLevelField(bool isMobile, TextTheme textTheme) {
+    return DropdownButtonFormField<String>(
+      key: ValueKey('skill_$_selectedSkillLevel'),
+      decoration: InputDecoration(
+        labelText: '급수',
+        labelStyle: textTheme.bodyLarge,
+        border: const OutlineInputBorder(),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
-      actions: <Widget>[
-        TextButton(
-          child: Text('취소', style: TextStyle(fontSize: buttonFontSize)),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        TextButton(
-          child: Text(isEditMode ? '수정' : '추가', style: TextStyle(fontSize: buttonFontSize)),
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              _formKey.currentState!.save();
-              Navigator.of(context).pop({
-                'name': _name,
-                'rate': _rate,
-                'gender': _selectedGender,
-                'role': isGuestMode ? 'guest' : (_isManager ? "manager" : "user"),
-                'played': _playCount,
-                'waited': _waitCount,
-                'groups': _groups,
-                'loaded': isLoaded,
-                'player': _player,
+      initialValue: _selectedSkillLevel,
+      items: skillLevelToRate.keys.map((String level) {
+        return DropdownMenuItem<String>(
+          value: level,
+          child: Text(level, style: textTheme.bodyLarge),
+        );
+      }).toList(),
+      onChanged: isLoaded
+          ? null
+          : (newValue) {
+              setState(() {
+                _selectedSkillLevel = newValue;
               });
-            }
-          },
+            },
+      validator: (value) => value == null ? '급수를 선택하세요.' : null,
+      onSaved: (value) {
+        if (value != null) {
+          _rate = skillLevelToRate[value];
+        }
+      },
+    );
+  }
+
+  Widget _buildGenderField(bool isMobile, TextTheme textTheme) {
+    return DropdownButtonFormField<String>(
+      key: ValueKey('gender_$_selectedGender'),
+      decoration: InputDecoration(
+        labelText: '성별',
+        labelStyle: textTheme.bodyLarge,
+        border: const OutlineInputBorder(),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      initialValue: _selectedGender,
+      items: _genders.map((String gender) {
+        return DropdownMenuItem<String>(
+          value: gender,
+          child: Text(gender, style: textTheme.bodyLarge),
+        );
+      }).toList(),
+      onChanged: isLoaded
+          ? null
+          : (newValue) {
+              setState(() {
+                _selectedGender = newValue;
+              });
+            },
+      validator: (value) => value == null ? '성별을 선택하세요.' : null,
+      onSaved: (value) => _selectedGender = value,
+    );
+  }
+
+  Widget _buildGroupPlayerField(bool isMobile, TextTheme textTheme) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 60.0),
+      child: MultiSelectForm(
+        title: '그룹 플레이어',
+        options: widget.playersProvider.players.values
+            .map((p) => p.name)
+            .toList(),
+        optionsId: widget.playersProvider.players.values
+            .map((p) => p.id)
+            .toList(),
+        groupsOptionId: widget.playersProvider.players.values
+            .where((p) => p.groups.isNotEmpty)
+            .map((p) => p.id)
+            .toList(),
+        initialValue: _groups,
+        currentId: _id,
+        onSelectionChanged: (selectedOptions) {
+          setState(() {
+            _groups = selectedOptions;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildStatsRow(bool isMobile, TextTheme textTheme) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextFormField(
+            initialValue: _playCount?.toString(),
+            decoration: InputDecoration(
+              labelText: '플레이 횟수',
+              labelStyle: textTheme.bodyLarge,
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            validator: (value) {
+              if (value == null || value.isEmpty) return '입력 필요';
+              return null;
+            },
+            onSaved: (value) => _playCount = int.tryParse(value ?? '0'),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: TextFormField(
+            initialValue: _waitCount?.toString(),
+            decoration: InputDecoration(
+              labelText: '대기 횟수',
+              labelStyle: textTheme.bodyLarge,
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            validator: (value) {
+              if (value == null || value.isEmpty) return '입력 필요';
+              return null;
+            },
+            onSaved: (value) => _waitCount = int.tryParse(value ?? '0'),
+          ),
         ),
       ],
     );
