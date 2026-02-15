@@ -11,18 +11,21 @@ class PlayersRightSideMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = Provider.of<PlayersViewModel>(context);
     final isTablet = ResponsiveUtils.isTablet(context);
-    // 태블릿(넓은 화면)일 때 더 큰 폰트, 모바일일 때 작은 폰트
-    final double iconAndFontSize = isTablet ? 48.0 : 24.0;
+
+    // 폰트 사이즈 조정
+    final double titleFontSize = isTablet ? 28.0 : 20.0;
+    final double chipFontSize = isTablet ? 18.0 : 16.0;
 
     return Drawer(
       width: isTablet
-          ? MediaQuery.of(context).size.width * 0.60
+          ? MediaQuery.of(context).size.width *
+                0.40 // 탭에서는 60% 너무 큼 -> 40%
           : MediaQuery.of(context).size.width * 0.75,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           SizedBox(
-            height: isTablet ? 180 : 120,
+            height: isTablet ? 100 : 70,
             child: DrawerHeader(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -31,72 +34,79 @@ class PlayersRightSideMenu extends StatelessWidget {
                   end: Alignment.bottomLeft,
                 ),
               ),
-              child: Text('필터', style: TextStyle(fontSize: iconAndFontSize)),
+              margin: EdgeInsets.zero,
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('필터', style: TextStyle(fontSize: titleFontSize)),
+              ),
             ),
           ),
 
           // 역할 필터 섹션
           ListTile(
             title: Text(
-              '역할 (Role)',
+              '역할',
               style: TextStyle(
-                fontSize: iconAndFontSize,
+                fontSize: titleFontSize,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          ...PlayerRole.values.map((role) {
-            return CheckboxListTile(
-              title: Text(
-                role.label,
-                style: TextStyle(fontSize: iconAndFontSize * 0.8),
-              ),
-              value: viewModel.selectedRoles.contains(role),
-              onChanged: (bool? value) {
-                if (value != null) {
-                  viewModel.toggleRoleFilter(role);
-                }
-              },
-            );
-          }),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0, // runSpacing 조금 넒힘
+              children: PlayerRole.values.map((role) {
+                return FilterChip(
+                  label: Text(
+                    role.label,
+                    style: TextStyle(fontSize: chipFontSize),
+                  ),
+                  selected: viewModel.selectedRoles.contains(role),
+                  onSelected: (bool selected) {
+                    viewModel.toggleRoleFilter(role);
+                  },
+                );
+              }).toList(),
+            ),
+          ),
 
           const Divider(),
 
           // 성별 필터 섹션
           ListTile(
             title: Text(
-              '성별 (Gender)',
+              '성별',
               style: TextStyle(
-                fontSize: iconAndFontSize,
+                fontSize: titleFontSize,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          // 일반적인 관례에 따라 'M'과 'F'를 성별 값으로 가정
-          // 성별 Enum이 있다면 정의하는 것이 좋지만, 현재는 String 상수를 사용
-          CheckboxListTile(
-            title: Text(
-              '남성',
-              style: TextStyle(fontSize: iconAndFontSize * 0.8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: [
+                FilterChip(
+                  label: Text('남성', style: TextStyle(fontSize: chipFontSize)),
+                  selected: viewModel.selectedGenders.contains('남'),
+                  onSelected: (bool selected) {
+                    viewModel.toggleGenderFilter('남');
+                  },
+                ),
+                FilterChip(
+                  label: Text('여성', style: TextStyle(fontSize: chipFontSize)),
+                  selected: viewModel.selectedGenders.contains('여'),
+                  onSelected: (bool selected) {
+                    viewModel.toggleGenderFilter('여');
+                  },
+                ),
+              ],
             ),
-            value: viewModel.selectedGenders.contains('남'), // DB에서 사용되는 '남'
-            onChanged: (bool? value) {
-              if (value != null) {
-                viewModel.toggleGenderFilter('남');
-              }
-            },
-          ),
-          CheckboxListTile(
-            title: Text(
-              '여성',
-              style: TextStyle(fontSize: iconAndFontSize * 0.8),
-            ),
-            value: viewModel.selectedGenders.contains('여'), // '여'
-            onChanged: (bool? value) {
-              if (value != null) {
-                viewModel.toggleGenderFilter('여');
-              }
-            },
           ),
         ],
       ),

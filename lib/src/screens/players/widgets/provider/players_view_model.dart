@@ -62,8 +62,8 @@ class PlayersViewModel extends ChangeNotifier {
     int initialCount = _queryResults.length < _pageSize
         ? _queryResults.length
         : _pageSize;
-    // RealmResults는 Iterable이므로 toList()로 변환 후 자름
-    _players = _queryResults.toList().sublist(0, initialCount);
+    // RealmResults는 Iterable이므로 take()를 사용하여 필요한 만큼만 가져옴
+    _players = _queryResults.take(initialCount).toList();
 
     _hasMore = _players.length < _queryResults.length;
 
