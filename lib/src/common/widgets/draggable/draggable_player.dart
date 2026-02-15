@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
-import 'package:hotswing/src/common/utils/skill_utils.dart';
+import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:hotswing/src/common/widgets/dialogs/game_played_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
@@ -68,14 +68,21 @@ class DraggablePlayerItem extends StatelessWidget {
     Widget playerItemDisplay = Container(
       padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 0.0),
-      decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(8.0)),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(8.0),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             '${player.name} (${player.gender})',
-            style: TextStyle(fontSize: nameFontSize, fontWeight: FontWeight.bold, color: onPrimaryContainer),
+            style: TextStyle(
+              fontSize: nameFontSize,
+              fontWeight: FontWeight.bold,
+              color: onPrimaryContainer,
+            ),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -86,21 +93,30 @@ class DraggablePlayerItem extends StatelessWidget {
             children: [
               Text(
                 '급수: $skillLevelDisplay',
-                style: TextStyle(fontSize: skillFontSize, color: onPrimaryContainer.withAlpha(230)),
+                style: TextStyle(
+                  fontSize: skillFontSize,
+                  color: onPrimaryContainer.withAlpha(230),
+                ),
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 4.0),
               Text(
                 '플레이: ${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}',
-                style: TextStyle(fontSize: detailFontSize, color: onPrimaryContainer.withAlpha(204)),
+                style: TextStyle(
+                  fontSize: detailFontSize,
+                  color: onPrimaryContainer.withAlpha(204),
+                ),
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 2.0),
               Text(
                 '대기: ${player.waited}',
-                style: TextStyle(fontSize: detailFontSize, color: onPrimaryContainer.withAlpha(204)),
+                style: TextStyle(
+                  fontSize: detailFontSize,
+                  color: onPrimaryContainer.withAlpha(204),
+                ),
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
               ),
@@ -113,15 +129,26 @@ class DraggablePlayerItem extends StatelessWidget {
     // 탭 기능을 추가하기 위해 GestureDetector로 감싼 위젯
     Widget interactivePlayerContent = GestureDetector(
       onTap: () {
-        final Map<String, int> newGamesPlayedWithMap = player.gamesPlayedWith.map((key, value) {
-          final newKey = playersProvider.getPlayerById(ObjectId.fromHexString(key))?.name ?? "";
-          return MapEntry(newKey, value);
-        });
+        final Map<String, int> newGamesPlayedWithMap = player.gamesPlayedWith
+            .map((key, value) {
+              final newKey =
+                  playersProvider
+                      .getPlayerById(ObjectId.fromHexString(key))
+                      ?.name ??
+                  "";
+              return MapEntry(newKey, value);
+            });
 
-        final List<String> allPlayerNames = playersProvider.players.values.map((p) => p.name).toList();
-        final Set<String> playedWithPlayerNames = newGamesPlayedWithMap.keys.toSet();
+        final List<String> allPlayerNames = playersProvider.players.values
+            .map((p) => p.name)
+            .toList();
+        final Set<String> playedWithPlayerNames = newGamesPlayedWithMap.keys
+            .toSet();
         final List<String> notPlayedWithNames = allPlayerNames
-            .where((name) => !playedWithPlayerNames.contains(name) && name != player.name)
+            .where(
+              (name) =>
+                  !playedWithPlayerNames.contains(name) && name != player.name,
+            )
             .toList();
 
         showDialog(
@@ -154,10 +181,18 @@ class DraggablePlayerItem extends StatelessWidget {
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(8.0),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.7,
+          ),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-            decoration: BoxDecoration(color: const Color(0xAA007FFF), borderRadius: BorderRadius.circular(8.0)),
+            padding: const EdgeInsets.symmetric(
+              vertical: 8.0,
+              horizontal: 12.0,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xAA007FFF),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -247,7 +282,14 @@ class PlayerDropZone extends StatelessWidget {
       },
       onAcceptWithDetails: (details) {
         if (isDropEnabled) {
-          onPlayerDropped(details.data, player, sectionId, sectionKind, sectionIndex, subIndex);
+          onPlayerDropped(
+            details.data,
+            player,
+            sectionId,
+            sectionKind,
+            sectionIndex,
+            subIndex,
+          );
         }
       },
       builder: (context, candidateData, rejectedData) {
@@ -269,7 +311,10 @@ class PlayerDropZone extends StatelessWidget {
           decoration: BoxDecoration(
             color: isHovering ? hoveringBgColor : determinedDefaultBgColor,
             borderRadius: BorderRadius.circular(12.0),
-            border: Border.all(color: Theme.of(context).colorScheme.outline.withAlpha(64), width: 1.0),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withAlpha(64),
+              width: 1.0,
+            ),
           ),
           child: Center(
             child: player == null
@@ -278,7 +323,9 @@ class PlayerDropZone extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 24.0,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(179),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant.withAlpha(179),
                     ),
                   )
                 : DraggablePlayerItem(

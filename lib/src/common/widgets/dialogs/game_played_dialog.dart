@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/models/players/player.dart';
 
 class GamePlayedDialog extends StatelessWidget {
@@ -18,21 +19,40 @@ class GamePlayedDialog extends StatelessWidget {
     final mediaQuery = MediaQuery.of(context);
     final screenWidth = mediaQuery.size.width;
     final screenHeight = mediaQuery.size.height;
-    final isMobile = screenWidth < 600;
+    final isMobile = ResponsiveUtils.isMobile(context);
 
     final textTheme = Theme.of(context).textTheme;
     final double dialogWidth = isMobile ? screenWidth * 0.9 : 500.0;
     final double dialogHeight = isMobile ? screenHeight * 0.5 : 400.0;
+
+    // 반응형 스타일 정의
+    final titleStyle = ResponsiveUtils.getResponsiveStyle(
+      context,
+      textTheme.headlineSmall,
+    );
+    final listTitleStyle = ResponsiveUtils.getResponsiveStyle(
+      context,
+      textTheme.titleMedium,
+    )?.copyWith(fontWeight: FontWeight.bold);
+    final bodyStyle = ResponsiveUtils.getResponsiveStyle(
+      context,
+      textTheme.bodyLarge,
+    );
+    final subStyle = ResponsiveUtils.getResponsiveStyle(
+      context,
+      textTheme.bodyMedium,
+    );
+    final buttonStyle = ResponsiveUtils.getResponsiveStyle(
+      context,
+      textTheme.titleMedium,
+    );
 
     final sortedNotPlayedWithNames = List<String>.from(notPlayedWithNames)
       ..sort();
     final bool hasNotPlayedWith = notPlayedWithNames.isNotEmpty;
 
     return AlertDialog(
-      title: Text(
-        '${player.name}님과 함께 플레이한 사람',
-        style: textTheme.headlineSmall,
-      ),
+      title: Text('${player.name}님과 함께 플레이한 사람', style: titleStyle),
       content: SizedBox(
         width: dialogWidth,
         height: dialogHeight,
@@ -45,15 +65,10 @@ class GamePlayedDialog extends StatelessWidget {
               if (hasNotPlayedWith && index == 0) {
                 return ListTile(
                   dense: true,
-                  title: Text(
-                    '기록 없음',
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  title: Text('기록 없음', style: listTitleStyle),
                   subtitle: Text(
                     sortedNotPlayedWithNames.join(', '),
-                    style: textTheme.bodyMedium,
+                    style: subStyle,
                   ),
                 );
               } else {
@@ -61,11 +76,8 @@ class GamePlayedDialog extends StatelessWidget {
                 final entry = gamesPlayedWithMap.entries.elementAt(mapIndex);
                 return ListTile(
                   dense: true,
-                  title: Text(entry.key, style: textTheme.bodyLarge),
-                  trailing: Text(
-                    '${entry.value} 회',
-                    style: textTheme.bodyLarge,
-                  ),
+                  title: Text(entry.key, style: bodyStyle),
+                  trailing: Text('${entry.value} 회', style: bodyStyle),
                 );
               }
             },
@@ -74,7 +86,7 @@ class GamePlayedDialog extends StatelessWidget {
       ),
       actions: <Widget>[
         TextButton(
-          child: Text('닫기', style: textTheme.titleMedium),
+          child: Text('닫기', style: buttonStyle),
           onPressed: () {
             Navigator.of(context).pop();
           },

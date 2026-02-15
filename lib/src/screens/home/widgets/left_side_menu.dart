@@ -6,7 +6,7 @@ import 'package:realm/realm.dart';
 import 'dart:math';
 
 import '../../../providers/players_provider.dart';
-import '../../../common/utils/skill_utils.dart';
+import '../../../common/utils/game/skill_utils.dart';
 import '../../../common/widgets/dialogs/add_player_dialog.dart';
 import '../../../common/widgets/dialogs/confirmation_dialog.dart';
 

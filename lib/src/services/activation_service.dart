@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
-import 'package:hotswing/src/common/utils/crypto_utils.dart';
+import 'package:hotswing/src/common/utils/security/crypto_utils.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// 라이센스 인증 서비스

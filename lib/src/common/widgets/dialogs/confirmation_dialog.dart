@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 
 class ConfirmationDialog extends StatelessWidget {
   final String message;
@@ -13,6 +14,19 @@ class ConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final bool isMobile = ResponsiveUtils.isMobile(context);
+    final double dialogWidth = isMobile
+        ? MediaQuery.of(context).size.width * 0.8
+        : 450.0;
+
+    final messageStyle = ResponsiveUtils.getResponsiveStyle(
+      context,
+      textTheme.titleLarge,
+    );
+    final buttonStyle = ResponsiveUtils.getResponsiveStyle(
+      context,
+      textTheme.titleMedium,
+    );
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.0)),
@@ -20,14 +34,11 @@ class ConfirmationDialog extends StatelessWidget {
       actionsPadding: EdgeInsets.zero,
       content: Container(
         padding: const EdgeInsets.all(24.0),
+        width: dialogWidth,
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: Colors.grey.shade400)),
         ),
-        child: Text(
-          message,
-          style: textTheme.titleLarge,
-          textAlign: TextAlign.center,
-        ),
+        child: Text(message, style: messageStyle, textAlign: TextAlign.center),
       ),
       actions: <Widget>[
         IntrinsicHeight(
@@ -47,7 +58,7 @@ class ConfirmationDialog extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('취소', style: textTheme.titleMedium),
+                  child: Text('취소', style: buttonStyle),
                 ),
               ),
               SizedBox(
@@ -74,7 +85,7 @@ class ConfirmationDialog extends StatelessWidget {
                     onConfirm();
                     Navigator.of(context).pop();
                   },
-                  child: Text('확인', style: textTheme.titleMedium),
+                  child: Text('확인', style: buttonStyle),
                 ),
               ),
             ],

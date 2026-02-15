@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hotswing/src/common/forms/multi_select_form.dart';
-import 'package:hotswing/src/common/utils/skill_utils.dart';
+import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
+import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:realm/realm.dart';
@@ -113,11 +114,25 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         // 하지만 이것은 Dialog 내부이므로 constraints가 더 느슨할 수 있습니다.
         // 전체 디바이스 유형을 확인하려면 context의 MediaQuery를 확인하는 것이 더 안전합니다.
         final mediaWidth = MediaQuery.of(context).size.width;
-        final bool isMobile = mediaWidth < 600;
+        final bool isMobile = ResponsiveUtils.isMobile(context);
 
         final textTheme = Theme.of(context).textTheme;
         final double dialogWidth = isMobile ? mediaWidth * 0.9 : 500.0;
         final double fieldSpacing = isMobile ? 16.0 : 24.0;
+
+        // 반응형 스타일 정의
+        final titleStyle = ResponsiveUtils.getResponsiveStyle(
+          context,
+          textTheme.headlineSmall,
+        )?.copyWith(fontWeight: FontWeight.bold);
+        final labelStyle = ResponsiveUtils.getResponsiveStyle(
+          context,
+          textTheme.bodyLarge,
+        );
+        final buttonStyle = ResponsiveUtils.getResponsiveStyle(
+          context,
+          textTheme.titleMedium,
+        );
 
         return AlertDialog(
           titlePadding: EdgeInsets.zero,
@@ -132,9 +147,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
             ),
             child: Text(
               '${isGuestMode ? '게스트' : '회원'} ${isEditMode ? '수정' : '추가'}',
-              style: textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: titleStyle,
             ),
           ),
           content: SingleChildScrollView(
@@ -150,17 +163,17 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       isMobile,
                       isEditMode,
                       isGuestMode,
-                      textTheme,
+                      labelStyle,
                     ),
                     SizedBox(height: fieldSpacing),
-                    _buildSkillLevelField(isMobile, textTheme),
+                    _buildSkillLevelField(isMobile, labelStyle),
                     SizedBox(height: fieldSpacing),
-                    _buildGenderField(isMobile, textTheme),
+                    _buildGenderField(isMobile, labelStyle),
                     SizedBox(height: fieldSpacing),
                     _buildGroupPlayerField(isMobile, textTheme),
                     if (isEditMode) ...[
                       SizedBox(height: fieldSpacing),
-                      _buildStatsRow(isMobile, textTheme),
+                      _buildStatsRow(isMobile, labelStyle),
                     ],
                   ],
                 ),
@@ -169,15 +182,12 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('취소', style: textTheme.titleMedium),
+              child: Text('취소', style: buttonStyle),
               onPressed: () => Navigator.of(context).pop(),
             ),
             ElevatedButton(
               onPressed: _submit,
-              child: Text(
-                isEditMode ? '수정' : '추가',
-                style: textTheme.titleMedium,
-              ),
+              child: Text(isEditMode ? '수정' : '추가', style: buttonStyle),
             ),
           ],
         );
@@ -189,7 +199,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     bool isMobile,
     bool isEditMode,
     bool isGuestMode,
-    TextTheme textTheme,
+    TextStyle? labelStyle,
   ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -239,14 +249,14 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                         focusNode: focusNode,
                         decoration: InputDecoration(
                           labelText: '이름',
-                          labelStyle: textTheme.bodyLarge,
+                          labelStyle: labelStyle,
                           border: const OutlineInputBorder(),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 8,
                           ),
                         ),
-                        style: textTheme.bodyLarge,
+                        style: labelStyle,
                         validator: (value) {
                           if (value == null || value.isEmpty)
                             return '이름을 입력하세요';
@@ -263,7 +273,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         ),
         if (!isGuestMode) ...[
           const SizedBox(width: 16),
-          Text('운영진', style: textTheme.bodyLarge),
+          Text('운영진', style: labelStyle),
           Switch(
             value: _isManager,
             onChanged: isLoaded
@@ -279,12 +289,12 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     );
   }
 
-  Widget _buildSkillLevelField(bool isMobile, TextTheme textTheme) {
+  Widget _buildSkillLevelField(bool isMobile, TextStyle? labelStyle) {
     return DropdownButtonFormField<String>(
       key: ValueKey('skill_$_selectedSkillLevel'),
       decoration: InputDecoration(
         labelText: '급수',
-        labelStyle: textTheme.bodyLarge,
+        labelStyle: labelStyle,
         border: const OutlineInputBorder(),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
@@ -292,7 +302,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       items: skillLevelToRate.keys.map((String level) {
         return DropdownMenuItem<String>(
           value: level,
-          child: Text(level, style: textTheme.bodyLarge),
+          child: Text(level, style: labelStyle),
         );
       }).toList(),
       onChanged: isLoaded
@@ -311,12 +321,12 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     );
   }
 
-  Widget _buildGenderField(bool isMobile, TextTheme textTheme) {
+  Widget _buildGenderField(bool isMobile, TextStyle? labelStyle) {
     return DropdownButtonFormField<String>(
       key: ValueKey('gender_$_selectedGender'),
       decoration: InputDecoration(
         labelText: '성별',
-        labelStyle: textTheme.bodyLarge,
+        labelStyle: labelStyle,
         border: const OutlineInputBorder(),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
@@ -324,7 +334,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       items: _genders.map((String gender) {
         return DropdownMenuItem<String>(
           value: gender,
-          child: Text(gender, style: textTheme.bodyLarge),
+          child: Text(gender, style: labelStyle),
         );
       }).toList(),
       onChanged: isLoaded
@@ -365,7 +375,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     );
   }
 
-  Widget _buildStatsRow(bool isMobile, TextTheme textTheme) {
+  Widget _buildStatsRow(bool isMobile, TextStyle? labelStyle) {
     return Row(
       children: [
         Expanded(
@@ -373,13 +383,14 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
             initialValue: _playCount?.toString(),
             decoration: InputDecoration(
               labelText: '플레이 횟수',
-              labelStyle: textTheme.bodyLarge,
+              labelStyle: labelStyle,
               border: const OutlineInputBorder(),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 12,
                 vertical: 8,
               ),
             ),
+            style: labelStyle,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             validator: (value) {
@@ -395,13 +406,14 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
             initialValue: _waitCount?.toString(),
             decoration: InputDecoration(
               labelText: '대기 횟수',
-              labelStyle: textTheme.bodyLarge,
+              labelStyle: labelStyle,
               border: const OutlineInputBorder(),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 12,
                 vertical: 8,
               ),
             ),
+            style: labelStyle,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             validator: (value) {
