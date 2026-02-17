@@ -12,9 +12,8 @@ class PlayersRightSideMenu extends StatelessWidget {
     final viewModel = Provider.of<PlayersViewModel>(context);
     final isTablet = ResponsiveUtils.isTablet(context);
 
-    // 폰트 사이즈 조정
-    final double titleFontSize = isTablet ? 28.0 : 20.0;
-    final double chipFontSize = isTablet ? 18.0 : 16.0;
+    // 폰트 사이즈 조정 (DrawerHeader용)
+    final double headerTitleFontSize = isTablet ? 28.0 : 20.0;
 
     return Drawer(
       width: isTablet
@@ -38,78 +37,92 @@ class PlayersRightSideMenu extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text('필터', style: TextStyle(fontSize: titleFontSize)),
+                child: Text(
+                  '필터',
+                  style: TextStyle(fontSize: headerTitleFontSize),
+                ),
               ),
             ),
           ),
 
           // 역할 필터 섹션
-          ListTile(
-            title: Text(
-              '역할',
-              style: TextStyle(
-                fontSize: titleFontSize,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0, // runSpacing 조금 넒힘
-              children: PlayerRole.values.map((role) {
-                return FilterChip(
-                  label: Text(
-                    role.label,
-                    style: TextStyle(fontSize: chipFontSize),
-                  ),
-                  selected: viewModel.selectedRoles.contains(role),
-                  onSelected: (bool selected) {
-                    viewModel.toggleRoleFilter(role);
-                  },
-                );
-              }).toList(),
-            ),
+          _FilterSection<PlayerRole>(
+            title: '역할',
+            values: PlayerRole.values,
+            selectedValues: viewModel.selectedRoles,
+            onSelected: viewModel.toggleRoleFilter,
+            labelBuilder: (role) => role.label,
           ),
 
           const Divider(),
 
           // 성별 필터 섹션
-          ListTile(
-            title: Text(
-              '성별',
-              style: TextStyle(
-                fontSize: titleFontSize,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
-              children: [
-                FilterChip(
-                  label: Text('남성', style: TextStyle(fontSize: chipFontSize)),
-                  selected: viewModel.selectedGenders.contains('남'),
-                  onSelected: (bool selected) {
-                    viewModel.toggleGenderFilter('남');
-                  },
-                ),
-                FilterChip(
-                  label: Text('여성', style: TextStyle(fontSize: chipFontSize)),
-                  selected: viewModel.selectedGenders.contains('여'),
-                  onSelected: (bool selected) {
-                    viewModel.toggleGenderFilter('여');
-                  },
-                ),
-              ],
-            ),
+          _FilterSection<PlayerGender>(
+            title: '성별',
+            values: PlayerGender.values,
+            selectedValues: viewModel.selectedGenders,
+            onSelected: viewModel.toggleGenderFilter,
+            labelBuilder: (gender) => gender.label,
           ),
         ],
       ),
+    );
+  }
+}
+
+class _FilterSection<T> extends StatelessWidget {
+  final String title;
+  final List<T> values;
+  final Set<T> selectedValues;
+  final Function(T) onSelected;
+  final String Function(T) labelBuilder;
+
+  const _FilterSection({
+    required this.title,
+    required this.values,
+    required this.selectedValues,
+    required this.onSelected,
+    required this.labelBuilder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isTablet = ResponsiveUtils.isTablet(context);
+    final double titleFontSize = isTablet ? 28.0 : 20.0;
+    final double chipFontSize = isTablet ? 18.0 : 16.0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          title: Text(
+            title,
+            style: TextStyle(
+              fontSize: titleFontSize,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0, // runSpacing 조금 넒힘
+            children: values.map((value) {
+              return FilterChip(
+                label: Text(
+                  labelBuilder(value),
+                  style: TextStyle(fontSize: chipFontSize),
+                ),
+                selected: selectedValues.contains(value),
+                onSelected: (bool selected) {
+                  onSelected(value);
+                },
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 }

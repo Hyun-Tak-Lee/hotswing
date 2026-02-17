@@ -8,6 +8,15 @@ enum PlayerRole {
   const PlayerRole(this.value, this.label);
 }
 
+enum PlayerGender {
+  male("남", "남성"),
+  female("여", "여성");
+
+  final String value;
+  final String label;
+  const PlayerGender(this.value, this.label);
+}
+
 enum PlayerSectionKind {
   unassigned("unassigned"),
   assigned("assigned"),

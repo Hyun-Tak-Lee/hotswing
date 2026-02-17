@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:hotswing/src/common/forms/multi_select_form.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/utils/game/skill_utils.dart';
+import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:realm/realm.dart';
@@ -28,8 +29,8 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   ObjectId? _id;
   String? _name;
   int? _rate;
-  String? _selectedGender;
-  final List<String> _genders = ['남', '여'];
+  PlayerGender? _selectedGender;
+  final List<PlayerGender> _genders = PlayerGender.values;
   bool _isManager = false;
   String? _selectedSkillLevel;
   int? _playCount;
@@ -46,7 +47,10 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _name = widget.player!.name;
       _rate = widget.player!.rate;
       _selectedSkillLevel = rateToSkillLevel[widget.player!.rate];
-      _selectedGender = widget.player!.gender;
+      _selectedGender = PlayerGender.values.cast<PlayerGender?>().firstWhere(
+        (element) => element?.value == widget.player!.gender,
+        orElse: () => null,
+      );
       _isManager = widget.player!.role == "manager";
       _playCount = widget.player!.played;
       _waitCount = widget.player!.waited;
@@ -73,7 +77,10 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _player = player;
       _name = player.name;
       _selectedSkillLevel = rateToSkillLevel[player.rate];
-      _selectedGender = player.gender;
+      _selectedGender = PlayerGender.values.cast<PlayerGender?>().firstWhere(
+        (element) => element?.value == player.gender,
+        orElse: () => null,
+      );
       _isManager = player.role == "manager";
     });
   }
@@ -92,7 +99,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       Navigator.of(context).pop({
         'name': _name,
         'rate': _rate,
-        'gender': _selectedGender,
+        'gender': _selectedGender?.value,
         'role': role,
         'played': _playCount,
         'waited': _waitCount,
@@ -342,7 +349,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   }
 
   Widget _buildGenderField(bool isMobile, TextStyle? labelStyle) {
-    return DropdownButtonFormField<String>(
+    return DropdownButtonFormField<PlayerGender>(
       key: ValueKey('gender_$_selectedGender'),
       decoration: InputDecoration(
         labelText: '성별',
@@ -351,10 +358,10 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
       initialValue: _selectedGender,
-      items: _genders.map((String gender) {
-        return DropdownMenuItem<String>(
+      items: _genders.map((PlayerGender gender) {
+        return DropdownMenuItem<PlayerGender>(
           value: gender,
-          child: Text(gender, style: labelStyle),
+          child: Text(gender.label, style: labelStyle),
         );
       }).toList(),
       onChanged: isLoaded

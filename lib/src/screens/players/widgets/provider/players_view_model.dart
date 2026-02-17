@@ -23,8 +23,9 @@ class PlayersViewModel extends ChangeNotifier {
   final Set<PlayerRole> _selectedRoles = {};
   Set<PlayerRole> get selectedRoles => _selectedRoles;
 
-  final Set<String> _selectedGenders = {};
-  Set<String> get selectedGenders => _selectedGenders;
+  // 성별 필터 (다중 선택 가능)
+  final Set<PlayerGender> _selectedGenders = {};
+  Set<PlayerGender> get selectedGenders => _selectedGenders;
 
   // 선택 모드 상태
   bool _isSelectionMode = false;
@@ -52,7 +53,7 @@ class PlayersViewModel extends ChangeNotifier {
     // 1. Repository를 통해 데이터 조회
     _queryResults = _repository.getPlayers(
       roleValues: _selectedRoles.map((e) => e.value).toSet(),
-      genderValues: _selectedGenders,
+      genderValues: _selectedGenders.map((e) => e.value).toSet(),
       sortField: 'name',
       sortAscending: true,
     );
@@ -85,7 +86,7 @@ class PlayersViewModel extends ChangeNotifier {
   }
 
   // 성별 필터 토글
-  void toggleGenderFilter(String gender) {
+  void toggleGenderFilter(PlayerGender gender) {
     if (_selectedGenders.contains(gender)) {
       _selectedGenders.remove(gender);
     } else {
