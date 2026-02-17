@@ -19,11 +19,15 @@ class _MainWrapperState extends State<MainWrapper> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const PlayersScreen(),
-    const SettingsScreen(),
-  ];
+  Widget _buildContent() {
+    return Stack(
+      children: [
+        Offstage(offstage: _selectedIndex != 0, child: const HomeScreen()),
+        if (_selectedIndex == 1) const PlayersScreen(),
+        if (_selectedIndex == 2) const SettingsScreen(),
+      ],
+    );
+  }
 
   void _onDestinationSelected(int index) {
     setState(() {
@@ -65,9 +69,7 @@ class _MainWrapperState extends State<MainWrapper> {
               },
             ),
             const VerticalDivider(thickness: 1, width: 1),
-            Expanded(
-              child: IndexedStack(index: _selectedIndex, children: _screens),
-            ),
+            Expanded(child: _buildContent()),
           ],
         ),
       );
@@ -96,7 +98,7 @@ class _MainWrapperState extends State<MainWrapper> {
       ),
       drawer: const LeftSideMenu(isMobileSize: true),
       endDrawer: const RightSideMenu(isMobileSize: true),
-      body: IndexedStack(index: _selectedIndex, children: _screens),
+      body: _buildContent(),
       bottomNavigationBar: MainNavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: _onDestinationSelected,
