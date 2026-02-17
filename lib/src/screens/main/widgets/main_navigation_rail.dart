@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class MainNavigationRail extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
+  final VoidCallback onMenuPressed;
 
   const MainNavigationRail({
     super.key,
     required this.selectedIndex,
     required this.onDestinationSelected,
+    required this.onMenuPressed,
   });
 
   @override
@@ -24,12 +26,7 @@ class MainNavigationRail extends StatelessWidget {
       leading: Column(
         children: [
           const SizedBox(height: 8),
-          IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              // TODO: Implement menu dropdown
-            },
-          ),
+          IconButton(icon: const Icon(Icons.menu), onPressed: onMenuPressed),
         ],
       ),
       destinations: const [
