@@ -18,9 +18,9 @@ void main() async {
   // SharedPreferences 초기화
   await SharedProvider().init();
 
-  // 활성화 서비스 초기화 (자동 활성화 안 함)
+  // 활성화 서비스 초기화 및 기기 검증 (보안 강화)
   final activationService = ActivationService();
-  final isActivated = activationService.isActivated();
+  final isActivated = await activationService.verifyDevice();
 
   runApp(
     MultiProvider(
