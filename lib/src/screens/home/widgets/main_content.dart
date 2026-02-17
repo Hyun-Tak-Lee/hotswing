@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned_court.dart';
 import 'package:hotswing/src/common/widgets/courts/standby_court.dart';
+import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
@@ -10,9 +11,7 @@ import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:provider/provider.dart';
 
 class MainContent extends StatefulWidget {
-  const MainContent({super.key, required this.isMobileSize});
-
-  final bool isMobileSize;
+  const MainContent({super.key});
 
   @override
   State<MainContent> createState() => _MainContentState();
@@ -168,9 +167,8 @@ class _MainContentState extends State<MainContent> {
   Widget _buildViewButton(String label, CourtViewSection value) {
     final bool isSelected = (selectedView == value);
 
-    final buttonTextStyle = TextStyle(
-      fontSize: widget.isMobileSize ? 14.0 : 32.0,
-    );
+    final isTablet = ResponsiveUtils.isTablet(context);
+    final buttonTextStyle = TextStyle(fontSize: isTablet ? 32.0 : 14.0);
     final Color deepBlue = Color(0x99008BD1);
 
     final buttonStyle = ButtonStyle(
@@ -214,6 +212,8 @@ class _MainContentState extends State<MainContent> {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = ResponsiveUtils.isTablet(context);
+    final isMobileSize = !isTablet;
     final optionsProvider = Provider.of<OptionsProvider>(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
     final playerList = List<Player>.from(playersProvider.unassignedPlayers);
@@ -302,7 +302,7 @@ class _MainContentState extends State<MainContent> {
                   child: switch (selectedView) {
                     CourtViewSection.assignedView => CourtSectionsView(
                       // '경기 코트' 뷰
-                      isMobileSize: widget.isMobileSize,
+                      isMobileSize: isMobileSize,
                       sectionData: sectionData,
                       courtGameStartedState: _courtGameStartedState,
                       getGamesPlayedWith: getGamesPlayedWith,
@@ -351,7 +351,7 @@ class _MainContentState extends State<MainContent> {
 
                     CourtViewSection.standbyView => StandbyCourtSectionsView(
                       // '대기 코트' 뷰
-                      isMobileSize: widget.isMobileSize,
+                      isMobileSize: isMobileSize,
                       sectionData: standbyCourts,
                       courtGameStartedState: _courtGameStartedState,
                       getGamesPlayedWith: getGamesPlayedWith,
@@ -417,7 +417,7 @@ class _MainContentState extends State<MainContent> {
                                 Text(
                                   "대기 선수",
                                   style: TextStyle(
-                                    fontSize: widget.isMobileSize ? 16.0 : 18.0,
+                                    fontSize: isTablet ? 18.0 : 16.0,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -444,16 +444,14 @@ class _MainContentState extends State<MainContent> {
                                       },
                                       underline: Container(),
                                       style: TextStyle(
-                                        fontSize: widget.isMobileSize
-                                            ? 14.0
-                                            : 16.0,
+                                        fontSize: isTablet ? 16.0 : 14.0,
                                         color: Theme.of(
                                           context,
                                         ).textTheme.bodyLarge?.color,
                                       ),
                                       icon: Icon(
                                         Icons.arrow_drop_down,
-                                        size: widget.isMobileSize ? 20.0 : 22.0,
+                                        size: isTablet ? 22.0 : 20.0,
                                       ),
                                     ),
                                     SizedBox(width: 4.0),
@@ -463,9 +461,7 @@ class _MainContentState extends State<MainContent> {
                                             ? Icons.arrow_upward
                                             : Icons.arrow_downward,
                                       ),
-                                      iconSize: widget.isMobileSize
-                                          ? 20.0
-                                          : 22.0,
+                                      iconSize: isTablet ? 22.0 : 20.0,
                                       padding: EdgeInsets.zero,
                                       constraints: BoxConstraints(),
                                       onPressed: () {
@@ -566,7 +562,7 @@ class _MainContentState extends State<MainContent> {
                               child: Icon(
                                 Icons.delete,
                                 color: Colors.white,
-                                size: widget.isMobileSize ? 30.0 : 50.0,
+                                size: isTablet ? 50.0 : 30.0,
                               ),
                             );
                           },

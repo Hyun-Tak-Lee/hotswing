@@ -5,10 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 import 'dart:math';
 
-import '../../../providers/players_provider.dart';
-import '../../../common/utils/game/skill_utils.dart';
-import '../../../common/widgets/dialogs/add_player_dialog.dart';
-import '../../../common/widgets/dialogs/confirmation_dialog.dart';
+import '../../../../providers/players_provider.dart';
+import '../../../../common/utils/game/skill_utils.dart';
+import '../../../../common/widgets/dialogs/add_player_dialog.dart';
+import '../../../../common/widgets/dialogs/confirmation_dialog.dart';
 
 class LeftSideMenu extends StatefulWidget {
   const LeftSideMenu({super.key, required this.isMobileSize});

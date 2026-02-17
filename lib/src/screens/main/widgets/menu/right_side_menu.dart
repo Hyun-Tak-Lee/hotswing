@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
-import '../../../common/widgets/dialogs/confirmation_dialog.dart';
+import '../../../../common/widgets/dialogs/confirmation_dialog.dart';
 
 class RightSideMenu extends StatelessWidget {
   const RightSideMenu({super.key, required this.isMobileSize});

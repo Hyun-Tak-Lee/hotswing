@@ -3,10 +3,10 @@ import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/screens/home/home_screen.dart';
 import 'package:hotswing/src/screens/players/players_screen.dart';
 import 'package:hotswing/src/screens/settings/settings_screen.dart';
-import 'package:hotswing/src/screens/main/widgets/main_navigation_bar.dart';
-import 'package:hotswing/src/screens/main/widgets/main_navigation_rail.dart';
-import 'package:hotswing/src/screens/home/widgets/left_side_menu.dart';
-import 'package:hotswing/src/screens/home/widgets/right_side_menu.dart';
+import 'package:hotswing/src/screens/main/widgets/navigation/main_navigation_bar.dart';
+import 'package:hotswing/src/screens/main/widgets/navigation/main_navigation_rail.dart';
+import 'package:hotswing/src/screens/main/widgets/menu/left_side_menu.dart';
+import 'package:hotswing/src/screens/main/widgets/menu/right_side_menu.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -42,8 +42,8 @@ class _MainWrapperState extends State<MainWrapper> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: null, // explicit null or just remove it
-          automaticallyImplyLeading: false, // Ensure no default icon
+          leading: null,
+          automaticallyImplyLeading: false, // 기본 아이콘 비활성화
           actions: [
             IconButton(
               icon: const Icon(Icons.menu_rounded),
