@@ -29,7 +29,6 @@ class _PlayersScreenContent extends StatefulWidget {
 
 class _PlayersScreenContentState extends State<_PlayersScreenContent> {
   final ScrollController _scrollController = ScrollController();
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -48,16 +47,44 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
     if (!mounted) return;
     final viewModel = Provider.of<PlayersViewModel>(context, listen: false);
 
-    // 태블릿에서는 아이템 높이가 작아(한 줄) 250px 정도면 약 4개 분량의 여유가 있음
     final double triggerThreshold = ResponsiveUtils.isTablet(context)
         ? 250.0
         : 200.0;
 
-    // 하단에서 지정된 픽셀만큼 남았을 때 추가 데이터 로드 트리거
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - triggerThreshold) {
       viewModel.loadMore();
     }
+  }
+
+  void _openEndDrawer(BuildContext context) {
+    final viewModel = Provider.of<PlayersViewModel>(context, listen: false);
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Align(
+          alignment: Alignment.centerRight,
+          child: ChangeNotifierProvider.value(
+            value: viewModel,
+            child: const PlayersRightSideMenu(),
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1, 0),
+            end: Offset.zero,
+          ).animate(animation),
+          child: child,
+        );
+      },
+    );
   }
 
   @override
@@ -65,10 +92,9 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
     final viewModel = Provider.of<PlayersViewModel>(context);
     final isTablet = ResponsiveUtils.isTablet(context);
 
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        flexibleSpace: Container(
+    return Column(
+      children: [
+        Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -76,124 +102,152 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
               colors: [Color(0xFFE0C3FC), Color(0xFF8EC5FC)],
             ),
           ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: viewModel.isSelectionMode
-            ? Text(
-                '${viewModel.selectedPlayerIds.length} 선택됨',
-                style: const TextStyle(color: Colors.black87),
-              )
-            : const Text('회원 목록', style: TextStyle(color: Colors.black87)),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black87),
-        leading: viewModel.isSelectionMode
-            ? IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => viewModel.setSelectionMode(false),
-              )
-            : null,
-        actions: [
-          if (viewModel.isSelectionMode) ...[
-            TextButton(
-              onPressed: () => viewModel.selectAll(),
-              child: const Text(
-                'All',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () => _showMultiDeleteDialog(context, viewModel),
-            ),
-          ] else
-            IconButton(
-              icon: const Icon(Icons.checklist),
-              onPressed: () => viewModel.setSelectionMode(true),
-            ),
-          IconButton(
-            icon: const Icon(Icons.sort),
-            onPressed: () {
-              _scaffoldKey.currentState?.openEndDrawer();
-            },
-          ),
-        ],
-      ),
-      endDrawer: const PlayersRightSideMenu(),
-      body: Consumer<PlayersViewModel>(
-        builder: (context, viewModel, child) {
-          if (viewModel.players.isEmpty && viewModel.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          child: SafeArea(
+            bottom: false,
+            child: SizedBox(
+              height: kToolbarHeight,
+              child: Row(
+                children: [
+                  // 좌측 영역
+                  if (viewModel.isSelectionMode)
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.black87),
+                      onPressed: () => viewModel.setSelectionMode(false),
+                    )
+                  else
+                    const SizedBox(width: 48),
+                  Expanded(
+                    child: Center(
+                      child: viewModel.isSelectionMode
+                          ? Text(
+                              '${viewModel.selectedPlayerIds.length} 선택됨',
+                              style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            )
+                          : const Text(
+                              '회원 목록',
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                    ),
+                  ),
 
-          if (viewModel.players.isEmpty) {
-            return const Center(child: Text('No players found.'));
-          }
-
-          return ListView.builder(
-            controller: _scrollController,
-            // 태블릿에서는 좌우 여백을 줘서 리스트가 너무 넓어 보이지 않게 함
-            padding: isTablet
-                ? const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0)
-                : EdgeInsets.zero,
-            itemCount: viewModel.players.length + (viewModel.hasMore ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index < viewModel.players.length) {
-                final player = viewModel.players[index];
-                final isSelected = viewModel.selectedPlayerIds.contains(
-                  player.id,
-                );
-
-                return GestureDetector(
-                  onLongPress: () {
-                    if (!viewModel.isSelectionMode) {
-                      viewModel.setSelectionMode(true);
-                      viewModel.toggleSelection(player.id);
-                    }
-                  },
-                  onTap: () {
-                    if (viewModel.isSelectionMode) {
-                      viewModel.toggleSelection(player.id);
-                    }
-                  },
-                  child: Row(
-                    children: [
-                      if (viewModel.isSelectionMode)
-                        Checkbox(
-                          value: isSelected,
-                          onChanged: (bool? value) {
-                            viewModel.toggleSelection(player.id);
-                          },
-                        ),
-                      Expanded(
-                        child: PlayerListTile(
-                          player: player,
-                          onDelete: viewModel.isSelectionMode
-                              ? null
-                              : () => _showDeleteDialog(
-                                  context,
-                                  viewModel,
-                                  player,
-                                ),
+                  // 액션 버튼
+                  if (viewModel.isSelectionMode) ...[
+                    TextButton(
+                      onPressed: () => viewModel.selectAll(),
+                      child: const Text(
+                        'All',
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.black87),
+                      onPressed: () =>
+                          _showMultiDeleteDialog(context, viewModel),
+                    ),
+                  ] else ...[
+                    IconButton(
+                      icon: const Icon(Icons.checklist, color: Colors.black87),
+                      onPressed: () => viewModel.setSelectionMode(true),
+                    ),
+                  ],
+                  IconButton(
+                    icon: const Icon(Icons.sort, color: Colors.black87),
+                    onPressed: () => _openEndDrawer(context),
                   ),
-                );
-              } else {
-                // 하단 로딩 인디케이터
-                return const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Center(child: CircularProgressIndicator()),
-                );
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // 본문
+        Expanded(
+          child: Consumer<PlayersViewModel>(
+            builder: (context, viewModel, child) {
+              if (viewModel.players.isEmpty && viewModel.isLoading) {
+                return const Center(child: CircularProgressIndicator());
               }
+
+              if (viewModel.players.isEmpty) {
+                return const Center(child: Text('No players found.'));
+              }
+
+              return ListView.builder(
+                controller: _scrollController,
+                padding: isTablet
+                    ? const EdgeInsets.symmetric(
+                        horizontal: 32.0,
+                        vertical: 16.0,
+                      )
+                    : EdgeInsets.zero,
+                itemCount:
+                    viewModel.players.length + (viewModel.hasMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index < viewModel.players.length) {
+                    final player = viewModel.players[index];
+                    final isSelected = viewModel.selectedPlayerIds.contains(
+                      player.id,
+                    );
+
+                    return GestureDetector(
+                      onLongPress: () {
+                        if (!viewModel.isSelectionMode) {
+                          viewModel.setSelectionMode(true);
+                          viewModel.toggleSelection(player.id);
+                        }
+                      },
+                      onTap: () {
+                        if (viewModel.isSelectionMode) {
+                          viewModel.toggleSelection(player.id);
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          if (viewModel.isSelectionMode)
+                            Checkbox(
+                              value: isSelected,
+                              onChanged: (bool? value) {
+                                viewModel.toggleSelection(player.id);
+                              },
+                            ),
+                          Expanded(
+                            child: PlayerListTile(
+                              player: player,
+                              onDelete: viewModel.isSelectionMode
+                                  ? null
+                                  : () => _showDeleteDialog(
+                                      context,
+                                      viewModel,
+                                      player,
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    return const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                },
+              );
             },
-          );
-        },
-      ),
+          ),
+        ),
+      ],
     );
   }
 

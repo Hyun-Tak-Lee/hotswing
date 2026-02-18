@@ -92,19 +92,19 @@ class RightSideMenu extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(
-              Icons.refresh, // 새로고침/초기화 아이콘
+              Icons.refresh,
               size: iconAndFontSize,
-              color: Colors.orangeAccent, // 주황색 계열로 강조
+              color: Colors.orangeAccent,
             ),
             title: Text(
               '플레이 정보 초기화',
               style: TextStyle(
                 fontSize: iconAndFontSize,
-                color: Colors.orangeAccent, // 아이콘과 동일한 색상으로 통일감
-                fontWeight: FontWeight.bold, // 굵게 표시
+                color: Colors.orangeAccent,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            tileColor: Colors.orangeAccent.withOpacity(0.1), // 은은한 주황색 배경
+            tileColor: Colors.orangeAccent.withValues(alpha: 0.1),
             onTap: () {
               showDialog(
                 context: context,

@@ -11,7 +11,16 @@ class StandbyCourtSectionsView extends StatelessWidget {
   final Function(int) onAutoMatch;
   final VoidCallback onAddStandByCourt;
   final Function(int) onRemoveStandByCourt;
-  final Function(BuildContext, PlayerDragData, Player?, dynamic, String, int, int) onPlayerDrop;
+  final Function(
+    BuildContext,
+    PlayerDragData,
+    Player?,
+    dynamic,
+    String,
+    int,
+    int,
+  )
+  onPlayerDrop;
   final VoidCallback onCourtPlayerDragStarted;
   final VoidCallback onCourtPlayerDragEnded;
   final String Function(List<Player?>, int, int) getGamesPlayedWith;
@@ -48,11 +57,14 @@ class StandbyCourtSectionsView extends StatelessWidget {
               ...sectionData.asMap().entries.map((entry) {
                 int sectionIndex = entry.key;
                 List<Player?> item = entry.value;
-                bool isGameStarted = courtGameStartedState[sectionIndex] ?? false;
+                // bool isGameStarted = courtGameStartedState[sectionIndex] ?? false;
                 return Container(
                   margin: const EdgeInsets.all(5.0),
                   padding: const EdgeInsets.all(5.0),
-                  decoration: BoxDecoration(color: pastelBlue, borderRadius: BorderRadius.circular(20.0)),
+                  decoration: BoxDecoration(
+                    color: pastelBlue,
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
                   child: Column(
                     children: [
                       Row(
@@ -61,7 +73,10 @@ class StandbyCourtSectionsView extends StatelessWidget {
                         children: [
                           Text(
                             '${sectionIndex + 1} 코트',
-                            style: TextStyle(fontSize: isMobileSize ? 20.0 : 32.0, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: isMobileSize ? 20.0 : 32.0,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           SizedBox(width: isMobileSize ? 16.0 : 32.0),
                           SizedBox(
@@ -71,7 +86,10 @@ class StandbyCourtSectionsView extends StatelessWidget {
                               elevation: 2.0,
                               onPressed: () => onRefreshCourt(sectionIndex),
                               heroTag: 'refresh_fab_$sectionIndex',
-                              child: Icon(Icons.refresh, size: isMobileSize ? 18.0 : 24.0),
+                              child: Icon(
+                                Icons.refresh,
+                                size: isMobileSize ? 18.0 : 24.0,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8.0),
@@ -82,7 +100,12 @@ class StandbyCourtSectionsView extends StatelessWidget {
                               elevation: 2.0,
                               onPressed: () => onAutoMatch(sectionIndex),
                               heroTag: 'start_fab_$sectionIndex',
-                              child: Text('자동 매칭', style: TextStyle(fontSize: isMobileSize ? 12.0 : 20.0)),
+                              child: Text(
+                                '자동 매칭',
+                                style: TextStyle(
+                                  fontSize: isMobileSize ? 12.0 : 20.0,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8.0),
@@ -91,9 +114,13 @@ class StandbyCourtSectionsView extends StatelessWidget {
                             height: isMobileSize ? 30.0 : 45.0,
                             child: FloatingActionButton(
                               elevation: 2.0,
-                              onPressed: () => onRemoveStandByCourt(sectionIndex),
+                              onPressed: () =>
+                                  onRemoveStandByCourt(sectionIndex),
                               heroTag: 'refresh_fab_$sectionIndex',
-                              child: Icon(Icons.remove, size: isMobileSize ? 18.0 : 24.0),
+                              child: Icon(
+                                Icons.remove,
+                                size: isMobileSize ? 18.0 : 24.0,
+                              ),
                             ),
                           ),
                         ],
@@ -111,8 +138,11 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                     Expanded(
                                       child: PlayerDropZone(
                                         sectionId: '${sectionIndex}_0',
-                                        player: item.asMap().containsKey(0) ? item[0] : null,
-                                        sectionKind: PlayerSectionKind.standby.value,
+                                        player: item.asMap().containsKey(0)
+                                            ? item[0]
+                                            : null,
+                                        sectionKind:
+                                            PlayerSectionKind.standby.value,
                                         sectionIndex: sectionIndex,
                                         subIndex: 0,
                                         onPlayerDropped:
@@ -132,15 +162,20 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                               targetSectionIdx,
                                               targetSubIdx,
                                             ),
-                                        onDragStartedFromZone: onCourtPlayerDragStarted,
-                                        onDragEndedFromZone: onCourtPlayerDragEnded,
+                                        onDragStartedFromZone:
+                                            onCourtPlayerDragStarted,
+                                        onDragEndedFromZone:
+                                            onCourtPlayerDragEnded,
                                       ),
                                     ),
                                     Expanded(
                                       child: PlayerDropZone(
                                         sectionId: '${sectionIndex}_1',
-                                        player: item.asMap().containsKey(1) ? item[1] : null,
-                                        sectionKind: PlayerSectionKind.standby.value,
+                                        player: item.asMap().containsKey(1)
+                                            ? item[1]
+                                            : null,
+                                        sectionKind:
+                                            PlayerSectionKind.standby.value,
                                         sectionIndex: sectionIndex,
                                         subIndex: 1,
                                         onPlayerDropped:
@@ -160,8 +195,10 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                               targetSectionIdx,
                                               targetSubIdx,
                                             ),
-                                        onDragStartedFromZone: onCourtPlayerDragStarted,
-                                        onDragEndedFromZone: onCourtPlayerDragEnded,
+                                        onDragStartedFromZone:
+                                            onCourtPlayerDragStarted,
+                                        onDragEndedFromZone:
+                                            onCourtPlayerDragEnded,
                                       ),
                                     ),
                                   ],
@@ -173,9 +210,12 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                     Expanded(
                                       child: PlayerDropZone(
                                         sectionId: '${sectionIndex}_2',
-                                        player: item.asMap().containsKey(2) ? item[2] : null,
+                                        player: item.asMap().containsKey(2)
+                                            ? item[2]
+                                            : null,
                                         sectionIndex: sectionIndex,
-                                        sectionKind: PlayerSectionKind.standby.value,
+                                        sectionKind:
+                                            PlayerSectionKind.standby.value,
                                         subIndex: 2,
                                         onPlayerDropped:
                                             (
@@ -194,15 +234,20 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                               targetSectionIdx,
                                               targetSubIdx,
                                             ),
-                                        onDragStartedFromZone: onCourtPlayerDragStarted,
-                                        onDragEndedFromZone: onCourtPlayerDragEnded,
+                                        onDragStartedFromZone:
+                                            onCourtPlayerDragStarted,
+                                        onDragEndedFromZone:
+                                            onCourtPlayerDragEnded,
                                       ),
                                     ),
                                     Expanded(
                                       child: PlayerDropZone(
                                         sectionId: '${sectionIndex}_3',
-                                        player: item.asMap().containsKey(3) ? item[3] : null,
-                                        sectionKind: PlayerSectionKind.standby.value,
+                                        player: item.asMap().containsKey(3)
+                                            ? item[3]
+                                            : null,
+                                        sectionKind:
+                                            PlayerSectionKind.standby.value,
                                         sectionIndex: sectionIndex,
                                         subIndex: 3,
                                         onPlayerDropped:
@@ -223,8 +268,10 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                               targetSubIdx,
                                             ),
 
-                                        onDragStartedFromZone: onCourtPlayerDragStarted,
-                                        onDragEndedFromZone: onCourtPlayerDragEnded,
+                                        onDragStartedFromZone:
+                                            onCourtPlayerDragStarted,
+                                        onDragEndedFromZone:
+                                            onCourtPlayerDragEnded,
                                       ),
                                     ),
                                   ],
@@ -245,7 +292,10 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                 ),
                                 child: Text(
                                   getGamesPlayedWith(item, 0, 1),
-                                  style: TextStyle(fontSize: isMobileSize ? 16.0 : 28.0, color: playedWithTextColor),
+                                  style: TextStyle(
+                                    fontSize: isMobileSize ? 16.0 : 28.0,
+                                    color: playedWithTextColor,
+                                  ),
                                 ),
                               ),
                             ),
@@ -262,7 +312,10 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                 ),
                                 child: Text(
                                   getGamesPlayedWith(item, 2, 3),
-                                  style: TextStyle(fontSize: isMobileSize ? 16.0 : 28.0, color: playedWithTextColor),
+                                  style: TextStyle(
+                                    fontSize: isMobileSize ? 16.0 : 28.0,
+                                    color: playedWithTextColor,
+                                  ),
                                 ),
                               ),
                             ),
@@ -279,7 +332,10 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                 ),
                                 child: Text(
                                   getGamesPlayedWith(item, 0, 2),
-                                  style: TextStyle(fontSize: isMobileSize ? 16.0 : 28.0, color: playedWithTextColor),
+                                  style: TextStyle(
+                                    fontSize: isMobileSize ? 16.0 : 28.0,
+                                    color: playedWithTextColor,
+                                  ),
                                 ),
                               ),
                             ),
@@ -296,12 +352,18 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                 ),
                                 child: Text(
                                   getGamesPlayedWith(item, 1, 3),
-                                  style: TextStyle(fontSize: isMobileSize ? 16.0 : 28.0, color: playedWithTextColor),
+                                  style: TextStyle(
+                                    fontSize: isMobileSize ? 16.0 : 28.0,
+                                    color: playedWithTextColor,
+                                  ),
                                 ),
                               ),
                             ),
                             Align(
-                              alignment: FractionalOffset(isMobileSize ? 0.25 : 0.35, 0.5),
+                              alignment: FractionalOffset(
+                                isMobileSize ? 0.25 : 0.35,
+                                0.5,
+                              ),
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [
@@ -315,7 +377,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(16.0),
                                     ),
                                     child: Text(
-                                      '1⇄4 ' + getGamesPlayedWith(item, 0, 3),
+                                      '1⇄4 ${getGamesPlayedWith(item, 0, 3)}',
                                       style: TextStyle(
                                         fontSize: isMobileSize ? 16.0 : 28.0,
                                         color: playedWithTextColor,
@@ -326,7 +388,10 @@ class StandbyCourtSectionsView extends StatelessWidget {
                               ),
                             ),
                             Align(
-                              alignment: FractionalOffset(isMobileSize ? 0.75 : 0.65, 0.5),
+                              alignment: FractionalOffset(
+                                isMobileSize ? 0.75 : 0.65,
+                                0.5,
+                              ),
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [
@@ -340,7 +405,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(16.0),
                                     ),
                                     child: Text(
-                                      '2⇄3 ' + getGamesPlayedWith(item, 1, 2),
+                                      '2⇄3 ${getGamesPlayedWith(item, 1, 2)}',
                                       style: TextStyle(
                                         fontSize: isMobileSize ? 16.0 : 28.0,
                                         color: playedWithTextColor,
@@ -371,13 +436,17 @@ class StandbyCourtSectionsView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20.0),
                     onTap: onAddStandByCourt,
                     child: Center(
-                      child: Icon(Icons.add, size: isMobileSize ? 40.0 : 60.0, color: Colors.white),
+                      child: Icon(
+                        Icons.add,
+                        size: isMobileSize ? 40.0 : 60.0,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
               ),
               // 하단 여백 추가
-              SizedBox(height: isMobileSize ?  300.0 : 600.0),
+              SizedBox(height: isMobileSize ? 300.0 : 600.0),
             ],
           ),
         ),

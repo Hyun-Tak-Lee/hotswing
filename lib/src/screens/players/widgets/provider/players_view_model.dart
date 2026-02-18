@@ -41,6 +41,21 @@ class PlayersViewModel extends ChangeNotifier {
   // 필터링 및 정렬된 전체 쿼리 결과 (지연 로딩을 위해 전체 객체를 메모리에 두지 않고 쿼리 결과만 유지)
   late RealmResults<Player> _queryResults;
 
+  bool _isDisposed = false;
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_isDisposed) {
+      super.notifyListeners();
+    }
+  }
+
   PlayersViewModel() {
     _loadInitialData();
   }
@@ -50,7 +65,7 @@ class PlayersViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    // 1. Repository를 통해 데이터 조회
+    // 1. 데이터 조회
     _queryResults = _repository.getPlayers(
       roleValues: _selectedRoles.map((e) => e.value).toSet(),
       genderValues: _selectedGenders.map((e) => e.value).toSet(),
@@ -58,17 +73,14 @@ class PlayersViewModel extends ChangeNotifier {
       sortAscending: true,
     );
 
-    // 2. 첫 페이지 데이터 로드
-    // 결과 개수가 페이지 사이즈보다 적으면 전체 사용
+    // 2. 페이지 데이터 구성
     int initialCount = _queryResults.length < _pageSize
         ? _queryResults.length
         : _pageSize;
-    // RealmResults는 Iterable이므로 take()를 사용하여 필요한 만큼만 가져옴
     _players = _queryResults.take(initialCount).toList();
 
     _hasMore = _players.length < _queryResults.length;
 
-    // UI 데모를 위한 인위적 지연 (로컬 DB가 너무 빨라서 로딩 표시가 안 보일 수 있음)
     await Future.delayed(const Duration(milliseconds: 500));
 
     _isLoading = false;
@@ -102,7 +114,7 @@ class PlayersViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 1000)); // UI 데모용 지연
+    await Future.delayed(const Duration(milliseconds: 1000));
 
     int currentLength = _players.length;
     int nextCount = currentLength + _pageSize;
@@ -172,7 +184,6 @@ class PlayersViewModel extends ChangeNotifier {
 
     _repository.deletePlayers(_selectedPlayerIds.toList());
 
-    // 메모리 내 리스트에서도 제거 (Realm 객체가 삭제되면 무효화되므로 isValid 체크)
     _players.removeWhere((p) => !p.isValid);
 
     // 선택 모드 종료 및 초기화

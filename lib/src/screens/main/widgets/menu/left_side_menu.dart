@@ -170,7 +170,6 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           ),
           ...players.map(
             (player) => Container(
-              // 1. ListTile의 'tileColor' 역할을 합니다.
               color: player.activate == false
                   ? const Color(0x55333333)
                   : player.role == "manager"
@@ -178,7 +177,6 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                   : player.role == "user"
                   ? const Color(0x3300BFFF)
                   : null,
-              // 2. ListTile의 기본 여백과 유사하게 Padding을 줍니다.
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16.0,
@@ -186,9 +184,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
-                  // 아이콘과 텍스트를 세로 중앙 정렬
                   children: [
-                    // 3. 텍스트 영역 (남은 공간을 모두 차지)
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,7 +211,6 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                         ],
                       ),
                     ),
-                    // 4. 아이콘 영역 (ListTile의 'trailing' 역할)
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

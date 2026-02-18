@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
@@ -13,7 +13,7 @@ class PlayersProvider with ChangeNotifier {
   final CourtAssignService _courtService = CourtAssignService();
   final PlayerService _playerService = PlayerService();
 
-  final Random _random = Random();
+  // final Random _random = Random();
 
   final Map<ObjectId, Player> _players = {};
   final List<List<Player?>> _assignedPlayers = [];
@@ -64,8 +64,7 @@ class PlayersProvider with ChangeNotifier {
   }
 
   Future<void> _loadInitialPlayers() async {
-    List<String> playerIds =
-        await SharedProvider().getStringList("players") ?? [];
+    List<String> playerIds = await SharedProvider().getStringList("players");
     if (playerIds.isNotEmpty) {
       _players.clear();
       List<ObjectId> playerObjectIds = playerIds
@@ -79,8 +78,9 @@ class PlayersProvider with ChangeNotifier {
         _players[player.id] = player;
       }
     }
-    List<String> unassignedIds =
-        await SharedProvider().getStringList("unassignedPlayers") ?? [];
+    List<String> unassignedIds = await SharedProvider().getStringList(
+      "unassignedPlayers",
+    );
     List<ObjectId> unassignedObjectIds = unassignedIds
         .map((id) => ObjectId.fromHexString(id))
         .toList();
@@ -93,8 +93,9 @@ class PlayersProvider with ChangeNotifier {
             .toList(),
       );
     }
-    List<String> assignedIds =
-        await SharedProvider().getStringList("assignedPlayers") ?? [];
+    List<String> assignedIds = await SharedProvider().getStringList(
+      "assignedPlayers",
+    );
     if (assignedIds.isNotEmpty) {
       _assignedPlayers.clear();
       _assignedPlayers.addAll(
@@ -107,8 +108,9 @@ class PlayersProvider with ChangeNotifier {
         }).toList(),
       );
     }
-    List<String> standbyIds =
-        await SharedProvider().getStringList("standbyPlayers") ?? [];
+    List<String> standbyIds = await SharedProvider().getStringList(
+      "standbyPlayers",
+    );
     if (standbyIds.isNotEmpty) {
       _standbyPlayers.clear();
       _standbyPlayers.addAll(
@@ -490,8 +492,9 @@ class PlayersProvider with ChangeNotifier {
 
     if (sectionIndex < 0 || sectionIndex >= targetCourtPlayers.length) return;
     if (playerIndexInSection < 0 ||
-        playerIndexInSection >= targetCourtPlayers[sectionIndex].length)
+        playerIndexInSection >= targetCourtPlayers[sectionIndex].length) {
       return;
+    }
 
     Player? playerToRemove =
         targetCourtPlayers[sectionIndex][playerIndexInSection];

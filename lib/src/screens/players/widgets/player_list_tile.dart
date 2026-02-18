@@ -69,13 +69,13 @@ class PlayerListTile extends StatelessWidget {
           ),
         ),
         subtitle: isTablet
-            ? null // 태블릿에선 subtitle 대신 Row로 펼쳐서 보여줌
+            ? null
             : Text(
                 '${_getRoleLabel(player.role)} | ${_getGenderLabel(player.gender)}',
                 style: TextStyle(fontSize: baseFontSize - 2),
               ),
         trailing: SizedBox(
-          width: isTablet ? 400 : 120, // 태블릿일 때 더 넓은 공간 확보
+          width: isTablet ? 400 : 120,
           child: isTablet
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -134,7 +134,7 @@ class PlayerListTile extends StatelessWidget {
                           'Rate: ${player.rate}',
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            fontSize: baseFontSize - 4, // Mobile small text
+                            fontSize: baseFontSize - 4,
                             color: Colors.black54,
                           ),
                         ),

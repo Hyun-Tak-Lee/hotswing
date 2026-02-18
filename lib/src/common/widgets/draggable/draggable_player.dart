@@ -35,7 +35,7 @@ class DraggablePlayerItem extends StatelessWidget {
   final VoidCallback? onDragEnded;
 
   const DraggablePlayerItem({
-    Key? key,
+    super.key,
     required this.player,
     required this.sourceSectionId,
     required this.sectionKind,
@@ -44,7 +44,7 @@ class DraggablePlayerItem extends StatelessWidget {
     this.isDragEnabled = true,
     this.onDragStarted,
     this.onDragEnded,
-  }) : super(key: key);
+  });
 
   String _getSkillLevelString(int rate) {
     return rateToSkillLevel[rate] ?? rate.toString();
@@ -257,7 +257,7 @@ class PlayerDropZone extends StatelessWidget {
   final VoidCallback? onDragEndedFromZone;
 
   const PlayerDropZone({
-    Key? key,
+    super.key,
     required this.sectionId,
     this.player,
     required this.sectionKind,
@@ -268,7 +268,7 @@ class PlayerDropZone extends StatelessWidget {
     this.backgroundColor,
     this.onDragStartedFromZone,
     this.onDragEndedFromZone,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

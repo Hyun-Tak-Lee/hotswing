@@ -41,7 +41,6 @@ class ActivationService {
         return 'unsupported_platform';
       }
     } catch (e) {
-      print('기기 ID 가져오기 실패: $e');
       return 'error_getting_device_id';
     }
   }
@@ -73,12 +72,10 @@ class ActivationService {
       final secretKey = dotenv.env['SECRET_KEY'];
 
       if (masterPassword == null) {
-        print('에러: 마스터 비밀번호가 .env 파일에 정의되지 않았습니다.');
         return false;
       }
 
       if (secretKey == null) {
-        print('에러: SECRET_KEY가 .env 파일에 정의되지 않았습니다.');
         return false;
       }
 
@@ -106,16 +103,11 @@ class ActivationService {
           DateTime.now().millisecondsSinceEpoch,
         );
 
-        print('★ 활성화 완료 ★');
-        print('기기 ID: $deviceId');
-        print('암호화된 기기 ID + 비밀번호 저장 완료 (복제 방지)');
-
         return true;
       }
 
       return false;
     } catch (e) {
-      print('활성화 처리 중 에러: $e');
       return false;
     }
   }
@@ -134,7 +126,6 @@ class ActivationService {
     try {
       // 1. 활성화되었는지 확인
       if (!isActivated()) {
-        print('기기 검증: 활성화되지 않음');
         return false;
       }
 
@@ -143,7 +134,6 @@ class ActivationService {
         _keyEncryptedDeviceId,
       );
       if (encryptedDeviceId == null) {
-        print('기기 검증: 암호화된 값이 없음 (이전 버전에서 활성화됨)');
         // 이전 버전에서 활성화된 경우 - 재활성화 필요
         await _sharedProvider.saveBool(_keyIsActivated, false);
         return false;
@@ -157,7 +147,6 @@ class ActivationService {
       final secretKey = dotenv.env['SECRET_KEY'];
 
       if (masterPassword == null || secretKey == null) {
-        print('에러: .env 파일에 MASTER_PASSWORD 또는 SECRET_KEY가 없음');
         return false;
       }
 
@@ -170,17 +159,13 @@ class ActivationService {
       );
 
       if (isValid) {
-        print('기기 검증: 성공 ✓ (현재 기기: $currentDeviceId)');
         return true;
       } else {
-        print('기기 검증: 실패 ✗ (다른 기기로 복제됨!)');
-        print('현재 기기: $currentDeviceId');
         // 불일치 시 활성화 해제
         await _sharedProvider.saveBool(_keyIsActivated, false);
         return false;
       }
     } catch (e) {
-      print('기기 검증 중 에러: $e');
       // 에러 시 안전을 위해 재활성화 요구
       await _sharedProvider.saveBool(_keyIsActivated, false);
       return false;
@@ -210,6 +195,5 @@ class ActivationService {
   /// 주의: 프로덕션에서는 사용하지 말 것
   Future<void> resetActivation() async {
     await _sharedProvider.saveBool(_keyIsActivated, false);
-    print('활성화가 초기화되었습니다.');
   }
 }

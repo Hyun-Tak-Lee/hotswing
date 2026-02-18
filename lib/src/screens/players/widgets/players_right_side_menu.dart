@@ -12,13 +12,11 @@ class PlayersRightSideMenu extends StatelessWidget {
     final viewModel = Provider.of<PlayersViewModel>(context);
     final isTablet = ResponsiveUtils.isTablet(context);
 
-    // 폰트 사이즈 조정 (DrawerHeader용)
     final double headerTitleFontSize = isTablet ? 28.0 : 20.0;
 
     return Drawer(
       width: isTablet
-          ? MediaQuery.of(context).size.width *
-                0.40 // 탭에서는 60% 너무 큼 -> 40%
+          ? MediaQuery.of(context).size.width * 0.40
           : MediaQuery.of(context).size.width * 0.75,
       child: ListView(
         padding: EdgeInsets.zero,
@@ -107,7 +105,7 @@ class _FilterSection<T> extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Wrap(
             spacing: 8.0,
-            runSpacing: 8.0, // runSpacing 조금 넒힘
+            runSpacing: 8.0,
             children: values.map((value) {
               return FilterChip(
                 label: Text(

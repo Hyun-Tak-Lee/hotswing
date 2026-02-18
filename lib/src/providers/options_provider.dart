@@ -3,7 +3,6 @@ import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/repository/realms/options.dart';
 import 'package:realm/realm.dart';
 
-
 class OptionsProvider with ChangeNotifier {
   late Realm _realm;
   late Options _options;
@@ -22,11 +21,6 @@ class OptionsProvider with ChangeNotifier {
 
   OptionsProvider() {
     _loadOptions();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   void _loadOptions() {
@@ -77,8 +71,10 @@ class OptionsProvider with ChangeNotifier {
 
   void setPlayedWithWeight(double newPlayedWithWeight) {
     _realm.write(() {
-      _options.playedWithWeight =
-          newPlayedWithWeight.clamp(_minWeight, _maxWeight);
+      _options.playedWithWeight = newPlayedWithWeight.clamp(
+        _minWeight,
+        _maxWeight,
+      );
     });
     notifyListeners();
   }

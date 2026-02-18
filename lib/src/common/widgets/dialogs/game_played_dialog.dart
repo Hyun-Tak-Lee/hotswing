@@ -8,11 +8,11 @@ class GamePlayedDialog extends StatelessWidget {
   final List<String> notPlayedWithNames;
 
   const GamePlayedDialog({
-    Key? key,
+    super.key,
     required this.gamesPlayedWithMap,
     required this.player,
     required this.notPlayedWithNames,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
