@@ -104,9 +104,9 @@ class _MainWrapperState extends State<MainWrapper> {
                 child: Container(
                   margin: const EdgeInsets.only(top: 0, right: 0, bottom: 0),
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: Color(0xFFF5F5F5), // 눈의 피로를 줄이기 위한 부드러운 오프화이트
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
+                      topLeft: Radius.circular(20),
                     ),
                   ),
                   clipBehavior: Clip.antiAlias, // 둥근 모서리에 맞춰 내용 자르기
@@ -159,8 +159,8 @@ class _MainWrapperState extends State<MainWrapper> {
         endDrawer: const RightSideMenu(isMobileSize: true),
         body: Container(
           decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+            color: Color(0xFFF5F5F5), // 눈의 피로를 줄이기 위한 부드러운 오프화이트
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           clipBehavior: Clip.antiAlias,
           child: _buildContent(),
