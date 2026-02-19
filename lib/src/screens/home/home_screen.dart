@@ -84,49 +84,81 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       listen: false,
     );
-    final Player draggedPlayer = data.player;
     final String sourceSectionKind = data.sectionKind;
     final int sourceSectionIndex = data.sectionIndex;
     final int sourceSubIndex = data.subIndex;
 
-    // 사례 1: 할당되지 않은 목록에서 드래그한 경우
+    // 1. Source에서 제거 (Drag된 Player)
+    Player? draggedPlayer;
     if (sourceSectionKind == PlayerSectionKind.unassigned.value) {
-      if (targetSectionIndex != -1) {
-        playersProvider.exchangeUnassignedPlayerWithCourtPlayer(
-          unassignedPlayerToAssign: draggedPlayer,
-          targetCourtSectionIndex: targetSectionIndex,
-          targetCourtPlayerIndex: targetSubIndex,
-          targetCourtKind: targetSectionKind,
-        );
-      }
+      draggedPlayer = data.player;
+      playersProvider.removeUnassignedPlayer(draggedPlayer);
+    } else if (sourceSectionKind == PlayerSectionKind.assigned.value) {
+      draggedPlayer = playersProvider.removeAssignedPlayer(
+        sourceSectionIndex,
+        sourceSubIndex,
+      );
+    } else if (sourceSectionKind == PlayerSectionKind.standby.value) {
+      draggedPlayer = playersProvider.removeStandbyPlayer(
+        sourceSectionIndex,
+        sourceSubIndex,
+      );
     }
-    // 사례 2: 코트 슬롯에서 드래그한 경우
-    else {
-      // 사례 2a: 다른 assigned 코트 슬롯에 놓은 경우
-      if (![
-        PlayerSectionKind.unassigned.value,
-        PlayerSectionKind.drop.value,
-      ].contains(targetSectionKind)) {
-        if (sourceSectionIndex == targetSectionIndex &&
-            sourceSubIndex == targetSubIndex) {
-          return;
-        }
-        playersProvider.exchangePlayersInCourts(
-          sectionIndex1: sourceSectionIndex,
-          playerIndexInSection1: sourceSubIndex,
-          sectionIndex2: targetSectionIndex,
-          playerIndexInSection2: targetSubIndex,
-          targetCourtKind: sourceSectionKind,
-        );
-      }
-      // 사례 2b: 할당되지 않은 목록에 놓은 경우
-      else {
-        playersProvider.removePlayerFromCourt(
-          sectionIndex: sourceSectionIndex,
-          playerIndexInSection: sourceSubIndex,
-          targetCourtKind: sourceSectionKind,
-        );
-      }
+
+    if (draggedPlayer == null) return;
+
+    // 2. Target 상호작용 준비
+    // Target이 대기 목록(unassigned)이거나 삭제 영역(drop)이면, 단순히 대기 목록에 추가하고 종료.
+    if (targetSectionKind == PlayerSectionKind.unassigned.value ||
+        targetSectionKind == PlayerSectionKind.drop.value) {
+      playersProvider.addUnassignedPlayer(draggedPlayer);
+      return;
+    }
+
+    // 3. Target에서 기존 플레이어 제거 (자리가 차 있는 경우) - 교환 여부 확인
+    Player? existingTargetPlayer;
+    if (targetSectionKind == PlayerSectionKind.assigned.value) {
+      existingTargetPlayer = playersProvider.removeAssignedPlayer(
+        targetSectionIndex,
+        targetSubIndex,
+      );
+    } else if (targetSectionKind == PlayerSectionKind.standby.value) {
+      existingTargetPlayer = playersProvider.removeStandbyPlayer(
+        targetSectionIndex,
+        targetSubIndex,
+      );
+    }
+
+    // 4. 드래그된 플레이어를 Target에 추가
+    if (targetSectionKind == PlayerSectionKind.assigned.value) {
+      playersProvider.addAssignedPlayer(
+        draggedPlayer,
+        targetSectionIndex,
+        targetSubIndex,
+      );
+    } else if (targetSectionKind == PlayerSectionKind.standby.value) {
+      playersProvider.addStandbyPlayer(
+        draggedPlayer,
+        targetSectionIndex,
+        targetSubIndex,
+      );
+    }
+
+    // 5. 기존 Target의 플레이어를 Source로 이동 (교환)
+    if (sourceSectionKind == PlayerSectionKind.unassigned.value) {
+      playersProvider.addUnassignedPlayer(existingTargetPlayer);
+    } else if (sourceSectionKind == PlayerSectionKind.assigned.value) {
+      playersProvider.addAssignedPlayer(
+        existingTargetPlayer,
+        sourceSectionIndex,
+        sourceSubIndex,
+      );
+    } else if (sourceSectionKind == PlayerSectionKind.standby.value) {
+      playersProvider.addStandbyPlayer(
+        existingTargetPlayer,
+        sourceSectionIndex,
+        sourceSubIndex,
+      );
     }
   }
 
