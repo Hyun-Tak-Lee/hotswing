@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final int sourceSectionIndex = data.sectionIndex;
     final int sourceSubIndex = data.subIndex;
 
-    // 1. Source에서 제거 (Drag된 Player)
+    // [1] 소스 처리 (Extraction): 드래그가 시작된 위치에서 플레이어를 제거하고 정보를 가져옵니다.
     Player? draggedPlayer;
     if (sourceSectionKind == PlayerSectionKind.unassigned.value) {
       draggedPlayer = data.player;
@@ -107,18 +107,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (draggedPlayer == null) return;
 
-    // 2. Target 상호작용 준비
-    // Target이 대기 목록(unassigned)이거나 삭제 영역(drop)이면, 단순히 대기 목록에 추가하고 종료.
+    // [2] 타겟 처리 (Move Only): 타겟이 대기 목록이나 삭제 영역인 경우, 단순 이동 처리 후 종료합니다 (조기 리턴).
     if (targetSectionKind == PlayerSectionKind.unassigned.value ||
         targetSectionKind == PlayerSectionKind.drop.value) {
       playersProvider.addUnassignedPlayer(draggedPlayer);
       return;
     }
 
-    // 3. Target에서 기존 플레이어 제거 (자리가 차 있는 경우) - 교환 여부 확인
+    // [3] 타겟 처리 (Exchange): 타겟이 코트 슬롯인 경우, 기존 플레이어를 추출하고 드래그된 플레이어로 교체합니다.
     Player? existingTargetPlayer;
     if (targetSectionKind == PlayerSectionKind.assigned.value) {
       existingTargetPlayer = playersProvider.removeAssignedPlayer(
+        targetSectionIndex,
+        targetSubIndex,
+      );
+      playersProvider.addAssignedPlayer(
+        draggedPlayer,
         targetSectionIndex,
         targetSubIndex,
       );
@@ -127,16 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
         targetSectionIndex,
         targetSubIndex,
       );
-    }
-
-    // 4. 드래그된 플레이어를 Target에 추가
-    if (targetSectionKind == PlayerSectionKind.assigned.value) {
-      playersProvider.addAssignedPlayer(
-        draggedPlayer,
-        targetSectionIndex,
-        targetSubIndex,
-      );
-    } else if (targetSectionKind == PlayerSectionKind.standby.value) {
       playersProvider.addStandbyPlayer(
         draggedPlayer,
         targetSectionIndex,
@@ -144,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    // 5. 기존 Target의 플레이어를 Source로 이동 (교환)
+    // [4] 소스 복구 (Swap): 타겟에 원래 있던 플레이어를 드래그가 시작되었던 소스 위치로 이동시켜 배치를 완료합니다.
     if (sourceSectionKind == PlayerSectionKind.unassigned.value) {
       playersProvider.addUnassignedPlayer(existingTargetPlayer);
     } else if (sourceSectionKind == PlayerSectionKind.assigned.value) {
