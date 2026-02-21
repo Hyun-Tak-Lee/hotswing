@@ -218,7 +218,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: switch (selectedView) {
                     CourtViewSection.assignedView => CourtSectionsView(
                       // '경기 코트' 뷰
-                      isMobileSize: isMobileSize,
                       sectionData: sectionData,
                       courtGameStartedState: _courtGameStartedState,
                       getGamesPlayedWith: getGamesPlayedWith,
@@ -267,7 +266,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     CourtViewSection.standbyView => StandbyCourtSectionsView(
                       // '대기 코트' 뷰
-                      isMobileSize: isMobileSize,
                       sectionData: standbyCourts,
                       courtGameStartedState: _courtGameStartedState,
                       getGamesPlayedWith: getGamesPlayedWith,
