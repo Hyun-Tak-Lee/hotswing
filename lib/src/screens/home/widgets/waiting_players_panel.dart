@@ -207,6 +207,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
           ),
           PopupMenuButton<SortCriterion>(
             initialValue: _sortCriterion,
+            color: const Color(0xFFFAFAFA), // 눈 안 부신 부드러운 흰색
             onSelected: (SortCriterion newValue) {
               setState(() {
                 _sortCriterion = newValue;
@@ -232,9 +233,9 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                       vertical: 6.0,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: const Color(0xFFE3F2FD), // 연한 파스텔 블루 배경
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.grey.shade300),
+                      border: Border.all(color: const Color(0xFFBBDEFB)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,

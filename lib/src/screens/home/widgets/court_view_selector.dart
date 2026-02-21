@@ -56,7 +56,16 @@ class CourtViewSelector extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
+          color: isSelected ? null : Colors.transparent,
+          gradient: isSelected
+              ? const RadialGradient(
+                  colors: [
+                    Color(0xFFFCE4EC),
+                    Color(0xFFF8BBD0),
+                  ], // 파스텔 핑크 원형 그라데이션
+                  radius: 1.5,
+                )
+              : null,
           borderRadius: BorderRadius.circular(20),
           boxShadow: isSelected
               ? [

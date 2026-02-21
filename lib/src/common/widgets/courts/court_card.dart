@@ -49,7 +49,6 @@ class CourtCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtils.isTablet(context);
-    final Color pastelBlue = Color(0x9987CEFA);
     final Color playedWithColor = Color(0xFF89A7DA);
     final Color playedWithTextColor = Color(0xFFFFEB3B);
 
@@ -57,7 +56,21 @@ class CourtCard extends StatelessWidget {
       margin: const EdgeInsets.all(5.0),
       padding: const EdgeInsets.all(5.0),
       decoration: BoxDecoration(
-        color: pastelBlue,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFF3E5F5), // 라벤더 미스트 (연보라)
+            Color(0xFFE1F5FE), // 연하늘
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(20),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
         borderRadius: BorderRadius.circular(20.0),
       ),
       child: Column(

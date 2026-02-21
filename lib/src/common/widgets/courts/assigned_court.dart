@@ -57,86 +57,137 @@ class CourtSectionsView extends StatelessWidget {
                 onCourtPlayerDragEnded: onCourtPlayerDragEnded,
                 headerActions: [
                   // 새로고침 버튼
-                  SizedBox(
+                  _buildGradientButton(
+                    isTablet: isTablet,
                     width: isTablet ? 50.0 : 40.0,
                     height: isTablet ? 45.0 : 30.0,
-                    child: FloatingActionButton(
-                      elevation: 2.0,
-                      onPressed: () {
-                        playersProvider.movePlayersFromCourtToUnassigned(
-                          sectionIndex: sectionIndex,
-                          targetCourtKind: PlayerSectionKind.assigned.value,
-                          played: 0,
-                        );
-                      },
-                      heroTag: 'refresh_fab_$sectionIndex',
-                      child: Icon(Icons.refresh, size: isTablet ? 24.0 : 18.0),
+                    colors: [const Color(0xFFEF9A9A), const Color(0xFFE57373)],
+                    onTap: () {
+                      playersProvider.movePlayersFromCourtToUnassigned(
+                        sectionIndex: sectionIndex,
+                        targetCourtKind: PlayerSectionKind.assigned.value,
+                        played: 0,
+                      );
+                    },
+                    child: Icon(
+                      Icons.group_remove,
+                      size: isTablet ? 24.0 : 18.0,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(width: 8.0),
                   // 자동 매칭 / 경기 종료 버튼
                   if (!isGameStarted)
-                    SizedBox(
+                    _buildGradientButton(
+                      isTablet: isTablet,
                       width: isTablet ? 120.0 : 80.0,
                       height: isTablet ? 45.0 : 30.0,
-                      child: FloatingActionButton(
-                        elevation: 2.0,
-                        onPressed: () {
-                          playersProvider.assignPlayersToCourt(
-                            sectionIndex,
-                            skillWeight: optionsProvider.skillWeight,
-                            genderWeight: optionsProvider.genderWeight,
-                            waitedWeight: optionsProvider.waitedWeight,
-                            playedWeight: optionsProvider.playedWeight,
-                            playedWithWeight: optionsProvider.playedWithWeight,
-                            targetCourtKind: PlayerSectionKind.assigned.value,
-                          );
-                        },
-                        heroTag: 'start_fab_$sectionIndex',
-                        child: Text(
-                          '자동 매칭',
-                          style: TextStyle(fontSize: isTablet ? 20.0 : 12.0),
+                      colors: [
+                        const Color(0xFFA5D6A7),
+                        const Color(0xFF81C784),
+                      ],
+                      onTap: () {
+                        playersProvider.assignPlayersToCourt(
+                          sectionIndex,
+                          skillWeight: optionsProvider.skillWeight,
+                          genderWeight: optionsProvider.genderWeight,
+                          waitedWeight: optionsProvider.waitedWeight,
+                          playedWeight: optionsProvider.playedWeight,
+                          playedWithWeight: optionsProvider.playedWithWeight,
+                          targetCourtKind: PlayerSectionKind.assigned.value,
+                        );
+                      },
+                      child: Text(
+                        '자동 매칭',
+                        style: TextStyle(
+                          fontSize: isTablet ? 20.0 : 12.0,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     )
                   else
-                    SizedBox(
+                    _buildGradientButton(
+                      isTablet: isTablet,
                       width: isTablet ? 150.0 : 90.0,
                       height: isTablet ? 45.0 : 30.0,
-                      child: FloatingActionButton(
-                        elevation: 2.0,
-                        onPressed: () {
-                          playersProvider
-                              .incrementWaitedTimeForAllUnassignedPlayers();
-                          playersProvider.movePlayersFromCourtToUnassigned(
-                            sectionIndex: sectionIndex,
-                            targetCourtKind: PlayerSectionKind.assigned.value,
-                          );
-                        },
-                        heroTag: 'stop_fab_$sectionIndex',
-                        child: Text(
-                          '경기 종료',
-                          style: TextStyle(fontSize: isTablet ? 20.0 : 12.0),
+                      colors: [
+                        const Color(0xFFFFB74D),
+                        const Color(0xFFE57373),
+                      ],
+                      onTap: () {
+                        playersProvider
+                            .incrementWaitedTimeForAllUnassignedPlayers();
+                        playersProvider.movePlayersFromCourtToUnassigned(
+                          sectionIndex: sectionIndex,
+                          targetCourtKind: PlayerSectionKind.assigned.value,
+                        );
+                      },
+                      child: Text(
+                        '경기 종료',
+                        style: TextStyle(
+                          fontSize: isTablet ? 20.0 : 12.0,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   const SizedBox(width: 8.0),
                   // 대기 코트 Pop 버튼
-                  SizedBox(
+                  _buildGradientButton(
+                    isTablet: isTablet,
                     width: isTablet ? 50.0 : 40.0,
                     height: isTablet ? 45.0 : 30.0,
-                    child: FloatingActionButton(
-                      elevation: 2.0,
-                      onPressed: () =>
-                          playersProvider.popStandByPlayers(sectionIndex),
-                      heroTag: 'pop_standby_fab_$sectionIndex',
-                      child: Icon(Icons.add, size: isTablet ? 24.0 : 18.0),
+                    colors: [const Color(0xFF80CBC4), const Color(0xFF26A69A)],
+                    onTap: () =>
+                        playersProvider.popStandByPlayers(sectionIndex),
+                    child: Icon(
+                      Icons.add,
+                      size: isTablet ? 24.0 : 18.0,
+                      color: Colors.white,
                     ),
                   ),
                 ],
               );
             }).toList(),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGradientButton({
+    required bool isTablet,
+    required double width,
+    required double height,
+    required List<Color> colors,
+    required VoidCallback onTap,
+    required Widget child,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colors.last.withAlpha(100), // 그림자는 끝 색상에 기반해 부드럽게
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(15.0),
+          onTap: onTap,
+          child: Center(child: child),
         ),
       ),
     );
