@@ -3,14 +3,12 @@ import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/courts/court_card.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:provider/provider.dart';
+import 'package:hotswing/src/providers/options_provider.dart';
+import 'package:hotswing/src/providers/players_provider.dart';
+import 'package:hotswing/src/enums/player_feature.dart';
 
 class StandbyCourtSectionsView extends StatelessWidget {
-  final List<List<Player?>> sectionData;
-  final Map<int, bool> courtGameStartedState;
-  final Function(int) onRefreshCourt;
-  final Function(int) onAutoMatch;
-  final VoidCallback onAddStandByCourt;
-  final Function(int) onRemoveStandByCourt;
   final Function(
     BuildContext,
     PlayerDragData,
@@ -23,26 +21,21 @@ class StandbyCourtSectionsView extends StatelessWidget {
   onPlayerDrop;
   final VoidCallback onCourtPlayerDragStarted;
   final VoidCallback onCourtPlayerDragEnded;
-  final String Function(List<Player?>, int, int) getGamesPlayedWith;
 
   const StandbyCourtSectionsView({
     super.key,
-    required this.sectionData,
-    required this.courtGameStartedState,
-    required this.onRefreshCourt,
-    required this.onAutoMatch,
-    required this.onAddStandByCourt,
-    required this.onRemoveStandByCourt,
     required this.onPlayerDrop,
     required this.onCourtPlayerDragStarted,
     required this.onCourtPlayerDragEnded,
-    required this.getGamesPlayedWith,
   });
 
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtils.isTablet(context);
     final Color pastelBlue = Color(0x9987CEFA);
+    final playersProvider = Provider.of<PlayersProvider>(context);
+    final optionsProvider = Provider.of<OptionsProvider>(context);
+    final sectionData = playersProvider.standbyPlayers;
 
     return Align(
       alignment: Alignment.topCenter,
@@ -63,7 +56,6 @@ class StandbyCourtSectionsView extends StatelessWidget {
                   onPlayerDrop: onPlayerDrop,
                   onCourtPlayerDragStarted: onCourtPlayerDragStarted,
                   onCourtPlayerDragEnded: onCourtPlayerDragEnded,
-                  getGamesPlayedWith: getGamesPlayedWith,
                   headerActions: [
                     // 새로고침 버튼
                     SizedBox(
@@ -71,7 +63,13 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       height: isTablet ? 45.0 : 30.0,
                       child: FloatingActionButton(
                         elevation: 2.0,
-                        onPressed: () => onRefreshCourt(sectionIndex),
+                        onPressed: () {
+                          playersProvider.movePlayersFromCourtToUnassigned(
+                            sectionIndex: sectionIndex,
+                            targetCourtKind: PlayerSectionKind.standby.value,
+                            played: 0,
+                          );
+                        },
                         heroTag: 'standby_refresh_fab_$sectionIndex',
                         child: Icon(
                           Icons.refresh,
@@ -86,7 +84,17 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       height: isTablet ? 45.0 : 30.0,
                       child: FloatingActionButton(
                         elevation: 2.0,
-                        onPressed: () => onAutoMatch(sectionIndex),
+                        onPressed: () {
+                          playersProvider.assignPlayersToCourt(
+                            sectionIndex,
+                            skillWeight: optionsProvider.skillWeight,
+                            genderWeight: optionsProvider.genderWeight,
+                            waitedWeight: optionsProvider.waitedWeight,
+                            playedWeight: optionsProvider.playedWeight,
+                            playedWithWeight: optionsProvider.playedWithWeight,
+                            targetCourtKind: PlayerSectionKind.standby.value,
+                          );
+                        },
                         heroTag: 'standby_start_fab_$sectionIndex',
                         child: Text(
                           '자동 매칭',
@@ -101,7 +109,8 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       height: isTablet ? 45.0 : 30.0,
                       child: FloatingActionButton(
                         elevation: 2.0,
-                        onPressed: () => onRemoveStandByCourt(sectionIndex),
+                        onPressed: () =>
+                            playersProvider.removeStandByPlayers(sectionIndex),
                         heroTag: 'standby_remove_fab_$sectionIndex',
                         child: Icon(Icons.remove, size: isTablet ? 24.0 : 18.0),
                       ),
@@ -122,7 +131,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(20.0),
-                    onTap: onAddStandByCourt,
+                    onTap: playersProvider.addStandByPlayers,
                     child: Center(
                       child: Icon(
                         Icons.add,

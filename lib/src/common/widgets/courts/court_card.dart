@@ -22,7 +22,6 @@ class CourtCard extends StatelessWidget {
   onPlayerDrop;
   final VoidCallback onCourtPlayerDragStarted;
   final VoidCallback onCourtPlayerDragEnded;
-  final String Function(List<Player?>, int, int) getGamesPlayedWith;
 
   const CourtCard({
     super.key,
@@ -33,8 +32,19 @@ class CourtCard extends StatelessWidget {
     required this.onPlayerDrop,
     required this.onCourtPlayerDragStarted,
     required this.onCourtPlayerDragEnded,
-    required this.getGamesPlayedWith,
   });
+
+  String _getGamesPlayedWith(List<Player?> list, int index1, int index2) {
+    final maxIndex = index1 > index2 ? index1 : index2;
+    if (list.length <= maxIndex) return '0';
+
+    final player1 = list[index1];
+    final player2 = list[index2];
+    if (player1 == null || player2 == null) return '0';
+
+    final gamesCount = player1.gamesPlayedWith[player2.id.hexString];
+    return gamesCount?.toString() ?? '0';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +108,7 @@ class CourtCard extends StatelessWidget {
                 _buildIndicator(
                   isTablet: isTablet,
                   alignment: FractionalOffset(0.5, 0.20),
-                  text: getGamesPlayedWith(players, 0, 1),
+                  text: _getGamesPlayedWith(players, 0, 1),
                   color: playedWithColor,
                   textColor: playedWithTextColor,
                 ),
@@ -106,7 +116,7 @@ class CourtCard extends StatelessWidget {
                 _buildIndicator(
                   isTablet: isTablet,
                   alignment: FractionalOffset(0.5, 0.80),
-                  text: getGamesPlayedWith(players, 2, 3),
+                  text: _getGamesPlayedWith(players, 2, 3),
                   color: playedWithColor,
                   textColor: playedWithTextColor,
                 ),
@@ -114,7 +124,7 @@ class CourtCard extends StatelessWidget {
                 _buildIndicator(
                   isTablet: isTablet,
                   alignment: FractionalOffset(0.05, 0.5),
-                  text: getGamesPlayedWith(players, 0, 2),
+                  text: _getGamesPlayedWith(players, 0, 2),
                   color: playedWithColor,
                   textColor: playedWithTextColor,
                 ),
@@ -122,7 +132,7 @@ class CourtCard extends StatelessWidget {
                 _buildIndicator(
                   isTablet: isTablet,
                   alignment: FractionalOffset(0.95, 0.5),
-                  text: getGamesPlayedWith(players, 1, 3),
+                  text: _getGamesPlayedWith(players, 1, 3),
                   color: playedWithColor,
                   textColor: playedWithTextColor,
                 ),
@@ -130,7 +140,7 @@ class CourtCard extends StatelessWidget {
                 _buildIndicator(
                   isTablet: isTablet,
                   alignment: FractionalOffset(isTablet ? 0.35 : 0.25, 0.5),
-                  text: '1⇄4 ${getGamesPlayedWith(players, 0, 3)}',
+                  text: '1⇄4 ${_getGamesPlayedWith(players, 0, 3)}',
                   color: playedWithColor,
                   textColor: playedWithTextColor,
                   useStack: true,
@@ -139,7 +149,7 @@ class CourtCard extends StatelessWidget {
                 _buildIndicator(
                   isTablet: isTablet,
                   alignment: FractionalOffset(isTablet ? 0.65 : 0.75, 0.5),
-                  text: '2⇄3 ${getGamesPlayedWith(players, 1, 2)}',
+                  text: '2⇄3 ${_getGamesPlayedWith(players, 1, 2)}',
                   color: playedWithColor,
                   textColor: playedWithTextColor,
                   useStack: true,

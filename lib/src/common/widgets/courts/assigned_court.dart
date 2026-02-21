@@ -3,14 +3,12 @@ import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/courts/court_card.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:provider/provider.dart';
+import 'package:hotswing/src/providers/options_provider.dart';
+import 'package:hotswing/src/providers/players_provider.dart';
+import 'package:hotswing/src/enums/player_feature.dart';
 
 class CourtSectionsView extends StatelessWidget {
-  final List<List<Player?>> sectionData;
-  final Map<int, bool> courtGameStartedState;
-  final Function(int) onRefreshCourt;
-  final Function(int) onAutoMatch;
-  final Function(int) onEndGame;
-  final Function(int) onPopStandByCourt;
   final Function(
     BuildContext,
     PlayerDragData,
@@ -23,25 +21,20 @@ class CourtSectionsView extends StatelessWidget {
   onPlayerDrop;
   final VoidCallback onCourtPlayerDragStarted;
   final VoidCallback onCourtPlayerDragEnded;
-  final String Function(List<Player?>, int, int) getGamesPlayedWith;
 
   const CourtSectionsView({
     super.key,
-    required this.sectionData,
-    required this.courtGameStartedState,
-    required this.onRefreshCourt,
-    required this.onAutoMatch,
-    required this.onEndGame,
-    required this.onPopStandByCourt,
     required this.onPlayerDrop,
     required this.onCourtPlayerDragStarted,
     required this.onCourtPlayerDragEnded,
-    required this.getGamesPlayedWith,
   });
 
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtils.isTablet(context);
+    final playersProvider = Provider.of<PlayersProvider>(context);
+    final optionsProvider = Provider.of<OptionsProvider>(context);
+    final sectionData = playersProvider.assignedPlayers;
 
     return Center(
       child: Container(
@@ -52,7 +45,8 @@ class CourtSectionsView extends StatelessWidget {
             children: sectionData.asMap().entries.map((entry) {
               int sectionIndex = entry.key;
               List<Player?> item = entry.value;
-              bool isGameStarted = courtGameStartedState[sectionIndex] ?? false;
+              final playerCount = item.where((p) => p != null).length;
+              bool isGameStarted = (playerCount == 4);
 
               return CourtCard(
                 sectionIndex: sectionIndex,
@@ -61,7 +55,6 @@ class CourtSectionsView extends StatelessWidget {
                 onPlayerDrop: onPlayerDrop,
                 onCourtPlayerDragStarted: onCourtPlayerDragStarted,
                 onCourtPlayerDragEnded: onCourtPlayerDragEnded,
-                getGamesPlayedWith: getGamesPlayedWith,
                 headerActions: [
                   // 새로고침 버튼
                   SizedBox(
@@ -69,7 +62,13 @@ class CourtSectionsView extends StatelessWidget {
                     height: isTablet ? 45.0 : 30.0,
                     child: FloatingActionButton(
                       elevation: 2.0,
-                      onPressed: () => onRefreshCourt(sectionIndex),
+                      onPressed: () {
+                        playersProvider.movePlayersFromCourtToUnassigned(
+                          sectionIndex: sectionIndex,
+                          targetCourtKind: PlayerSectionKind.assigned.value,
+                          played: 0,
+                        );
+                      },
                       heroTag: 'refresh_fab_$sectionIndex',
                       child: Icon(Icons.refresh, size: isTablet ? 24.0 : 18.0),
                     ),
@@ -82,7 +81,17 @@ class CourtSectionsView extends StatelessWidget {
                       height: isTablet ? 45.0 : 30.0,
                       child: FloatingActionButton(
                         elevation: 2.0,
-                        onPressed: () => onAutoMatch(sectionIndex),
+                        onPressed: () {
+                          playersProvider.assignPlayersToCourt(
+                            sectionIndex,
+                            skillWeight: optionsProvider.skillWeight,
+                            genderWeight: optionsProvider.genderWeight,
+                            waitedWeight: optionsProvider.waitedWeight,
+                            playedWeight: optionsProvider.playedWeight,
+                            playedWithWeight: optionsProvider.playedWithWeight,
+                            targetCourtKind: PlayerSectionKind.assigned.value,
+                          );
+                        },
                         heroTag: 'start_fab_$sectionIndex',
                         child: Text(
                           '자동 매칭',
@@ -96,7 +105,14 @@ class CourtSectionsView extends StatelessWidget {
                       height: isTablet ? 45.0 : 30.0,
                       child: FloatingActionButton(
                         elevation: 2.0,
-                        onPressed: () => onEndGame(sectionIndex),
+                        onPressed: () {
+                          playersProvider
+                              .incrementWaitedTimeForAllUnassignedPlayers();
+                          playersProvider.movePlayersFromCourtToUnassigned(
+                            sectionIndex: sectionIndex,
+                            targetCourtKind: PlayerSectionKind.assigned.value,
+                          );
+                        },
                         heroTag: 'stop_fab_$sectionIndex',
                         child: Text(
                           '경기 종료',
@@ -111,7 +127,8 @@ class CourtSectionsView extends StatelessWidget {
                     height: isTablet ? 45.0 : 30.0,
                     child: FloatingActionButton(
                       elevation: 2.0,
-                      onPressed: () => onPopStandByCourt(sectionIndex),
+                      onPressed: () =>
+                          playersProvider.popStandByPlayers(sectionIndex),
                       heroTag: 'pop_standby_fab_$sectionIndex',
                       child: Icon(Icons.add, size: isTablet ? 24.0 : 18.0),
                     ),
