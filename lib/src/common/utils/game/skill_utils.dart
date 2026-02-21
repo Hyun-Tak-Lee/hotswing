@@ -9,7 +9,16 @@ const Map<String, int> skillLevelToRate = {
   'S': 5000,
 };
 
-// 역 매핑을 위한 getter 또는 함수 (필요한 경우)
-Map<int, String> get rateToSkillLevel {
-  return skillLevelToRate.map((key, value) => MapEntry(value, key));
+// 점수(rate)에 따른 스킬 등급(문자열)을 반환하는 함수
+String rateToSkillLevel(int rate) {
+  final entries = skillLevelToRate.entries.toList();
+
+  for (int i = 0; i < entries.length - 1; i++) {
+    int midPoint = (entries[i].value + entries[i + 1].value) ~/ 2;
+    if (rate < midPoint) {
+      return entries[i].key;
+    }
+  }
+
+  return entries.last.key;
 }

@@ -47,7 +47,7 @@ class DraggablePlayerItem extends StatelessWidget {
   });
 
   String _getSkillLevelString(int rate) {
-    return rateToSkillLevel[rate] ?? rate.toString();
+    return rateToSkillLevel(rate);
   }
 
   @override

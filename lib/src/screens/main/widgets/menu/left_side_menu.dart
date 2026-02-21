@@ -190,7 +190,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${player.name} / ${player.gender} / ${rateToSkillLevel[player.rate]}',
+                            '${player.name} / ${player.gender} / ${rateToSkillLevel(player.rate)}',
                             style: TextStyle(fontSize: iconAndFontSize),
                           ),
                           if (player.groups.isNotEmpty)

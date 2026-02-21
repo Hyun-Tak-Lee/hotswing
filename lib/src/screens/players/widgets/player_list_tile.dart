@@ -25,7 +25,7 @@ class PlayerListTile extends StatelessWidget {
   }
 
   String _getSkillLevel(int rate) {
-    return rateToSkillLevel[rate] ?? '';
+    return rateToSkillLevel(rate);
   }
 
   Color _getRoleColor(String roleValue) {
