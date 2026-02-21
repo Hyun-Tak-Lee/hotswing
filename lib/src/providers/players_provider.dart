@@ -10,53 +10,32 @@ import 'package:hotswing/src/services/player_service.dart';
 import 'package:realm/realm.dart';
 
 class PlayersProvider with ChangeNotifier {
+  // ===========================================================================
+  // 1. Fields
+  // ===========================================================================
   final CourtAssignService _courtService = CourtAssignService();
   final PlayerService _playerService = PlayerService();
-
-  // final Random _random = Random();
 
   final Map<ObjectId, Player> _players = {};
   final List<List<Player?>> _assignedPlayers = [];
   final List<List<Player?>> _standbyPlayers = [];
   final List<Player> _unassignedPlayers = [];
 
+  // ===========================================================================
+  // 2. Constructor
+  // ===========================================================================
   PlayersProvider() {
     initialized();
-
     notifyListeners();
   }
 
+  // ===========================================================================
+  // 3. Initialization & Data Persistence
+  // ===========================================================================
   void initialized() async {
     try {
       await _loadInitialAssignedPlayersCount();
       await _loadInitialPlayers();
-
-      // final List<int> skillRates = skillLevelToRate.values.toList();
-      // for (int i = 1; i <= 32; i++) {
-      //   String name = 'user$i';
-      //   String role = _random.nextBool() ? "manager" : "user";
-      //   int rate = skillRates[_random.nextInt(skillRates.length)];
-      //   String gender = _random.nextBool() ? '남' : '여';
-      //   int played = 0;
-      //   int waited = 0;
-      //   int lated = 0;
-      //   final ObjectId newId = ObjectId();
-      //   Player newPlayer = Player(
-      //     newId,
-      //     name,
-      //     role,
-      //     rate,
-      //     gender,
-      //     played: played,
-      //     waited: waited,
-      //     lated: lated,
-      //     activate: true,
-      //     gamesPlayedWith: {},
-      //     groups: RealmList<ObjectId>([]),
-      //   );
-      //   _playerService.addPlayer(newPlayer);
-      //   addPlayerInCourt(newPlayer, []);
-      // }
       _saveLoadedPlayers();
     } finally {
       notifyListeners();
@@ -125,6 +104,12 @@ class PlayersProvider with ChangeNotifier {
     }
   }
 
+  Future<void> _loadInitialAssignedPlayersCount() async {
+    OptionsRepository optionsRepository = OptionsRepository.instance;
+    final int initialCount = optionsRepository.getOptions().numberOfSections;
+    updateAssignedPlayersListCount(initialCount);
+  }
+
   Future<void> _saveLoadedPlayers() async {
     final List<String> playerIdLists = _players.keys
         .map((key) => key.toString())
@@ -161,17 +146,38 @@ class PlayersProvider with ChangeNotifier {
     await SharedProvider().saveStringList("players", playerIdLists);
   }
 
-  Future<void> _loadInitialAssignedPlayersCount() async {
-    OptionsRepository optionsRepository = OptionsRepository.instance;
-
-    final int initialCount = optionsRepository.getOptions().numberOfSections;
-    updateAssignedPlayersListCount(initialCount);
-  }
-
+  // ===========================================================================
+  // 4. Getters
+  // ===========================================================================
   Map<ObjectId, Player> get players => Map.unmodifiable(_players);
+
+  List<Player> get unassignedPlayers => List.unmodifiable(_unassignedPlayers);
+
+  List<List<Player?>> get assignedPlayers =>
+      List.unmodifiable(_assignedPlayers);
+
+  List<List<Player?>> get standbyPlayers => List.unmodifiable(_standbyPlayers);
+
+  // ===========================================================================
+  // 5. Player CRUD & Search
+  // ===========================================================================
+  List<Player> getPlayers() {
+    var playerList = _players.values.toList();
+    playerList.sort((a, b) {
+      return a.name.compareTo(b.name);
+    });
+    return playerList;
+  }
 
   Player? getPlayerById(ObjectId id) {
     return _players[id];
+  }
+
+  List<Player> findPlayersByPrefix(String name, int count) {
+    RealmResults<Player> results = _playerService.findPlayersByPrefix(name);
+    int actualLimit = results.length < count ? results.length : count;
+    List<Player> limitedPlayers = results.take(actualLimit).toList();
+    return limitedPlayers;
   }
 
   void addPlayer({
@@ -207,25 +213,54 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void addPlayerInCourt(Player player, List<ObjectId> groups) {
-    if (!_players.containsKey(player.id)) {
-      _players[player.id] = player;
-    }
-    if (!unassignedPlayers.contains(player)) {
-      _unassignedPlayers.add(player);
-    }
-    if (player.groups.isNotEmpty) {
-      _playerService.removeGroupPlayers(_players, player.groups, player.id);
-    }
-    if (groups.isNotEmpty) {
-      _playerService.updateGroupPlayers(_players, groups, player.id);
-    }
-  }
-
   void loadPlayer(Player player, List<ObjectId> groups) {
     addPlayerInCourt(player, groups);
     _playerService.resetStats(player);
     _playerService.updateGroups(player, groups);
+
+    _saveLoadedPlayers();
+    notifyListeners();
+  }
+
+  void updatePlayer({
+    required ObjectId playerId,
+    required String newName,
+    required int newRate,
+    required String newGender,
+    required String newRole,
+    required int newPlayed,
+    required int newWaited,
+    required List<ObjectId> newGroups,
+  }) {
+    if (newName.length > 10) return;
+    if (!_players.containsKey(playerId)) return;
+    Player playerToUpdate = _players[playerId]!;
+
+    // 기존 그룹 플레이어들의 그룹 제거
+    if (playerToUpdate.groups.isNotEmpty) {
+      _playerService.removeGroupPlayers(
+        _players,
+        playerToUpdate.groups,
+        playerId,
+      );
+    }
+
+    _playerService.updatePlayer(
+      playerToUpdate,
+      newName,
+      newRole,
+      newRate,
+      newGender,
+      newPlayed,
+      newWaited,
+      playerToUpdate.lated,
+      newGroups,
+    );
+
+    // 자신 이외의 플레이어들도 그룹 생성
+    if (newGroups.isNotEmpty) {
+      _playerService.updateGroupPlayers(_players, newGroups, playerId);
+    }
 
     _saveLoadedPlayers();
     notifyListeners();
@@ -256,70 +291,6 @@ class PlayersProvider with ChangeNotifier {
     }
   }
 
-  void updatePlayer({
-    required ObjectId playerId,
-    required String newName,
-    required int newRate,
-    required String newGender,
-    required String newRole,
-    required int newPlayed,
-    required int newWaited,
-    required List<ObjectId> newGroups,
-  }) {
-    if (newName.length > 10) return;
-    if (!_players.containsKey(playerId)) return;
-    Player playerToUpdate = _players[playerId]!;
-
-    //기존 그룹 플레이어들의 그룹 제거
-    if (playerToUpdate.groups.isNotEmpty) {
-      _playerService.removeGroupPlayers(
-        _players,
-        playerToUpdate.groups,
-        playerId,
-      );
-    }
-
-    _playerService.updatePlayer(
-      playerToUpdate,
-      newName,
-      newRole,
-      newRate,
-      newGender,
-      newPlayed,
-      newWaited,
-      playerToUpdate.lated,
-      newGroups,
-    );
-
-    // 자신 이외의 플레이어들도 그룹 생성
-    if (newGroups.isNotEmpty) {
-      _playerService.updateGroupPlayers(_players, newGroups, playerId);
-    }
-
-    _saveLoadedPlayers();
-    notifyListeners();
-  }
-
-  void toggleIsActivate(Player player) {
-    _playerService.updateActivate(player, !player.activate);
-    _saveLoadedPlayers();
-    notifyListeners();
-  }
-
-  List<Player> findPlayersByPrefix(String name, int count) {
-    RealmResults<Player> results = _playerService.findPlayersByPrefix(name);
-    int actualLimit = results.length < count ? results.length : count;
-    List<Player> limitedPlayers = results.take(actualLimit).toList();
-    return limitedPlayers;
-  }
-
-  void resetPlayerStats() {
-    for (Player player in _players.values) {
-      _playerService.resetStats(player);
-    }
-    notifyListeners();
-  }
-
   void clearPlayers() {
     // 게스트 유저 삭제
     _players.clear();
@@ -330,13 +301,138 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<Player> getPlayers() {
-    var playerList = _players.values.toList();
-    playerList.sort((a, b) {
-      return a.name.compareTo(b.name);
-    });
+  // ===========================================================================
+  // 6. Player Stats & Status Modifiers
+  // ===========================================================================
+  void toggleIsActivate(Player player) {
+    _playerService.updateActivate(player, !player.activate);
+    _saveLoadedPlayers();
+    notifyListeners();
+  }
 
-    return playerList;
+  void resetPlayerStats() {
+    for (Player player in _players.values) {
+      _playerService.resetStats(player);
+    }
+    notifyListeners();
+  }
+
+  void incrementWaitedTimeForAllUnassignedPlayers() {
+    for (var player in _unassignedPlayers) {
+      _playerService.incrementWaited(player);
+    }
+    _saveLoadedPlayers();
+    notifyListeners();
+  }
+
+  // ===========================================================================
+  // 7. Court & List Assignments
+  // ===========================================================================
+  void updateAssignedPlayersListCount(int newCount) {
+    if (newCount < 0) {
+      return;
+    }
+    int currentCount = _assignedPlayers.length;
+    if (newCount < currentCount) {
+      for (int i = newCount; i < currentCount; i++) {
+        List<Player?> playersInList = _assignedPlayers[i];
+        for (Player? player in playersInList) {
+          if (player != null && !_unassignedPlayers.contains(player)) {
+            _unassignedPlayers.add(player);
+          }
+        }
+      }
+      _assignedPlayers.removeRange(newCount, currentCount);
+    } else if (newCount > currentCount) {
+      for (int i = 0; i < newCount - currentCount; i++) {
+        _assignedPlayers.add([null, null, null, null]);
+      }
+    }
+    notifyListeners();
+  }
+
+  void addPlayerInCourt(Player player, List<ObjectId> groups) {
+    if (!_players.containsKey(player.id)) {
+      _players[player.id] = player;
+    }
+    if (!unassignedPlayers.contains(player)) {
+      _unassignedPlayers.add(player);
+    }
+    if (player.groups.isNotEmpty) {
+      _playerService.removeGroupPlayers(_players, player.groups, player.id);
+    }
+    if (groups.isNotEmpty) {
+      _playerService.updateGroupPlayers(_players, groups, player.id);
+    }
+  }
+
+  void addUnassignedPlayer(Player? player) {
+    if (player == null) return;
+    if (!_unassignedPlayers.contains(player)) {
+      _unassignedPlayers.add(player);
+      _saveLoadedPlayers();
+      notifyListeners();
+    }
+  }
+
+  void removeUnassignedPlayer(Player player) {
+    if (_unassignedPlayers.contains(player)) {
+      _unassignedPlayers.remove(player);
+      _saveLoadedPlayers();
+      notifyListeners();
+    }
+  }
+
+  void addAssignedPlayer(Player? player, int courtIndex, int playerIndex) {
+    if (player == null) return;
+    if (courtIndex < 0 || courtIndex >= _assignedPlayers.length) return;
+    if (playerIndex < 0 || playerIndex >= _assignedPlayers[courtIndex].length) {
+      return;
+    }
+    _assignedPlayers[courtIndex][playerIndex] = player;
+    _saveLoadedPlayers();
+    notifyListeners();
+  }
+
+  Player? removeAssignedPlayer(int courtIndex, int playerIndex) {
+    if (courtIndex < 0 || courtIndex >= _assignedPlayers.length) return null;
+    if (playerIndex < 0 || playerIndex >= _assignedPlayers[courtIndex].length) {
+      return null;
+    }
+    Player? removed = _assignedPlayers[courtIndex][playerIndex];
+    _assignedPlayers[courtIndex][playerIndex] = null;
+
+    if (removed != null) {
+      _saveLoadedPlayers();
+      notifyListeners();
+    }
+    return removed;
+  }
+
+  void addStandbyPlayer(Player? player, int courtIndex, int playerIndex) {
+    if (player == null) return;
+    if (courtIndex < 0 || courtIndex >= _standbyPlayers.length) return;
+    if (playerIndex < 0 || playerIndex >= _standbyPlayers[courtIndex].length) {
+      return;
+    }
+    _standbyPlayers[courtIndex][playerIndex] = player;
+    _saveLoadedPlayers();
+    notifyListeners();
+  }
+
+  Player? removeStandbyPlayer(int courtIndex, int playerIndex) {
+    if (courtIndex < 0 || courtIndex >= _standbyPlayers.length) return null;
+    if (playerIndex < 0 || playerIndex >= _standbyPlayers[courtIndex].length) {
+      return null;
+    }
+    Player? removed = _standbyPlayers[courtIndex][playerIndex];
+    _standbyPlayers[courtIndex][playerIndex] = null;
+
+    if (removed != null) {
+      _saveLoadedPlayers();
+      notifyListeners();
+    }
+    return removed;
   }
 
   void addStandByPlayers() {
@@ -379,109 +475,6 @@ class PlayersProvider with ChangeNotifier {
     }
   }
 
-  void updateAssignedPlayersListCount(int newCount) {
-    if (newCount < 0) {
-      return;
-    }
-    int currentCount = _assignedPlayers.length;
-    if (newCount < currentCount) {
-      for (int i = newCount; i < currentCount; i++) {
-        List<Player?> playersInList = _assignedPlayers[i];
-        for (Player? player in playersInList) {
-          if (player != null && !_unassignedPlayers.contains(player)) {
-            _unassignedPlayers.add(player);
-          }
-        }
-      }
-      _assignedPlayers.removeRange(newCount, currentCount);
-    } else if (newCount > currentCount) {
-      for (int i = 0; i < newCount - currentCount; i++) {
-        _assignedPlayers.add([null, null, null, null]);
-      }
-    }
-    notifyListeners();
-  }
-
-  void incrementWaitedTimeForAllUnassignedPlayers() {
-    for (var player in _unassignedPlayers) {
-      _playerService.incrementWaited(player);
-    }
-    _saveLoadedPlayers();
-    notifyListeners();
-  }
-
-  // 1. 대기 명단 (Unassigned)
-  void addUnassignedPlayer(Player? player) {
-    if (player == null) return;
-    if (!_unassignedPlayers.contains(player)) {
-      _unassignedPlayers.add(player);
-      _saveLoadedPlayers();
-      notifyListeners();
-    }
-  }
-
-  void removeUnassignedPlayer(Player player) {
-    if (_unassignedPlayers.contains(player)) {
-      _unassignedPlayers.remove(player);
-      _saveLoadedPlayers();
-      notifyListeners();
-    }
-  }
-
-  // 2. 경기 코트 (Assigned Court)
-  void addAssignedPlayer(Player? player, int courtIndex, int playerIndex) {
-    if (player == null) return;
-    if (courtIndex < 0 || courtIndex >= _assignedPlayers.length) return;
-    if (playerIndex < 0 || playerIndex >= _assignedPlayers[courtIndex].length)
-      return;
-
-    _assignedPlayers[courtIndex][playerIndex] = player;
-    _saveLoadedPlayers();
-    notifyListeners();
-  }
-
-  Player? removeAssignedPlayer(int courtIndex, int playerIndex) {
-    if (courtIndex < 0 || courtIndex >= _assignedPlayers.length) return null;
-    if (playerIndex < 0 || playerIndex >= _assignedPlayers[courtIndex].length)
-      return null;
-
-    Player? removed = _assignedPlayers[courtIndex][playerIndex];
-    _assignedPlayers[courtIndex][playerIndex] = null;
-
-    if (removed != null) {
-      _saveLoadedPlayers();
-      notifyListeners();
-    }
-    return removed;
-  }
-
-  // 3. 대기 코트 (Standby Court)
-  void addStandbyPlayer(Player? player, int courtIndex, int playerIndex) {
-    if (player == null) return;
-    if (courtIndex < 0 || courtIndex >= _standbyPlayers.length) return;
-    if (playerIndex < 0 || playerIndex >= _standbyPlayers[courtIndex].length)
-      return;
-
-    _standbyPlayers[courtIndex][playerIndex] = player;
-    _saveLoadedPlayers();
-    notifyListeners();
-  }
-
-  Player? removeStandbyPlayer(int courtIndex, int playerIndex) {
-    if (courtIndex < 0 || courtIndex >= _standbyPlayers.length) return null;
-    if (playerIndex < 0 || playerIndex >= _standbyPlayers[courtIndex].length)
-      return null;
-
-    Player? removed = _standbyPlayers[courtIndex][playerIndex];
-    _standbyPlayers[courtIndex][playerIndex] = null;
-
-    if (removed != null) {
-      _saveLoadedPlayers();
-      notifyListeners();
-    }
-    return removed;
-  }
-
   void movePlayersFromCourtToUnassigned({
     required int sectionIndex,
     required String targetCourtKind,
@@ -514,7 +507,6 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 자동 매칭
   void assignPlayersToCourt(
     int sectionIndex, {
     required double skillWeight,
@@ -559,12 +551,4 @@ class PlayersProvider with ChangeNotifier {
     _saveLoadedPlayers();
     notifyListeners();
   }
-
-  List<Player> get unassignedPlayers => List.unmodifiable(_unassignedPlayers);
-
-  // 코트에 할당된 플레이어들의 수정 불가능한 목록 (리스트의 리스트 형태)을 반환합니다.
-  List<List<Player?>> get assignedPlayers =>
-      List.unmodifiable(_assignedPlayers);
-
-  List<List<Player?>> get standbyPlayers => List.unmodifiable(_standbyPlayers);
 }

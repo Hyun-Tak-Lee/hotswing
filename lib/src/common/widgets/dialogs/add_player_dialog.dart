@@ -378,11 +378,13 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   }
 
   /// 레이팅 및 급수를 주어진 [newRate]로 업데이트합니다.
+  /// 값은 0에서 [_maxRate] 사이로 제한됩니다.
   void _updateRateAndSkillLevel(int newRate) {
+    final clampedRate = newRate.clamp(0, _maxRate);
     setState(() {
-      _rate = newRate;
-      _rateController.text = newRate.toString();
-      _selectedSkillLevel = rateToSkillLevel(newRate);
+      _rate = clampedRate;
+      _rateController.text = clampedRate.toString();
+      _selectedSkillLevel = rateToSkillLevel(clampedRate);
     });
   }
 
@@ -483,6 +485,12 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   _rateController.selection = TextSelection.fromPosition(
                     TextPosition(offset: _rateController.text.length),
                   );
+                } else if (parsed < 0) {
+                  parsed = 0;
+                  _rateController.text = '0';
+                  _rateController.selection = TextSelection.fromPosition(
+                    TextPosition(offset: _rateController.text.length),
+                  );
                 }
                 setState(() {
                   _rate = parsed;
@@ -496,7 +504,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
             },
             onSaved: (value) {
               int parsed = int.tryParse(value ?? '') ?? (_rate ?? 0);
-              _rate = parsed > _maxRate ? _maxRate : parsed;
+              _rate = parsed.clamp(0, _maxRate);
             },
           ),
         ),
