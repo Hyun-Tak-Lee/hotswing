@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
+import 'package:hotswing/src/common/widgets/tags/player_info_tag.dart';
+import 'package:hotswing/src/common/widgets/tags/player_skill_rate.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 
 class PlayerListTile extends StatelessWidget {
@@ -80,31 +82,19 @@ class PlayerListTile extends StatelessWidget {
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    _buildInfoTag(
-                      _getRoleLabel(player.role),
-                      _getRoleColor(player.role),
+                    PlayerInfoTag(
+                      text: _getRoleLabel(player.role),
+                      color: _getRoleColor(player.role),
                     ),
                     const SizedBox(width: 8),
-                    _buildInfoTag(
-                      _getGenderLabel(player.gender),
-                      Colors.indigoAccent,
+                    PlayerInfoTag(
+                      text: _getGenderLabel(player.gender),
+                      color: Colors.indigoAccent,
                     ),
                     const SizedBox(width: 16),
-                    Text(
-                      '급수: $skillLevel',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: baseFontSize,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Text(
-                      'Rate: ${player.rate}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: baseFontSize,
-                        color: Colors.black87,
-                      ),
+                    PlayerSkillRateWidget(
+                      skillLevel: skillLevel,
+                      rate: player.rate,
                     ),
                     if (onDelete != null) ...[
                       const SizedBox(width: 16),
@@ -123,19 +113,11 @@ class PlayerListTile extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(
-                          '급수: $skillLevel',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: baseFontSize - 2,
-                          ),
-                        ),
-                        Text(
-                          'Rate: ${player.rate}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: baseFontSize - 4,
-                            color: Colors.black54,
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: PlayerSkillRateWidget(
+                            skillLevel: skillLevel,
+                            rate: player.rate,
                           ),
                         ),
                       ],
@@ -151,32 +133,6 @@ class PlayerListTile extends StatelessWidget {
                       ),
                   ],
                 ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoTag(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.2),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );

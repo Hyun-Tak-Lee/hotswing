@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
@@ -5,6 +6,7 @@ import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:hotswing/src/common/widgets/dialogs/game_played_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
+import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 
 // 드래그되는 플레이어의 데이터와 원래 소속 섹션 정보를 전달하기 위한 클래스
 class PlayerDragData {
@@ -53,16 +55,16 @@ class DraggablePlayerItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final playersProvider = Provider.of<PlayersProvider>(context);
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobileSize = screenWidth < 600;
+    final isTablet = ResponsiveUtils.isTablet(context);
 
-    final double nameFontSize = isMobileSize ? 20.0 : 32.0;
-    final double skillFontSize = isMobileSize ? 16.0 : 28.0;
-    final double detailFontSize = isMobileSize ? 16.0 : 28.0;
+    // 태블릿(높이 160.0)에 다 들어가도록 글자 크기 조정
+    final double nameFontSize = isTablet ? 25.0 : 20.0;
+    final double skillFontSize = isTablet ? 18.0 : 16.0;
+    final double detailFontSize = 16.0;
 
     String skillLevelDisplay = _getSkillLevelString(player.rate);
-    final onPrimaryContainer = Theme.of(context).colorScheme.onPrimaryContainer;
-    final onPrimary = Theme.of(context).colorScheme.onPrimary;
+    final textColor = const Color(0xFF1E293B); // Slate 800 (세련된 진회색)
+    final detailTextColor = const Color(0xFF64748B); // Slate 500
 
     // 순수 UI 표현을 위한 위젯
     Widget playerItemDisplay = Container(
@@ -76,46 +78,106 @@ class DraggablePlayerItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            '${player.name} (${player.gender})',
-            style: TextStyle(
-              fontSize: nameFontSize,
-              fontWeight: FontWeight.bold,
-              color: onPrimaryContainer,
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 2.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (player.role == "manager") ...[
+                    Icon(
+                      Icons.star_rounded,
+                      size: isTablet ? 28.0 : 20.0,
+                      color: const Color(0xFFFFB74D), // 별색상: 주황/금색
+                    ),
+                    const SizedBox(width: 4.0),
+                  ],
+                  Flexible(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            player.name,
+                            style: TextStyle(
+                              fontSize: nameFontSize,
+                              fontWeight: FontWeight.bold,
+                              color: textColor,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 10.0),
+                        Text(
+                          player.gender,
+                          style: TextStyle(
+                            fontSize: nameFontSize - 2.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blueAccent.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
           SizedBox(height: 2.0),
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                '급수: $skillLevelDisplay',
-                style: TextStyle(
-                  fontSize: skillFontSize,
-                  color: onPrimaryContainer.withAlpha(230),
-                ),
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    skillLevelDisplay,
+                    style: TextStyle(
+                      fontSize: skillFontSize + 4,
+                      color: Colors.blueAccent.shade700,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Container(
+                    height: 12,
+                    width: 1.5,
+                    color: Colors.grey.shade400,
+                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  Text(
+                    'Rate ',
+                    style: TextStyle(
+                      fontSize: detailFontSize - 2,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    '${player.rate}',
+                    style: TextStyle(
+                      fontSize: detailFontSize,
+                      color: detailTextColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 4.0),
+              SizedBox(height: isTablet ? 2.0 : 4.0),
               Text(
-                '플레이: ${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}',
+                '플레이: ${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}  |  대기: ${player.waited}',
                 style: TextStyle(
                   fontSize: detailFontSize,
-                  color: onPrimaryContainer.withAlpha(204),
-                ),
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 2.0),
-              Text(
-                '대기: ${player.waited}',
-                style: TextStyle(
-                  fontSize: detailFontSize,
-                  color: onPrimaryContainer.withAlpha(204),
+                  color: detailTextColor,
                 ),
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
@@ -190,22 +252,63 @@ class DraggablePlayerItem extends StatelessWidget {
               horizontal: 12.0,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xAA007FFF),
-              borderRadius: BorderRadius.circular(8.0),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(30),
+                  blurRadius: 15.0,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  '${player.name} (${player.gender})',
-                  style: TextStyle(
-                    fontSize: nameFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: onPrimary,
-                    decoration: TextDecoration.none,
-                  ),
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (player.role == "manager") ...[
+                      Icon(
+                        Icons.star_rounded,
+                        size: isTablet ? 18.0 : 14.0,
+                        color: const Color(0xFFFFB74D),
+                      ),
+                      const SizedBox(width: 4.0),
+                    ],
+                    Flexible(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              player.name,
+                              style: TextStyle(
+                                fontSize: nameFontSize,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF1E293B),
+                                decoration: TextDecoration.none,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 10.0),
+                          Text(
+                            player.gender,
+                            style: TextStyle(
+                              fontSize: nameFontSize - 2.0,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blueAccent.shade700,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -272,9 +375,9 @@ class PlayerDropZone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobileSize = screenWidth < 600;
-    final double currentHeight = isMobileSize ? 140.0 : 240.0;
+    final isTablet = ResponsiveUtils.isTablet(context);
+    // 태블릿 화면에서 코트를 더 많이 볼 수 있도록 세로 길이 축소 (기존 240 -> 160)
+    final double currentHeight = isTablet ? 160.0 : 140.0;
 
     return DragTarget<PlayerDragData>(
       onWillAcceptWithDetails: (details) {
@@ -296,25 +399,33 @@ class PlayerDropZone extends StatelessWidget {
         bool isHovering = candidateData.isNotEmpty && isDropEnabled;
 
         Color determinedDefaultBgColor = player == null
-            ? const Color(0x66FFFFFF)
+            ? const Color(0xFFF8FAFC) // 빈 영역은 부드러운 연회색
             : !player!.activate
-            ? const Color(0x55333333)
-            : player!.role == "manager"
-            ? const Color(0x77FFF700)
-            : const Color(0x66FFFFFF);
-        Color hoveringBgColor = const Color(0x88F0FFFF);
+            ? const Color(0xFFCBD5E1).withAlpha(120) // 비활성은 눈에 띄게 더 투명하고 흐리게
+            : const Color(0xFFFFFFFF); // 활성 플레이어는 깔끔한 흰색
+        Color hoveringBgColor = player == null
+            ? const Color(0xFFE2E8F0)
+            : const Color(0xFFF8FAFC);
+        Color borderColor = player == null
+            ? const Color(0xFFE2E8F0)
+            : Colors.transparent;
 
         return Container(
           height: currentHeight,
-          padding: const EdgeInsets.all(0.0),
-          margin: const EdgeInsets.all(2.0),
+          margin: EdgeInsets.all(isTablet ? 2.0 : 4.0),
           decoration: BoxDecoration(
             color: isHovering ? hoveringBgColor : determinedDefaultBgColor,
-            borderRadius: BorderRadius.circular(12.0),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withAlpha(64),
-              width: 1.0,
-            ),
+            borderRadius: BorderRadius.circular(16.0),
+            border: Border.all(color: borderColor, width: 1.5),
+            boxShadow: player != null && player!.activate
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(12),
+                      blurRadius: 12.0,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [], // 빈 영역이나 비활성은 그림자 없음
           ),
           child: Center(
             child: player == null
@@ -325,17 +436,22 @@ class PlayerDropZone extends StatelessWidget {
                       fontSize: 24.0,
                       color: Theme.of(
                         context,
-                      ).colorScheme.onSurfaceVariant.withAlpha(179),
+                      ).colorScheme.onSurfaceVariant.withAlpha(100),
                     ),
                   )
-                : DraggablePlayerItem(
-                    player: player!,
-                    sourceSectionId: sectionId,
-                    sectionKind: sectionKind,
-                    sectionIndex: sectionIndex,
-                    subIndex: subIndex,
-                    onDragStarted: onDragStartedFromZone,
-                    onDragEnded: onDragEndedFromZone,
+                : Opacity(
+                    opacity: player!.activate
+                        ? 1.0
+                        : 0.4, // 비활성 시 내용물도 투명하게 흐리게 처리
+                    child: DraggablePlayerItem(
+                      player: player!,
+                      sourceSectionId: sectionId,
+                      sectionKind: sectionKind,
+                      sectionIndex: sectionIndex,
+                      subIndex: subIndex,
+                      onDragStarted: onDragStartedFromZone,
+                      onDragEnded: onDragEndedFromZone,
+                    ),
                   ),
           ),
         );

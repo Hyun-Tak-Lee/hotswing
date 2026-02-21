@@ -77,42 +77,63 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
               child: Column(
                 children: [
                   _buildHeader(context, isTablet, playerList.length),
+                  SizedBox(height: isTablet ? 8.0 : 4.0),
                   Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: Column(
-                        children: playerList.asMap().entries.map<Widget>((
-                          entry,
-                        ) {
-                          int playerIndex = entry.key;
-                          Player player = entry.value;
-                          final String playerSectionId =
-                              'unassigned_$playerIndex';
-                          return PlayerDropZone(
-                            player: player,
-                            sectionId: playerSectionId,
-                            sectionKind: PlayerSectionKind.unassigned.value,
-                            sectionIndex: -1,
-                            subIndex: playerIndex,
-                            onPlayerDropped:
-                                (
-                                  data,
-                                  droppedOnPlayer,
-                                  targetId,
-                                  sectionKind,
-                                  targetSectionIdx,
-                                  targetSubIdx,
-                                ) => widget.onPlayerDrop(
-                                  context,
-                                  data,
-                                  droppedOnPlayer,
-                                  targetId,
-                                  sectionKind,
-                                  targetSectionIdx,
-                                  targetSubIdx,
-                                ),
-                          );
-                        }).toList(),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFFF8FAFC), // 눈이 가장 편안한 Slate 50
+                            Color(0xFFF1F5F9), // Slate 100
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(8),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: Column(
+                          children: playerList.asMap().entries.map<Widget>((
+                            entry,
+                          ) {
+                            int playerIndex = entry.key;
+                            Player player = entry.value;
+                            final String playerSectionId =
+                                'unassigned_$playerIndex';
+                            return PlayerDropZone(
+                              player: player,
+                              sectionId: playerSectionId,
+                              sectionKind: PlayerSectionKind.unassigned.value,
+                              sectionIndex: -1,
+                              subIndex: playerIndex,
+                              onPlayerDropped:
+                                  (
+                                    data,
+                                    droppedOnPlayer,
+                                    targetId,
+                                    sectionKind,
+                                    targetSectionIdx,
+                                    targetSubIdx,
+                                  ) => widget.onPlayerDrop(
+                                    context,
+                                    data,
+                                    droppedOnPlayer,
+                                    targetId,
+                                    sectionKind,
+                                    targetSectionIdx,
+                                    targetSubIdx,
+                                  ),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                   ),
@@ -174,7 +195,13 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

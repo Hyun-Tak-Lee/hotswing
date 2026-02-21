@@ -61,9 +61,9 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       isTablet: isTablet,
                       width: isTablet ? 50.0 : 40.0,
                       height: isTablet ? 45.0 : 30.0,
-                      colors: [
-                        const Color(0xFFEF9A9A),
-                        const Color(0xFFE57373),
+                      colors: const [
+                        Color(0xFFFCA5A5), // 더 세련된 부드러운 레드
+                        Color(0xFFF87171),
                       ],
                       onTap: () {
                         playersProvider.movePlayersFromCourtToUnassigned(
@@ -84,9 +84,9 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       isTablet: isTablet,
                       width: isTablet ? 120.0 : 80.0,
                       height: isTablet ? 45.0 : 30.0,
-                      colors: [
-                        const Color(0xFFA5D6A7),
-                        const Color(0xFF81C784),
+                      colors: const [
+                        Color(0xFF86EFAC), // 세련된 파스텔 그린
+                        Color(0xFF4ADE80),
                       ],
                       onTap: () {
                         playersProvider.assignPlayersToCourt(
@@ -114,9 +114,9 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       isTablet: isTablet,
                       width: isTablet ? 50.0 : 40.0,
                       height: isTablet ? 45.0 : 30.0,
-                      colors: [
-                        const Color(0xFFFFB74D),
-                        const Color(0xFFE57373),
+                      colors: const [
+                        Color(0xFFFDBA74), // 편안한 오렌지
+                        Color(0xFFFB923C),
                       ],
                       onTap: () =>
                           playersProvider.removeStandByPlayers(sectionIndex),
@@ -133,16 +133,23 @@ class StandbyCourtSectionsView extends StatelessWidget {
                 margin: const EdgeInsets.all(5.0),
                 height: isTablet ? 150.0 : 100.0,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color(0xFFF3E5F5).withAlpha(150), // 라벤더 미스트 (연보라)
-                      const Color(0xFFE1F5FE).withAlpha(150), // 연하늘
+                      Color(0xFFFEF3C7), // 파스텔 앰버 (대기존의 따뜻한 느낌)
+                      Color(0xFFFDE68A),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(20.0),
                   border: Border.all(color: Colors.white, width: 2.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(10),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Material(
                   color: Colors.transparent,
@@ -153,7 +160,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       child: Icon(
                         Icons.add,
                         size: isTablet ? 60.0 : 40.0,
-                        color: Colors.white,
+                        color: const Color(0xFFD97706), // 어두운 앰버로 눈 편안하게
                       ),
                     ),
                   ),
@@ -187,9 +194,9 @@ class StandbyCourtSectionsView extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: colors.last.withAlpha(100), // 그림자는 끝 색상에 기반해 부드럽게
-            blurRadius: 6,
-            offset: const Offset(0, 3),
+            color: colors.last.withAlpha(80), // 그림자를 조금 더 연하게
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
         borderRadius: BorderRadius.circular(15.0),

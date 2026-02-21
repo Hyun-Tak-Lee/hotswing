@@ -7,8 +7,12 @@ import 'dart:math';
 
 import '../../../../providers/players_provider.dart';
 import '../../../../common/utils/game/skill_utils.dart';
+import '../../../../common/widgets/tags/player_info_tag.dart';
+import '../../../../common/widgets/tags/player_skill_rate.dart';
 import '../../../../common/widgets/dialogs/add_player_dialog.dart';
 import '../../../../common/widgets/dialogs/confirmation_dialog.dart';
+import '../../../../common/utils/ui/responsive_utils.dart';
+import '../../../../enums/player_feature.dart';
 
 class LeftSideMenu extends StatefulWidget {
   const LeftSideMenu({super.key, required this.isMobileSize});
@@ -23,6 +27,27 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  String _getRoleLabel(String roleValue) {
+    try {
+      return PlayerRole.values.firstWhere((e) => e.value == roleValue).label;
+    } catch (_) {
+      return roleValue;
+    }
+  }
+
+  String _getGenderLabel(String genderValue) {
+    if (genderValue == '남') return '남성';
+    if (genderValue == '여') return '여성';
+    return genderValue;
+  }
+
+  Color _getRoleColor(String roleValue) {
+    if (roleValue == 'manager') return Colors.orange;
+    if (roleValue == 'user') return Colors.green;
+    if (roleValue == 'guest') return Colors.grey;
+    return Colors.black;
   }
 
   Future<void> _showAddPlayerDialog(
@@ -109,7 +134,12 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
   Widget build(BuildContext context) {
     final playersProvider = Provider.of<PlayersProvider>(context);
     final players = playersProvider.getPlayers();
-    final iconAndFontSize = widget.isMobileSize ? 24.0 : 40.0;
+
+    final isTablet = ResponsiveUtils.isTablet(context);
+    final textScale = ResponsiveUtils.getTextScale(context);
+    final iconAndFontSize = isTablet ? 32.0 : 24.0;
+    final baseFontSize = (isTablet ? 18.0 : 14.0) * textScale;
+    final titleFontSize = baseFontSize + 2;
 
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.75,
@@ -117,11 +147,14 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
         padding: EdgeInsets.zero,
         children: <Widget>[
           SizedBox(
-            height: widget.isMobileSize ? 120 : 180,
+            height: isTablet ? 180 : 120,
             child: DrawerHeader(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFFA0E9FF), Color(0xFFFFFFFF)],
+                  colors: [
+                    Color(0xFFF3E5F5), // 라벤더 미스트 (연보라)
+                    Color(0xFFE1F5FE), // 연하늘
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -170,13 +203,27 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           ),
           ...players.map(
             (player) => Container(
-              color: player.activate == false
-                  ? const Color(0x55333333)
-                  : player.role == "manager"
-                  ? const Color(0x55FFF700)
-                  : player.role == "user"
-                  ? const Color(0x3300BFFF)
-                  : null,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 4.0,
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: player.activate == false
+                      ? [const Color(0x55333333), const Color(0x55333333)]
+                      : [Colors.blue.shade50, Colors.purple.shade50],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16.0,
@@ -190,12 +237,37 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${player.name} / ${player.gender} / ${rateToSkillLevel(player.rate)}',
-                            style: TextStyle(fontSize: iconAndFontSize),
+                            player.name,
+                            style: TextStyle(
+                              fontSize: titleFontSize,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              PlayerInfoTag(
+                                text: _getRoleLabel(player.role),
+                                color: _getRoleColor(player.role),
+                              ),
+                              PlayerInfoTag(
+                                text: _getGenderLabel(player.gender),
+                                color: Colors.indigoAccent,
+                              ),
+                              PlayerSkillRateWidget(
+                                skillLevel: rateToSkillLevel(player.rate),
+                                rate: player.rate,
+                              ),
+                            ],
                           ),
                           if (player.groups.isNotEmpty)
                             Padding(
-                              padding: const EdgeInsets.only(top: 4.0),
+                              padding: const EdgeInsets.only(top: 6.0),
                               child: Text(
                                 player.groups
                                     .map(
@@ -204,7 +276,8 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                                     .where((name) => name != null)
                                     .join(' , '),
                                 style: TextStyle(
-                                  fontSize: iconAndFontSize * 0.6,
+                                  fontSize: baseFontSize * 0.8,
+                                  color: Colors.black54,
                                 ),
                               ),
                             ),

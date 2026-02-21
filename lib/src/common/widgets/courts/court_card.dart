@@ -34,41 +34,33 @@ class CourtCard extends StatelessWidget {
     required this.onCourtPlayerDragEnded,
   });
 
-  String _getGamesPlayedWith(List<Player?> list, int index1, int index2) {
-    final maxIndex = index1 > index2 ? index1 : index2;
-    if (list.length <= maxIndex) return '0';
-
-    final player1 = list[index1];
-    final player2 = list[index2];
-    if (player1 == null || player2 == null) return '0';
-
-    final gamesCount = player1.gamesPlayedWith[player2.id.hexString];
-    return gamesCount?.toString() ?? '0';
-  }
-
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtils.isTablet(context);
-    final Color playedWithColor = Color(0xFF89A7DA);
-    final Color playedWithTextColor = Color(0xFFFFEB3B);
 
     return Container(
-      margin: const EdgeInsets.all(5.0),
-      padding: const EdgeInsets.all(5.0),
+      margin: EdgeInsets.symmetric(
+        vertical: isTablet ? 3.0 : 5.0,
+        horizontal: 5.0,
+      ),
+      padding: EdgeInsets.symmetric(
+        vertical: isTablet ? 3.0 : 5.0,
+        horizontal: 5.0,
+      ),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFFF3E5F5), // 라벤더 미스트 (연보라)
-            Color(0xFFE1F5FE), // 연하늘
+            Color(0xFFECFDF5), // 파스텔 에메랄드 (눈이 편안한 톤)
+            Color(0xFFD1FAE5),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(20),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withAlpha(12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
         borderRadius: BorderRadius.circular(20.0),
@@ -85,6 +77,7 @@ class CourtCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: isTablet ? 32.0 : 20.0,
                   fontWeight: FontWeight.bold,
+                  color: const Color(0xFF065F46), // 진한 에메랄드 바탕 텍스트
                 ),
               ),
               SizedBox(width: isTablet ? 32.0 : 16.0),
@@ -92,83 +85,23 @@ class CourtCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4.0),
-          // 코트 내부: 4개의 PlayerDropZone + 6개의 indicator
-          SizedBox(
-            height: isTablet ? 510.0 : 310.0,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // PlayerDropZone 4개
-                Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(child: _buildDropZone(context, 0)),
-                        Expanded(child: _buildDropZone(context, 1)),
-                      ],
-                    ),
-                    SizedBox(height: isTablet ? 10.0 : 10.0),
-                    SizedBox(height: isTablet ? 10.0 : 10.0),
-                    Row(
-                      children: [
-                        Expanded(child: _buildDropZone(context, 2)),
-                        Expanded(child: _buildDropZone(context, 3)),
-                      ],
-                    ),
-                  ],
-                ),
-                // Indicator: 1-2 (상단 중앙)
-                _buildIndicator(
-                  isTablet: isTablet,
-                  alignment: FractionalOffset(0.5, 0.20),
-                  text: _getGamesPlayedWith(players, 0, 1),
-                  color: playedWithColor,
-                  textColor: playedWithTextColor,
-                ),
-                // Indicator: 3-4 (하단 중앙)
-                _buildIndicator(
-                  isTablet: isTablet,
-                  alignment: FractionalOffset(0.5, 0.80),
-                  text: _getGamesPlayedWith(players, 2, 3),
-                  color: playedWithColor,
-                  textColor: playedWithTextColor,
-                ),
-                // Indicator: 1-3 (좌측)
-                _buildIndicator(
-                  isTablet: isTablet,
-                  alignment: FractionalOffset(0.05, 0.5),
-                  text: _getGamesPlayedWith(players, 0, 2),
-                  color: playedWithColor,
-                  textColor: playedWithTextColor,
-                ),
-                // Indicator: 2-4 (우측)
-                _buildIndicator(
-                  isTablet: isTablet,
-                  alignment: FractionalOffset(0.95, 0.5),
-                  text: _getGamesPlayedWith(players, 1, 3),
-                  color: playedWithColor,
-                  textColor: playedWithTextColor,
-                ),
-                // Indicator: 1⇄4 (좌측 중앙)
-                _buildIndicator(
-                  isTablet: isTablet,
-                  alignment: FractionalOffset(isTablet ? 0.35 : 0.25, 0.5),
-                  text: '1⇄4 ${_getGamesPlayedWith(players, 0, 3)}',
-                  color: playedWithColor,
-                  textColor: playedWithTextColor,
-                  useStack: true,
-                ),
-                // Indicator: 2⇄3 (우측 중앙)
-                _buildIndicator(
-                  isTablet: isTablet,
-                  alignment: FractionalOffset(isTablet ? 0.65 : 0.75, 0.5),
-                  text: '2⇄3 ${_getGamesPlayedWith(players, 1, 2)}',
-                  color: playedWithColor,
-                  textColor: playedWithTextColor,
-                  useStack: true,
-                ),
-              ],
-            ),
+          // 코트 내부: 4개의 PlayerDropZone
+          Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(child: _buildDropZone(context, 0)),
+                  Expanded(child: _buildDropZone(context, 1)),
+                ],
+              ),
+              SizedBox(height: isTablet ? 4.0 : 4.0),
+              Row(
+                children: [
+                  Expanded(child: _buildDropZone(context, 2)),
+                  Expanded(child: _buildDropZone(context, 3)),
+                ],
+              ),
+            ],
           ),
         ],
       ),
@@ -201,37 +134,6 @@ class CourtCard extends StatelessWidget {
           ),
       onDragStartedFromZone: onCourtPlayerDragStarted,
       onDragEndedFromZone: onCourtPlayerDragEnded,
-    );
-  }
-
-  Widget _buildIndicator({
-    required bool isTablet,
-    required AlignmentGeometry alignment,
-    required String text,
-    required Color color,
-    required Color textColor,
-    bool useStack = false,
-  }) {
-    final content = Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isTablet ? 15.0 : 5.0,
-        vertical: isTablet ? 5.0 : 3.0,
-      ),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(16.0),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: isTablet ? 28.0 : 16.0, color: textColor),
-      ),
-    );
-
-    return Align(
-      alignment: alignment,
-      child: useStack
-          ? Stack(alignment: Alignment.center, children: [content])
-          : content,
     );
   }
 }
