@@ -5,6 +5,44 @@ import 'package:hotswing/src/models/players/player.dart';
 class CourtAssignService {
   final Random _random = Random();
 
+  List<Player> getRecommendedPlayersForCourt({
+    required List<Player> unassignedPlayers,
+    required List<Player> currentPlayersOnCourt,
+    required double skillWeight,
+    required double genderWeight,
+    required double waitedWeight,
+    required double playedWeight,
+    required double playedWithWeight,
+  }) {
+    List<Player> recommendedPlayers = [];
+    List<Player> tempUnassigned = List.from(unassignedPlayers);
+    List<Player> tempCourtPlayers = List.from(currentPlayersOnCourt);
+
+    int neededPlayers = 4 - currentPlayersOnCourt.length;
+
+    for (int i = 0; i < neededPlayers; i++) {
+      if (tempUnassigned.isEmpty) break;
+
+      Player? playerToAssign = findBestPlayerForCourt(
+        unassignedPlayers: tempUnassigned,
+        currentPlayersOnCourt: tempCourtPlayers,
+        skillWeight: skillWeight,
+        genderWeight: genderWeight,
+        waitedWeight: waitedWeight,
+        playedWeight: playedWeight,
+        playedWithWeight: playedWithWeight,
+      );
+
+      if (playerToAssign != null) {
+        recommendedPlayers.add(playerToAssign);
+        tempCourtPlayers.add(playerToAssign);
+        tempUnassigned.remove(playerToAssign);
+      }
+    }
+
+    return recommendedPlayers;
+  }
+
   Player? findBestPlayerForCourt({
     required List<Player> unassignedPlayers,
     required List<Player> currentPlayersOnCourt,

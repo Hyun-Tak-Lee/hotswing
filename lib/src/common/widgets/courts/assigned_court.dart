@@ -4,7 +4,6 @@ import 'package:hotswing/src/common/widgets/courts/court_card.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:provider/provider.dart';
-import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 
@@ -33,7 +32,6 @@ class CourtSectionsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtils.isTablet(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
-    final optionsProvider = Provider.of<OptionsProvider>(context);
     final sectionData = playersProvider.assignedPlayers;
 
     return Center(
@@ -87,13 +85,8 @@ class CourtSectionsView extends StatelessWidget {
                         const Color(0xFF81C784),
                       ],
                       onTap: () {
-                        playersProvider.assignPlayersToCourt(
+                        playersProvider.assignNextPlayers(
                           sectionIndex,
-                          skillWeight: optionsProvider.skillWeight,
-                          genderWeight: optionsProvider.genderWeight,
-                          waitedWeight: optionsProvider.waitedWeight,
-                          playedWeight: optionsProvider.playedWeight,
-                          playedWithWeight: optionsProvider.playedWithWeight,
                           targetCourtKind: PlayerSectionKind.assigned.value,
                         );
                       },

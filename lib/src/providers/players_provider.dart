@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/repository/realms/options.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
@@ -10,28 +11,22 @@ import 'package:hotswing/src/services/player_service.dart';
 import 'package:realm/realm.dart';
 
 class PlayersProvider with ChangeNotifier {
-  // ===========================================================================
-  // 1. Fields
-  // ===========================================================================
   final CourtAssignService _courtService = CourtAssignService();
   final PlayerService _playerService = PlayerService();
+
+  late final Options _options;
 
   final Map<ObjectId, Player> _players = {};
   final List<List<Player?>> _assignedPlayers = [];
   final List<List<Player?>> _standbyPlayers = [];
   final List<Player> _unassignedPlayers = [];
 
-  // ===========================================================================
-  // 2. Constructor
-  // ===========================================================================
   PlayersProvider() {
+    _options = OptionsRepository.instance.getOptions();
     initialized();
     notifyListeners();
   }
 
-  // ===========================================================================
-  // 3. Initialization & Data Persistence
-  // ===========================================================================
   void initialized() async {
     try {
       await _loadInitialAssignedPlayersCount();
@@ -105,8 +100,7 @@ class PlayersProvider with ChangeNotifier {
   }
 
   Future<void> _loadInitialAssignedPlayersCount() async {
-    OptionsRepository optionsRepository = OptionsRepository.instance;
-    final int initialCount = optionsRepository.getOptions().numberOfSections;
+    final int initialCount = _options.numberOfSections;
     updateAssignedPlayersListCount(initialCount);
   }
 
@@ -507,47 +501,88 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void assignPlayersToCourt(
-    int sectionIndex, {
-    required double skillWeight,
-    required double genderWeight,
-    required double waitedWeight,
-    required double playedWeight,
-    required double playedWithWeight,
-    required String targetCourtKind,
-  }) {
-    List<List<Player?>> targetCourtPlayers = targetCourtKind == "assigned"
-        ? _assignedPlayers
-        : _standbyPlayers;
+  List<Player> getAssignedPlayersInCourt(int sectionIndex) {
+    if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) {
+      return [];
+    }
+    return _assignedPlayers[sectionIndex]
+        .where((p) => p != null)
+        .cast<Player>()
+        .toList();
+  }
 
-    if (sectionIndex < 0 || sectionIndex >= targetCourtPlayers.length) return;
+  List<Player> getStandbyPlayersInCourt(int sectionIndex) {
+    if (sectionIndex < 0 || sectionIndex >= _standbyPlayers.length) {
+      return [];
+    }
+    return _standbyPlayers[sectionIndex]
+        .where((p) => p != null)
+        .cast<Player>()
+        .toList();
+  }
 
+  List<Player> getRecommendedPlayers(List<Player> currentPlayersOnCourt) {
+    List<Player> tempUnassigned = _unassignedPlayers
+        .where((player) => player.activate == true)
+        .toList();
+
+    return _courtService.getRecommendedPlayersForCourt(
+      unassignedPlayers: tempUnassigned,
+      currentPlayersOnCourt: currentPlayersOnCourt,
+      skillWeight: _options.skillWeight,
+      genderWeight: _options.genderWeight,
+      waitedWeight: _options.waitedWeight,
+      playedWeight: _options.playedWeight,
+      playedWithWeight: _options.playedWithWeight,
+    );
+  }
+
+  void assignNextPlayers(int sectionIndex, {required String targetCourtKind}) {
+    List<Player> currentPlayers = targetCourtKind == 'assigned'
+        ? getAssignedPlayersInCourt(sectionIndex)
+        : getStandbyPlayersInCourt(sectionIndex);
+
+    List<Player> recommendedPlayers = getRecommendedPlayers(currentPlayers);
+
+    if (targetCourtKind == 'assigned') {
+      addPlayersToAssignedCourt(sectionIndex, recommendedPlayers);
+    } else {
+      addPlayersToStandbyCourt(sectionIndex, recommendedPlayers);
+    }
+  }
+
+  void addPlayersToAssignedCourt(int sectionIndex, List<Player> playersToAdd) {
+    if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) return;
+
+    int addIndex = 0;
     for (int i = 0; i < 4; i++) {
-      if (_unassignedPlayers.isEmpty) break;
+      if (addIndex >= playersToAdd.length) break;
 
-      if (targetCourtPlayers[sectionIndex][i] == null) {
-        Player? playerToAssign = _courtService.findBestPlayerForCourt(
-          unassignedPlayers: _unassignedPlayers
-              .where((player) => player.activate == true)
-              .toList(),
-          currentPlayersOnCourt: targetCourtPlayers[sectionIndex]
-              .where((p) => p != null)
-              .cast<Player>()
-              .toList(),
-          skillWeight: skillWeight,
-          genderWeight: genderWeight,
-          waitedWeight: waitedWeight,
-          playedWeight: playedWeight,
-          playedWithWeight: playedWithWeight,
-        );
-
-        if (playerToAssign != null) {
-          targetCourtPlayers[sectionIndex][i] = playerToAssign;
-          _unassignedPlayers.remove(playerToAssign);
-        }
+      if (_assignedPlayers[sectionIndex][i] == null) {
+        Player player = playersToAdd[addIndex];
+        _assignedPlayers[sectionIndex][i] = player;
+        _unassignedPlayers.remove(player);
+        addIndex++;
       }
     }
+    _saveLoadedPlayers();
+    notifyListeners();
+  }
 
+  void addPlayersToStandbyCourt(int sectionIndex, List<Player> playersToAdd) {
+    if (sectionIndex < 0 || sectionIndex >= _standbyPlayers.length) return;
+
+    int addIndex = 0;
+    for (int i = 0; i < 4; i++) {
+      if (addIndex >= playersToAdd.length) break;
+
+      if (_standbyPlayers[sectionIndex][i] == null) {
+        Player player = playersToAdd[addIndex];
+        _standbyPlayers[sectionIndex][i] = player;
+        _unassignedPlayers.remove(player);
+        addIndex++;
+      }
+    }
     _saveLoadedPlayers();
     notifyListeners();
   }
