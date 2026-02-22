@@ -46,18 +46,18 @@ class ActivationService {
   }
 
   /// 저장된 기기 ID 가져오기
-  String? getSavedDeviceId() {
-    return _sharedProvider.getString(_keyDeviceId);
+  Future<String?> getSavedDeviceId() async {
+    return await _sharedProvider.getString(_keyDeviceId);
   }
 
   /// 활성화 여부 확인
-  bool isActivated() {
-    return _sharedProvider.getBool(_keyIsActivated, defaultValue: false);
+  Future<bool> isActivated() async {
+    return await _sharedProvider.getBool(_keyIsActivated, defaultValue: false);
   }
 
   /// 활성화 타임스탬프 가져오기
-  int? getActivationTimestamp() {
-    return _sharedProvider.getInt(_keyActivationTimestamp);
+  Future<int?> getActivationTimestamp() async {
+    return await _sharedProvider.getInt(_keyActivationTimestamp);
   }
 
   /// 마스터 비밀번호로 활성화
@@ -125,12 +125,12 @@ class ActivationService {
   Future<bool> verifyDevice() async {
     try {
       // 1. 활성화되었는지 확인
-      if (!isActivated()) {
+      if (!(await isActivated())) {
         return false;
       }
 
       // 2. 저장된 암호화 값 가져오기
-      final encryptedDeviceId = _sharedProvider.getString(
+      final encryptedDeviceId = await _sharedProvider.getString(
         _keyEncryptedDeviceId,
       );
       if (encryptedDeviceId == null) {
@@ -175,9 +175,9 @@ class ActivationService {
   /// 활성화 정보 조회 (디버그/관리 목적)
   Future<Map<String, dynamic>> getActivationInfo() async {
     final deviceId = await getDeviceId();
-    final savedDeviceId = getSavedDeviceId();
-    final isActivated = this.isActivated();
-    final timestamp = getActivationTimestamp();
+    final savedDeviceId = await getSavedDeviceId();
+    final isActivated = await this.isActivated();
+    final timestamp = await getActivationTimestamp();
 
     return {
       'current_device_id': deviceId,

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';

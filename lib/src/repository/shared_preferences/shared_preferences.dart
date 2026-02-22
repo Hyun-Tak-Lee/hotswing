@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedProvider {
-  late final SharedPreferences _preferences;
+  final SharedPreferencesAsync _preferences = SharedPreferencesAsync();
   static final SharedProvider _instance = SharedProvider._internal();
 
   SharedProvider._internal();
@@ -10,39 +10,35 @@ class SharedProvider {
     return _instance;
   }
 
-  Future<void> init() async {
-    _preferences = await SharedPreferences.getInstance();
-  }
-
-  Future<bool> saveStringList(String key, List<String> value) async {
-    return _preferences.setStringList(key, value);
+  Future<void> saveStringList(String key, List<String> value) async {
+    await _preferences.setStringList(key, value);
   }
 
   Future<List<String>> getStringList(String key) async {
-    return _preferences.getStringList(key) ?? [];
+    return await _preferences.getStringList(key) ?? [];
   }
 
-  Future<bool> saveString(String key, String value) async {
-    return _preferences.setString(key, value);
+  Future<void> saveString(String key, String value) async {
+    await _preferences.setString(key, value);
   }
 
-  String? getString(String key) {
-    return _preferences.getString(key);
+  Future<String?> getString(String key) async {
+    return await _preferences.getString(key);
   }
 
-  Future<bool> saveBool(String key, bool value) async {
-    return _preferences.setBool(key, value);
+  Future<void> saveBool(String key, bool value) async {
+    await _preferences.setBool(key, value);
   }
 
-  bool getBool(String key, {bool defaultValue = false}) {
-    return _preferences.getBool(key) ?? defaultValue;
+  Future<bool> getBool(String key, {bool defaultValue = false}) async {
+    return await _preferences.getBool(key) ?? defaultValue;
   }
 
-  Future<bool> saveInt(String key, int value) async {
-    return _preferences.setInt(key, value);
+  Future<void> saveInt(String key, int value) async {
+    await _preferences.setInt(key, value);
   }
 
-  int? getInt(String key) {
-    return _preferences.getInt(key);
+  Future<int?> getInt(String key) async {
+    return await _preferences.getInt(key);
   }
 }

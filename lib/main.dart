@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
-import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 import 'package:hotswing/src/services/activation_service.dart';
 import 'package:hotswing/src/app/activation_app.dart';
 import 'package:hotswing/src/app/main_app.dart';
@@ -14,9 +13,6 @@ void main() async {
 
   // .env 파일 로드
   await dotenv.load(fileName: ".env");
-
-  // SharedPreferences 초기화
-  await SharedProvider().init();
 
   // 활성화 서비스 초기화 및 기기 검증 (보안 강화)
   final activationService = ActivationService();
