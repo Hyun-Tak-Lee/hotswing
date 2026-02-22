@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/screens/players/widgets/provider/players_view_model.dart';
 import 'package:hotswing/src/screens/players/widgets/player_list_tile.dart';
-import 'package:hotswing/src/screens/players/widgets/players_right_side_menu.dart';
+import 'package:hotswing/src/screens/players/widgets/players_filter_bottom_sheet.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/common/widgets/dialogs/confirmation_dialog.dart';
 
@@ -57,31 +57,17 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
     }
   }
 
-  void _openEndDrawer(BuildContext context) {
+  void _showFilterBottomSheet(BuildContext context) {
     final viewModel = Provider.of<PlayersViewModel>(context, listen: false);
 
-    showGeneralDialog(
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: true,
-      barrierLabel: 'Dismiss',
-      barrierColor: Colors.black54,
-      transitionDuration: const Duration(milliseconds: 200),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return Align(
-          alignment: Alignment.centerRight,
-          child: ChangeNotifierProvider.value(
-            value: viewModel,
-            child: const PlayersRightSideMenu(),
-          ),
-        );
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(1, 0),
-            end: Offset.zero,
-          ).animate(animation),
-          child: child,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return ChangeNotifierProvider.value(
+          value: viewModel,
+          child: const PlayersFilterBottomSheet(),
         );
       },
     );
@@ -163,7 +149,7 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
                   ],
                   IconButton(
                     icon: const Icon(Icons.sort, color: Colors.black87),
-                    onPressed: () => _openEndDrawer(context),
+                    onPressed: () => _showFilterBottomSheet(context),
                   ),
                 ],
               ),
