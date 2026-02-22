@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/screens/home/home_screen.dart';
 import 'package:hotswing/src/screens/players/players_screen.dart';
+import 'package:hotswing/src/common/widgets/dialogs/manager_auth_overlay.dart';
 import 'package:hotswing/src/screens/settings/settings_screen.dart';
 import 'package:hotswing/src/screens/main/widgets/navigation/main_navigation_bar.dart';
 import 'package:hotswing/src/screens/main/widgets/navigation/main_navigation_rail.dart';
@@ -32,8 +33,20 @@ class _MainWrapperState extends State<MainWrapper> {
     );
   }
 
-  void _onDestinationSelected(int index) {
+  void _onDestinationSelected(int index) async {
     if (index == 1) {
+      // 플레이어 화면(index=1) 진입 시 인증 오버레이 띄우기
+      if (!mounted) return;
+      final bool? isAuthenticated = await showDialog<bool>(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) => const ManagerAuthOverlay(),
+      );
+
+      // 인증 취소 또는 실패 시 화면 전환 중지
+      if (isAuthenticated != true) {
+        return;
+      }
       _playersScreenKey = UniqueKey();
     }
     setState(() {
