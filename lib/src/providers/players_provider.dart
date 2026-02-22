@@ -1,17 +1,16 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/repository/realms/options.dart';
-import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 import 'package:hotswing/src/services/court_assign_service.dart';
 import 'package:hotswing/src/services/player_service.dart';
+import 'package:hotswing/src/services/player_session_service.dart';
 import 'package:realm/realm.dart';
 
 class PlayersProvider with ChangeNotifier {
   final CourtAssignService _courtService = CourtAssignService();
+  final PlayerSessionService _sessionService = PlayerSessionService();
   final PlayerService _playerService = PlayerService();
 
   late final Options _options;
@@ -38,63 +37,36 @@ class PlayersProvider with ChangeNotifier {
   }
 
   Future<void> _loadInitialPlayers() async {
-    List<String> playerIds = await SharedProvider().getStringList("players");
+    final playerIds = await _sessionService.loadPlayerIds();
     if (playerIds.isNotEmpty) {
       _players.clear();
-      List<ObjectId> playerObjectIds = playerIds
-          .map((id) => ObjectId.fromHexString(id))
-          .toList();
-      List<Player> loadedPlayers = _playerService
-          .findPlayersByIds(playerObjectIds)
-          .whereType<Player>()
-          .toList();
-      for (var player in loadedPlayers) {
-        _players[player.id] = player;
-      }
+      final loadedPlayers = _playerService
+          .findPlayersByIds(playerIds)
+          .whereType<Player>();
+      _players.addEntries(loadedPlayers.map((p) => MapEntry(p.id, p)));
     }
-    List<String> unassignedIds = await SharedProvider().getStringList(
-      "unassignedPlayers",
-    );
-    List<ObjectId> unassignedObjectIds = unassignedIds
-        .map((id) => ObjectId.fromHexString(id))
-        .toList();
+
+    final unassignedIds = await _sessionService.loadUnassignedPlayerIds();
     if (unassignedIds.isNotEmpty) {
       _unassignedPlayers.clear();
       _unassignedPlayers.addAll(
-        _playerService
-            .findPlayersByIds(unassignedObjectIds)
-            .whereType<Player>()
-            .toList(),
+        _playerService.findPlayersByIds(unassignedIds).whereType<Player>(),
       );
     }
-    List<String> assignedIds = await SharedProvider().getStringList(
-      "assignedPlayers",
-    );
+
+    final assignedIds = await _sessionService.loadAssignedPlayerIds();
     if (assignedIds.isNotEmpty) {
       _assignedPlayers.clear();
       _assignedPlayers.addAll(
-        assignedIds.map((encodedList) {
-          List<dynamic> decoded = jsonDecode(encodedList);
-          List<ObjectId?> singleCourt = decoded
-              .map((id) => (id == "") ? null : ObjectId.fromHexString(id))
-              .toList();
-          return _playerService.findPlayersByIds(singleCourt);
-        }).toList(),
+        assignedIds.map((ids) => _playerService.findPlayersByIds(ids)),
       );
     }
-    List<String> standbyIds = await SharedProvider().getStringList(
-      "standbyPlayers",
-    );
+
+    final standbyIds = await _sessionService.loadStandbyPlayerIds();
     if (standbyIds.isNotEmpty) {
       _standbyPlayers.clear();
       _standbyPlayers.addAll(
-        standbyIds.map((encodedList) {
-          List<dynamic> decoded = jsonDecode(encodedList);
-          List<ObjectId?> singleCourt = decoded
-              .map((id) => (id == "") ? null : ObjectId.fromHexString(id))
-              .toList();
-          return _playerService.findPlayersByIds(singleCourt);
-        }).toList(),
+        standbyIds.map((ids) => _playerService.findPlayersByIds(ids)),
       );
     }
   }
@@ -105,44 +77,14 @@ class PlayersProvider with ChangeNotifier {
   }
 
   Future<void> _saveLoadedPlayers() async {
-    final List<String> playerIdLists = _players.keys
-        .map((key) => key.toString())
-        .toList();
-    final List<String> assignedPlayersIdListNested = _assignedPlayers
-        .map(
-          (innerList) =>
-              innerList.map((player) => player?.id.toString() ?? "").toList(),
-        )
-        .map((idList) => jsonEncode(idList))
-        .toList();
-    final List<String> standbyPlayersIdListNested = _standbyPlayers
-        .map(
-          (innerList) =>
-              innerList.map((player) => player?.id.toString() ?? "").toList(),
-        )
-        .map((idList) => jsonEncode(idList))
-        .toList();
-    final List<String> unassignedPlayersIdList = _unassignedPlayers
-        .map((player) => player.id.toString())
-        .toList();
-    await SharedProvider().saveStringList(
-      "assignedPlayers",
-      assignedPlayersIdListNested,
+    await _sessionService.saveSession(
+      players: _players,
+      unassignedPlayers: _unassignedPlayers,
+      assignedPlayers: _assignedPlayers,
+      standbyPlayers: _standbyPlayers,
     );
-    await SharedProvider().saveStringList(
-      "standbyPlayers",
-      standbyPlayersIdListNested,
-    );
-    await SharedProvider().saveStringList(
-      "unassignedPlayers",
-      unassignedPlayersIdList,
-    );
-    await SharedProvider().saveStringList("players", playerIdLists);
   }
 
-  // ===========================================================================
-  // 4. Getters
-  // ===========================================================================
   Map<ObjectId, Player> get players => Map.unmodifiable(_players);
 
   List<Player> get unassignedPlayers => List.unmodifiable(_unassignedPlayers);
@@ -152,9 +94,6 @@ class PlayersProvider with ChangeNotifier {
 
   List<List<Player?>> get standbyPlayers => List.unmodifiable(_standbyPlayers);
 
-  // ===========================================================================
-  // 5. Player CRUD & Search
-  // ===========================================================================
   List<Player> getPlayers() {
     var playerList = _players.values.toList();
     playerList.sort((a, b) {
@@ -271,10 +210,10 @@ class PlayersProvider with ChangeNotifier {
           playerId,
         );
       }
-      for (int i = 0; i < _assignedPlayers.length; i++) {
-        for (int j = 0; j < _assignedPlayers[i].length; j++) {
-          if (_assignedPlayers[i][j] == playerToRemove) {
-            _assignedPlayers[i][j] = null;
+      for (var court in _assignedPlayers) {
+        for (int i = 0; i < court.length; i++) {
+          if (court[i] == playerToRemove) {
+            court[i] = null;
           }
         }
       }
@@ -290,14 +229,11 @@ class PlayersProvider with ChangeNotifier {
     _players.clear();
     _unassignedPlayers.clear();
     for (int i = 0; i < _assignedPlayers.length; i++) {
-      _assignedPlayers[i] = [null, null, null, null];
+      _assignedPlayers[i] = List.filled(4, null);
     }
     notifyListeners();
   }
 
-  // ===========================================================================
-  // 6. Player Stats & Status Modifiers
-  // ===========================================================================
   void toggleIsActivate(Player player) {
     _playerService.updateActivate(player, !player.activate);
     _saveLoadedPlayers();
@@ -319,9 +255,6 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // ===========================================================================
-  // 7. Court & List Assignments
-  // ===========================================================================
   void updateAssignedPlayersListCount(int newCount) {
     if (newCount < 0) {
       return;
@@ -329,18 +262,17 @@ class PlayersProvider with ChangeNotifier {
     int currentCount = _assignedPlayers.length;
     if (newCount < currentCount) {
       for (int i = newCount; i < currentCount; i++) {
-        List<Player?> playersInList = _assignedPlayers[i];
-        for (Player? player in playersInList) {
-          if (player != null && !_unassignedPlayers.contains(player)) {
+        for (final player in _assignedPlayers[i].whereType<Player>()) {
+          if (!_unassignedPlayers.contains(player)) {
             _unassignedPlayers.add(player);
           }
         }
       }
       _assignedPlayers.removeRange(newCount, currentCount);
     } else if (newCount > currentCount) {
-      for (int i = 0; i < newCount - currentCount; i++) {
-        _assignedPlayers.add([null, null, null, null]);
-      }
+      _assignedPlayers.addAll(
+        List.generate(newCount - currentCount, (_) => List.filled(4, null)),
+      );
     }
     notifyListeners();
   }
@@ -430,19 +362,14 @@ class PlayersProvider with ChangeNotifier {
   }
 
   void addStandByPlayers() {
-    _standbyPlayers.add([null, null, null, null]);
+    _standbyPlayers.add(List.filled(4, null));
     _saveLoadedPlayers();
     notifyListeners();
   }
 
   void removeStandByPlayers(int index) {
     final removedList = _standbyPlayers.removeAt(index);
-
-    for (var player in removedList) {
-      if (player != null) {
-        _unassignedPlayers.add(player);
-      }
-    }
+    _unassignedPlayers.addAll(removedList.whereType<Player>());
 
     _saveLoadedPlayers();
     notifyListeners();
