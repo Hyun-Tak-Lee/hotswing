@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/screens/players/widgets/provider/players_view_model.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
+import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 
 class PlayersFilterBottomSheet extends StatefulWidget {
   const PlayersFilterBottomSheet({super.key});
@@ -13,8 +14,18 @@ class PlayersFilterBottomSheet extends StatefulWidget {
 }
 
 class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
-  // 0: Role, 1: Gender
+  // 0: 역할, 1: 성별, 2: 급수
   int _selectedTabIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +65,8 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
                   _buildTab('역할', 0, tabFontSize),
                   const SizedBox(width: 24),
                   _buildTab('성별', 1, tabFontSize),
+                  const SizedBox(width: 24),
+                  _buildTab('급수', 2, tabFontSize),
                 ],
               ),
             ),
@@ -71,12 +84,20 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
                 labelBuilder: (role) => role.label,
                 chipFontSize: chipFontSize,
               )
-            else
+            else if (_selectedTabIndex == 1)
               _buildOptions<PlayerGender>(
                 values: PlayerGender.values,
                 selectedValues: viewModel.selectedGenders,
                 onSelected: viewModel.toggleGenderFilter,
                 labelBuilder: (gender) => gender.label,
+                chipFontSize: chipFontSize,
+              )
+            else if (_selectedTabIndex == 2)
+              _buildOptions<String>(
+                values: skillLevelToRate.keys.toList(),
+                selectedValues: viewModel.selectedSkills,
+                onSelected: viewModel.toggleSkillFilter,
+                labelBuilder: (skill) => skill,
                 chipFontSize: chipFontSize,
               ),
 

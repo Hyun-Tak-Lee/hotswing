@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/repository/realms/players.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
+import 'package:hotswing/src/common/utils/game/skill_utils.dart';
+import 'package:hotswing/src/common/utils/database/realm_query_builder.dart';
 import 'package:realm/realm.dart';
 
 class PlayersViewModel extends ChangeNotifier {
@@ -35,6 +37,14 @@ class PlayersViewModel extends ChangeNotifier {
   final Set<ObjectId> _selectedPlayerIds = {};
   Set<ObjectId> get selectedPlayerIds => _selectedPlayerIds;
 
+  // 이름 검색어
+  String _searchQuery = '';
+  String get searchQuery => _searchQuery;
+
+  // 급수 필터 (다중 선택 가능, skill_utils 기준 키값)
+  final Set<String> _selectedSkills = {};
+  Set<String> get selectedSkills => _selectedSkills;
+
   // 한 번에 불러올 데이터 개수
   static const int _pageSize = 30;
 
@@ -65,10 +75,38 @@ class PlayersViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
+    final queryBuilder = RealmQueryBuilder()
+        .addStartsWithCondition('name', _searchQuery)
+        .addInCondition('role', _selectedRoles.map((e) => e.value))
+        .addInCondition('gender', _selectedGenders.map((e) => e.value));
+
+    // 선택된 급수를 기반으로 rate 범위 조건 구성
+    if (_selectedSkills.isNotEmpty) {
+      final entries = skillLevelToRate.entries.toList();
+      List<List<num>> rateRanges = [];
+      for (var skill in _selectedSkills) {
+        int index = entries.indexWhere((e) => e.key == skill);
+        if (index != -1) {
+          int min = index == 0
+              ? 0
+              : (entries[index - 1].value + entries[index].value) ~/ 2;
+          int max = index == entries.length - 1
+              ? 10000
+              : (entries[index].value + entries[index + 1].value) ~/ 2;
+          rateRanges.add([min, max]);
+        }
+      }
+      queryBuilder.addMultiRangeOrCondition(
+        'rate',
+        rateRanges,
+        includeMax: false,
+      );
+    }
+
     // 1. 데이터 조회
     _queryResults = _repository.getPlayers(
-      roleValues: _selectedRoles.map((e) => e.value).toSet(),
-      genderValues: _selectedGenders.map((e) => e.value).toSet(),
+      query: queryBuilder.build(),
+      args: queryBuilder.args,
       sortField: 'name',
       sortAscending: true,
     );
@@ -87,24 +125,45 @@ class PlayersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 역할 필터 토글
+  // 역할 필터 토글 (데이터 로드 지연)
   void toggleRoleFilter(PlayerRole role) {
     if (_selectedRoles.contains(role)) {
       _selectedRoles.remove(role);
     } else {
       _selectedRoles.add(role);
     }
-    _loadInitialData(); // 데이터 다시 로드
+    notifyListeners();
   }
 
-  // 성별 필터 토글
+  // 성별 필터 토글 (데이터 로드 지연)
   void toggleGenderFilter(PlayerGender gender) {
     if (_selectedGenders.contains(gender)) {
       _selectedGenders.remove(gender);
     } else {
       _selectedGenders.add(gender);
     }
-    _loadInitialData(); // 데이터 다시 로드
+    notifyListeners();
+  }
+
+  // 급수 필터 토글 (데이터 로드 지연)
+  void toggleSkillFilter(String skill) {
+    if (_selectedSkills.contains(skill)) {
+      _selectedSkills.remove(skill);
+    } else {
+      _selectedSkills.add(skill);
+    }
+    notifyListeners();
+  }
+
+  // 필터 일괄 적용 메서드 (바텀 시트 닫힐 때 호출)
+  void applyFilters() {
+    _loadInitialData();
+  }
+
+  // 이름 검색어 설정 (검색은 즉시 적용)
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    _loadInitialData();
   }
 
   // 추가 데이터 로드 (무한 스크롤)

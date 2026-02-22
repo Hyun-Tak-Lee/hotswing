@@ -153,40 +153,18 @@ class PlayerRepository {
   }
 
   RealmResults<Player> getPlayers({
-    required Set<String> roleValues,
-    required Set<String> genderValues,
+    required String query,
+    required List<Object> args,
     String? sortField,
     bool sortAscending = true,
   }) {
-    List<String> conditions = [];
-    List<Object> args = [];
-    int argIndex = 0;
+    String finalQuery = query.isEmpty ? 'TRUEPREDICATE' : query;
 
-    if (roleValues.isNotEmpty) {
-      String roleCondition = roleValues
-          .map((_) => 'role == \$${argIndex++}')
-          .join(' OR ');
-      conditions.add('($roleCondition)');
-      args.addAll(roleValues);
+    if (sortField != null && sortField.isNotEmpty) {
+      finalQuery += ' SORT($sortField ${sortAscending ? 'ASC' : 'DESC'})';
     }
 
-    if (genderValues.isNotEmpty) {
-      String genderCondition = genderValues
-          .map((_) => 'gender == \$${argIndex++}')
-          .join(' OR ');
-      conditions.add('($genderCondition)');
-      args.addAll(genderValues);
-    }
-
-    String queryString = conditions.isEmpty
-        ? 'TRUEPREDICATE'
-        : conditions.join(' AND ');
-
-    if (sortField != null) {
-      queryString += ' SORT($sortField ${sortAscending ? 'ASC' : 'DESC'})';
-    }
-
-    return _realm.query<Player>(queryString, args);
+    return _realm.query<Player>(finalQuery, args);
   }
 
   void deletePlayers(List<ObjectId> ids) {

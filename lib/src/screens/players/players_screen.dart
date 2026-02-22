@@ -57,10 +57,10 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
     }
   }
 
-  void _showFilterBottomSheet(BuildContext context) {
+  void _showFilterBottomSheet(BuildContext context) async {
     final viewModel = Provider.of<PlayersViewModel>(context, listen: false);
 
-    showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -71,6 +71,9 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
         );
       },
     );
+
+    // 바텀 시트가 닫힌 후 필터 일괄 적용하여 쿼리 패치
+    viewModel.applyFilters();
   }
 
   @override
@@ -101,7 +104,8 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
                       onPressed: () => viewModel.setSelectionMode(false),
                     )
                   else
-                    const SizedBox(width: 48),
+                    const SizedBox(width: 8),
+
                   Expanded(
                     child: Center(
                       child: viewModel.isSelectionMode
@@ -113,12 +117,29 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
                                 fontWeight: FontWeight.w500,
                               ),
                             )
-                          : const Text(
-                              '회원 목록',
-                              style: TextStyle(
-                                color: Colors.black87,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w500,
+                          : Container(
+                              height: 40,
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: TextField(
+                                decoration: const InputDecoration(
+                                  hintText: '회원 이름 검색',
+                                  prefixIcon: Icon(
+                                    Icons.search,
+                                    color: Colors.black54,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  viewModel.setSearchQuery(value);
+                                },
                               ),
                             ),
                     ),

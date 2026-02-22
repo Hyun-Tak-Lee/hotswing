@@ -1,74 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
-import '../../../../common/widgets/dialogs/confirmation_dialog.dart';
+import 'package:hotswing/src/common/widgets/dialogs/confirmation_dialog.dart';
 
 class RightSideMenu extends StatelessWidget {
   const RightSideMenu({super.key, required this.isMobileSize});
 
   final bool isMobileSize;
 
-  Widget _buildSliderListItem({
-    required BuildContext context,
-    required String title,
-    required String leftText,
-    required String rightText,
-    required double value,
-    required ValueChanged<double> onChanged,
-    required double iconAndFontSize,
-  }) {
-    return ListTile(
-      tileColor: Colors.black.withAlpha(13),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: iconAndFontSize,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(leftText, style: TextStyle(fontSize: iconAndFontSize * 0.8)),
-              Text(
-                value.toStringAsFixed(1),
-                style: TextStyle(
-                  fontSize: iconAndFontSize * 0.9,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                rightText,
-                style: TextStyle(fontSize: iconAndFontSize * 0.8),
-              ),
-            ],
-          ),
-          Slider(
-            value: value,
-            min: 0,
-            max: 2,
-            divisions: 10,
-            label: value.toStringAsFixed(1),
-            onChanged: onChanged,
-            activeColor: Colors.blueAccent,
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final optionsProvider = Provider.of<OptionsProvider>(context);
     final playersProvider = Provider.of<PlayersProvider>(
       context,
       listen: false,
     );
-    final iconAndFontSize = isMobileSize ? 24.0 : 48.0;
+    final iconAndFontSize = isMobileSize ? 24.0 : 32.0;
 
     return Drawer(
       width: isMobileSize
@@ -82,134 +28,114 @@ class RightSideMenu extends StatelessWidget {
             child: DrawerHeader(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFFA0E9FF), Color(0xFFFFFFFF)],
+                  colors: [
+                    Color(0xFFF3E5F5), // 라벤더 미스트 (연보라)
+                    Color(0xFFE1F5FE), // 연하늘
+                  ],
+                  // left_side_menu의 방향과 반대로 설정
                   begin: Alignment.topRight,
                   end: Alignment.bottomLeft,
                 ),
               ),
-              child: Text('옵션', style: TextStyle(fontSize: iconAndFontSize)),
-            ),
-          ),
-          ListTile(
-            leading: Icon(
-              Icons.refresh,
-              size: iconAndFontSize,
-              color: Colors.orangeAccent,
-            ),
-            title: Text(
-              '플레이 정보 초기화',
-              style: TextStyle(
-                fontSize: iconAndFontSize,
-                color: Colors.orangeAccent,
-                fontWeight: FontWeight.bold,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text('옵션', style: TextStyle(fontSize: iconAndFontSize)),
+                ],
               ),
             ),
-            tileColor: Colors.orangeAccent.withValues(alpha: 0.1),
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext dialogContext) {
-                  return ConfirmationDialog(
-                    message: '모든 참여자의 플레이 정보들을 초기화 하시겠습니까?',
-                    onConfirm: () {
-                      playersProvider.resetPlayerStats();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('플레이 정보가 초기화되었습니다')),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext dialogContext) {
+                      return ConfirmationDialog(
+                        message: '참가 인원의 플레이 횟수들을 초기화 하시겠습니까?',
+                        onConfirm: () {
+                          playersProvider.resetPlayerStats();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('플레이 횟수가 초기화되었습니다'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
                       );
                     },
                   );
                 },
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          ListTile(
-            tileColor: Colors.black.withAlpha(13),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '코트 수: ${optionsProvider.numberOfSections}',
-                  style: TextStyle(fontSize: iconAndFontSize),
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.orange.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.history_edu_rounded,
+                          size: iconAndFontSize,
+                          color: Colors.orange.shade800,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '플레이 횟수 초기화',
+                              style: TextStyle(
+                                fontSize: iconAndFontSize * 0.75,
+                                color: Colors.orange.shade900,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '참가 인원의 기록을 0으로 설정합니다',
+                              style: TextStyle(
+                                fontSize: iconAndFontSize * 0.5,
+                                color: Colors.orange.shade700.withValues(
+                                  alpha: 0.8,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: Colors.orange.withValues(alpha: 0.5),
+                        size: iconAndFontSize * 0.8,
+                      ),
+                    ],
+                  ),
                 ),
-                Slider(
-                  value: optionsProvider.numberOfSections.toDouble(),
-                  min: 1,
-                  max: 10,
-                  divisions: 9,
-                  label: optionsProvider.numberOfSections.round().toString(),
-                  onChanged: (double value) {
-                    int newNumberOfSections = value.round();
-                    optionsProvider.setNumberOfSections(newNumberOfSections);
-                    playersProvider.updateAssignedPlayersListCount(
-                      newNumberOfSections,
-                    );
-                  },
-                  activeColor: Colors.blueAccent,
-                ),
-              ],
+              ),
             ),
           ),
-          const SizedBox(height: 10),
-          _buildSliderListItem(
-            context: context,
-            title: '실력',
-            leftText: '2명씩 균등',
-            rightText: '4인 균등',
-            value: optionsProvider.skillWeight,
-            onChanged: (double value) {
-              optionsProvider.setSkillWeight(value);
-            },
-            iconAndFontSize: iconAndFontSize,
-          ),
-          const SizedBox(height: 10),
-          _buildSliderListItem(
-            context: context,
-            title: '성별',
-            leftText: '남2여2',
-            rightText: '남4 or 여4',
-            value: optionsProvider.genderWeight,
-            onChanged: (double value) {
-              optionsProvider.setGenderWeight(value);
-            },
-            iconAndFontSize: iconAndFontSize,
-          ),
-          const SizedBox(height: 10),
-          _buildSliderListItem(
-            context: context,
-            title: '대기 횟수',
-            leftText: '무시',
-            rightText: '중시',
-            value: optionsProvider.waitedWeight,
-            onChanged: (double value) {
-              optionsProvider.setWaitedWeight(value);
-            },
-            iconAndFontSize: iconAndFontSize,
-          ),
-          const SizedBox(height: 10),
-          _buildSliderListItem(
-            context: context,
-            title: '경기 횟수',
-            leftText: '무시',
-            rightText: '중시',
-            value: optionsProvider.playedWeight,
-            onChanged: (double value) {
-              optionsProvider.setPlayedWeight(value);
-            },
-            iconAndFontSize: iconAndFontSize,
-          ),
-          const SizedBox(height: 10),
-          _buildSliderListItem(
-            context: context,
-            title: '중복 횟수',
-            leftText: '무시',
-            rightText: '최소화',
-            value: optionsProvider.playedWithWeight,
-            onChanged: (double value) {
-              optionsProvider.setPlayedWithWeight(value);
-            },
-            iconAndFontSize: iconAndFontSize,
-          ),
+          // 추후 사용할 내용을 위해 프레임은 비워둡니다
         ],
       ),
     );
