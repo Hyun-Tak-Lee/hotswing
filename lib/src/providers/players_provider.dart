@@ -9,7 +9,7 @@ import 'package:hotswing/src/services/player_session_service.dart';
 import 'package:realm/realm.dart';
 
 class PlayersProvider with ChangeNotifier {
-  final CourtAssignService _courtService = CourtAssignService();
+  late final CourtAssignService _courtService;
   final PlayerSessionService _sessionService = PlayerSessionService();
   final PlayerService _playerService = PlayerService();
 
@@ -22,6 +22,7 @@ class PlayersProvider with ChangeNotifier {
 
   PlayersProvider() {
     _options = OptionsRepository.instance.getOptions();
+    _courtService = CourtAssignService(_options);
     initialized();
     notifyListeners();
   }
@@ -456,11 +457,6 @@ class PlayersProvider with ChangeNotifier {
     return _courtService.getRecommendedPlayersForCourt(
       unassignedPlayers: tempUnassigned,
       currentPlayersOnCourt: currentPlayersOnCourt,
-      skillWeight: _options.skillWeight,
-      genderWeight: _options.genderWeight,
-      waitedWeight: _options.waitedWeight,
-      playedWeight: _options.playedWeight,
-      playedWithWeight: _options.playedWithWeight,
     );
   }
 

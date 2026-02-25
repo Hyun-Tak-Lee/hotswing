@@ -1,121 +1,96 @@
 import 'dart:math';
 
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/models/options/option.dart';
 
 class CourtAssignService {
   final Random _random = Random();
+  final Options _options;
+
+  CourtAssignService(this._options);
 
   List<Player> getRecommendedPlayersForCourt({
     required List<Player> unassignedPlayers,
     required List<Player> currentPlayersOnCourt,
-    required double skillWeight,
-    required double genderWeight,
-    required double waitedWeight,
-    required double playedWeight,
-    required double playedWithWeight,
   }) {
     List<Player> recommendedPlayers = [];
-    List<Player> tempUnassigned = List.from(unassignedPlayers);
-    List<Player> tempCourtPlayers = List.from(currentPlayersOnCourt);
+    List<Player> tempUnassignedPlayers = List.from(unassignedPlayers);
+    List<Player> tempCurrentCourtPlayers = List.from(currentPlayersOnCourt);
 
     int neededPlayers = 4 - currentPlayersOnCourt.length;
 
-    for (int i = 0; i < neededPlayers; i++) {
-      if (tempUnassigned.isEmpty) break;
-
-      Player? playerToAssign = findBestPlayerForCourt(
-        unassignedPlayers: tempUnassigned,
-        currentPlayersOnCourt: tempCourtPlayers,
-        skillWeight: skillWeight,
-        genderWeight: genderWeight,
-        waitedWeight: waitedWeight,
-        playedWeight: playedWeight,
-        playedWithWeight: playedWithWeight,
-      );
-
-      if (playerToAssign != null) {
-        recommendedPlayers.add(playerToAssign);
-        tempCourtPlayers.add(playerToAssign);
-        tempUnassigned.remove(playerToAssign);
-      }
-    }
-
-    return recommendedPlayers;
+    return [];
   }
 
-  Player? findBestPlayerForCourt({
+  List<List<Player>> getPlayerTeamForCourt({
     required List<Player> unassignedPlayers,
     required List<Player> currentPlayersOnCourt,
-    required double skillWeight,
-    required double genderWeight,
-    required double waitedWeight,
-    required double playedWeight,
-    required double playedWithWeight,
   }) {
-    if (unassignedPlayers.isEmpty) return null;
+    List<List<Player>> allPossiblePairs = [];
+    List<Map<String, dynamic>> pairsWithScore = [];
 
-    final int unassignedManagersCount = unassignedPlayers
-        .where((p) => p.role == "manager")
-        .length;
-    final bool isNotLastManager =
-        unassignedManagersCount == 1 &&
-        unassignedPlayers.any((p) => p.role != "manager");
-
-    if (currentPlayersOnCourt.isEmpty) {
-      List<Player> candidatePlayers = unassignedPlayers;
-      if (isNotLastManager) {
-        final nonManagers = unassignedPlayers
-            .where((p) => p.role != "manager")
-            .toList();
-        if (nonManagers.isNotEmpty) {
-          candidatePlayers = nonManagers;
+    // 플레이어를 실력(rate) 기준으로 오름차순 정렬하되,
+    // 실력이 같은 경우 매번 무작위로 순서가 바뀌도록 정렬 조건을 추가
+    List<Player> sortedPlayers = List.from(unassignedPlayers)
+      ..sort((a, b) {
+        int rateComparison = a.rate.compareTo(b.rate);
+        if (rateComparison != 0) {
+          return rateComparison;
         }
+        return _random.nextInt(3) - 1;
+      });
+
+    int searchRange = 16;
+
+    // 1. 인접한 플레이어들과의 조합 생성
+    for (int i = 0; i < sortedPlayers.length; i++) {
+      for (
+        int j = i + 1;
+        j < min(i + 1 + searchRange, sortedPlayers.length);
+        j++
+      ) {
+        allPossiblePairs.add([sortedPlayers[i], sortedPlayers[j]]);
       }
-      final sortedCandidates = List.of(candidatePlayers)
-        ..sort((a, b) {
-          int playedCompare = (a.played + a.lated).compareTo(
-            b.played + b.lated,
-          );
-          if (playedCompare != 0) return playedCompare;
-          return b.waited.compareTo(a.waited);
-        });
-
-      if (sortedCandidates.isEmpty) return null;
-
-      final topPlayer = sortedCandidates.first;
-      final topTierPlayers = sortedCandidates
-          .where(
-            (p) =>
-                (p.played + p.lated) == (topPlayer.played + topPlayer.lated) &&
-                p.waited == topPlayer.waited,
-          )
-          .toList();
-
-      final randomIndex = _random.nextInt(topTierPlayers.length);
-      return topTierPlayers[randomIndex];
     }
 
+    // 2. 필터링된 조합에 대해서만 점수 계산
+    for (int i = 0; i < allPossiblePairs.length; i++) {
+      Player playerA = allPossiblePairs[i][0];
+      Player playerB = allPossiblePairs[i][1];
+
+      double score = calculateScoreBetweenTwoPlayers(playerA, playerB);
+      pairsWithScore.add({
+        'pair': [playerA, playerB],
+        'score': score,
+      });
+    }
+
+    pairsWithScore.sort(
+      (a, b) => (a['score'] as double).compareTo(b['score'] as double),
+    );
+
+    return pairsWithScore
+        .take(3)
+        .map((e) => e['pair'] as List<Player>)
+        .toList();
+  }
+
+  Player? _getBestScoredPlayer({
+    required List<Player> unassignedPlayers,
+    required List<Player> currentPlayersOnCourt,
+    required bool isNotLastManager,
+  }) {
     final sortedUnassignedPlayers = List.of(unassignedPlayers)
       ..sort((a, b) {
         double scoreA = calculatePlayerScoreForCourt(
           a,
           currentPlayersOnCourt,
           unassignedPlayers: unassignedPlayers,
-          skillWeight: skillWeight,
-          genderWeight: genderWeight,
-          waitedWeight: waitedWeight,
-          playedWeight: playedWeight,
-          playedWithWeight: playedWithWeight,
         );
         double scoreB = calculatePlayerScoreForCourt(
           b,
           currentPlayersOnCourt,
           unassignedPlayers: unassignedPlayers,
-          skillWeight: skillWeight,
-          genderWeight: genderWeight,
-          waitedWeight: waitedWeight,
-          playedWeight: playedWeight,
-          playedWithWeight: playedWithWeight,
         );
         return scoreB.compareTo(scoreA);
       });
@@ -142,34 +117,20 @@ class CourtAssignService {
     Player player,
     List<Player> currentPlayersOnCourt, {
     required List<Player> unassignedPlayers,
-    required double skillWeight,
-    required double genderWeight,
-    required double waitedWeight,
-    required double playedWeight,
-    required double playedWithWeight,
   }) {
     // 실력 균등 분배 (2:2) 계산
     double equalScore;
 
     if (currentPlayersOnCourt.length == 1) {
       equalScore = 1.0;
-    } else if (currentPlayersOnCourt.length == 2) {
-      Player player1 = currentPlayersOnCourt[0];
-      int rateDiff1 = (player.rate - player1.rate).abs();
-      Player player2 = currentPlayersOnCourt[1];
-      int rateDiff2 = (player.rate - player2.rate).abs();
-      equalScore = 2.0 - min(rateDiff1, rateDiff2) / 1000.0;
+    } else if (currentPlayersOnCourt.length == 3) {
+      int team1Rate =
+          currentPlayersOnCourt[0].rate + currentPlayersOnCourt[1].rate;
+      int team2Rate = currentPlayersOnCourt[2].rate + player.rate;
+      int rateDiff = (team1Rate - team2Rate).abs();
+      equalScore = 2.0 - (rateDiff / 1000.0);
     } else {
-      final double avgRate =
-          currentPlayersOnCourt.map((p) => p.rate).reduce((a, b) => a + b) /
-          3.0;
-      final Player playerWithMaxDiff = currentPlayersOnCourt.reduce((a, b) {
-        final diffA = (a.rate - avgRate).abs();
-        final diffB = (b.rate - avgRate).abs();
-        return diffA > diffB ? a : b;
-      });
-      final int finalRateDiff = (player.rate - playerWithMaxDiff.rate).abs();
-      equalScore = 2.0 - finalRateDiff / 1000.0;
+      equalScore = 1.0;
     }
 
     // 실력 점수 계산
@@ -206,8 +167,8 @@ class CourtAssignService {
       singleGenderScore = 1.5;
     }
 
-    double weightForMix = (2.0 - genderWeight);
-    double weightForSingle = genderWeight;
+    double weightForMix = (2.0 - _options.genderWeight);
+    double weightForSingle = _options.genderWeight;
 
     double genderScore =
         (mixScore * weightForMix) + (singleGenderScore * weightForSingle);
@@ -243,10 +204,43 @@ class CourtAssignService {
 
     // 최종 점수 = 각 점수 * 가중치의 합
     return equalScore +
-        (skillScore * skillWeight) +
-        (genderScore * genderWeight) +
-        (waitedScore * waitedWeight) +
-        (playedScore * playedWeight) +
-        (playedWithScore * playedWithWeight);
+        (skillScore * _options.skillWeight) +
+        (genderScore * _options.genderWeight) +
+        (waitedScore * _options.waitedWeight) +
+        (playedScore * _options.playedWeight) +
+        (playedWithScore * _options.playedWithWeight);
+  }
+
+  double calculateScoreBetweenTwoPlayers(Player player1, Player player2) {
+    // 실력 점수 계산
+    double rateDiff = (player1.rate - player2.rate).abs().toDouble();
+    double skillScore = 1.0 - (rateDiff / 1000.0);
+
+    // 성별 점수 계산
+    double genderScore = 1.0;
+
+    if (player1.gender == player2.gender) {
+      genderScore = 2.0;
+    }
+
+    // 대기 횟수 및 플레이 횟수에 따른 추가 점수 (비율을 낮게 적용)
+    double waitedScore = (player1.waited + player2.waited) * 0.2;
+
+    double totalPlayed =
+        ((player1.played + player1.lated) + (player2.played + player2.lated))
+            .toDouble();
+    double playedScore = totalPlayed * 0.2;
+
+    // 함께 플레이한 횟수 점수 계산
+    int gamesPlayed = player1.gamesPlayedWith[player2.id.hexString] ?? 0;
+    double playedWithFactor = gamesPlayed * 0.5;
+    double playedWithScore = 1.0 - playedWithFactor;
+
+    // 최종 점수 반환
+    return (skillScore * _options.skillWeight) +
+        (genderScore * _options.genderWeight) +
+        (waitedScore * _options.waitedWeight) +
+        (playedScore * _options.playedWeight) +
+        (playedWithScore * _options.playedWithWeight);
   }
 }
