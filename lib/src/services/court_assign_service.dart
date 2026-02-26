@@ -13,76 +13,46 @@ class CourtAssignService {
     required List<Player> unassignedPlayers,
     required List<Player> currentPlayersOnCourt,
   }) {
-    List<Player> recommendedPlayers = [];
-    List<Player> tempUnassignedPlayers = List.from(unassignedPlayers);
-    List<Player> tempCurrentCourtPlayers = List.from(currentPlayersOnCourt);
+    // 1. 점수 기준 최적의 첫 번째 팀 선정
+    final firstTeam = getRecommendedTeamCandidates(
+      unassignedPlayers: unassignedPlayers,
+      currentPlayersOnCourt: currentPlayersOnCourt,
+    );
 
-    int neededPlayers = 4 - currentPlayersOnCourt.length;
+    if (firstTeam.isEmpty) return [];
 
-    return [];
+    // 2. 첫 번째 팀을 제외한 나머지 풀에서 두 번째 팀 선정
+    final firstTeamIds = firstTeam.map((p) => p.id.hexString).toSet();
+    final remainingPlayers = unassignedPlayers
+        .where((p) => !firstTeamIds.contains(p.id.hexString))
+        .toList();
+
+    final secondTeam = _getRecommendedSecondPair(
+      unassignedPlayers: remainingPlayers,
+      firstTeamPlayers: firstTeam,
+    );
+
+    return [...firstTeam, ...secondTeam];
   }
 
-  List<List<Player>> getPlayerTeamForCourt({
+  /// 점수가 가장 높은 최적의 팀(페어) 하나를 반환
+  List<Player> getRecommendedTeamCandidates({
     required List<Player> unassignedPlayers,
     required List<Player> currentPlayersOnCourt,
   }) {
-    List<List<Player>> allPossiblePairs = [];
-    List<Map<String, dynamic>> pairsWithScore = [];
-
-    // 플레이어를 실력(rate) 기준으로 오름차순 정렬하되,
-    // 실력이 같은 경우 매번 무작위로 순서가 바뀌도록 정렬 조건을 추가
-    List<Player> sortedPlayers = List.from(unassignedPlayers)
-      ..sort((a, b) {
-        int rateComparison = a.rate.compareTo(b.rate);
-        if (rateComparison != 0) {
-          return rateComparison;
-        }
-        return _random.nextInt(3) - 1;
-      });
-
-    int searchRange = 16;
-
-    // 1. 인접한 플레이어들과의 조합 생성
-    for (int i = 0; i < sortedPlayers.length; i++) {
-      for (
-        int j = i + 1;
-        j < min(i + 1 + searchRange, sortedPlayers.length);
-        j++
-      ) {
-        allPossiblePairs.add([sortedPlayers[i], sortedPlayers[j]]);
-      }
-    }
-
-    // 2. 필터링된 조합에 대해서만 점수 계산
-    for (int i = 0; i < allPossiblePairs.length; i++) {
-      Player playerA = allPossiblePairs[i][0];
-      Player playerB = allPossiblePairs[i][1];
-
-      double score = calculateScoreBetweenTwoPlayers(playerA, playerB);
-      pairsWithScore.add({
-        'pair': [playerA, playerB],
-        'score': score,
-      });
-    }
-
-    pairsWithScore.sort(
-      (a, b) => (a['score'] as double).compareTo(b['score'] as double),
-    );
-
-    return pairsWithScore
-        .take(3)
-        .map((e) => e['pair'] as List<Player>)
-        .toList();
+    final pairs = _generateScoredPairs(unassignedPlayers);
+    if (pairs.isEmpty) return [];
+    return pairs.first['pair'] as List<Player>;
   }
 
-  double calculateScoreBetweenTwoPlayers(Player player1, Player player2) {
+  /// 두 플레이어 간의 매칭 점수를 계산 (높을수록 좋음)
+  double calculatePairScore(Player player1, Player player2) {
     // 실력 점수 계산
     double rateDiff = (player1.rate - player2.rate).abs().toDouble();
     double skillScore = 1.0 - (rateDiff / 1000.0);
 
     // 성별 점수 계산
     double genderScore = 1.0;
-
     if (player1.gender == player2.gender) {
       genderScore = 2.0;
     }
@@ -93,7 +63,7 @@ class CourtAssignService {
     double totalPlayed =
         ((player1.played + player1.lated) + (player2.played + player2.lated))
             .toDouble();
-    double playedScore = totalPlayed * 0.2;
+    double playedScore = totalPlayed * 0.25;
 
     // 함께 플레이한 횟수 점수 계산
     int gamesPlayed = player1.gamesPlayedWith[player2.id.hexString] ?? 0;
@@ -106,5 +76,73 @@ class CourtAssignService {
         (waitedScore * _options.waitedWeight) +
         (playedScore * _options.playedWeight) +
         (playedWithScore * _options.playedWithWeight);
+  }
+
+  /// 첫 번째 팀과의 중복 플레이 횟수에 따라 패널티를 부여하여 두 번째 팀(페어) 선정
+  List<Player> _getRecommendedSecondPair({
+    required List<Player> unassignedPlayers,
+    required List<Player> firstTeamPlayers,
+  }) {
+    if (unassignedPlayers.length < 2) return unassignedPlayers;
+
+    final pairsWithScore = _generateScoredPairs(unassignedPlayers);
+
+    // 첫 번째 팀 멤버와의 중복 플레이 횟수 당 패널티 적용 (0.25 유지)
+    for (var entry in pairsWithScore) {
+      final playerA = (entry['pair'] as List<Player>)[0];
+      final playerB = (entry['pair'] as List<Player>)[1];
+
+      for (var firstTeamPlayer in firstTeamPlayers) {
+        final gamesWithA =
+            playerA.gamesPlayedWith[firstTeamPlayer.id.hexString] ?? 0;
+        final gamesWithB =
+            playerB.gamesPlayedWith[firstTeamPlayer.id.hexString] ?? 0;
+
+        entry['score'] =
+            (entry['score'] as double) - (gamesWithA + gamesWithB) * 0.25;
+      }
+    }
+
+    // 패널티 적용 후 재정렬
+    pairsWithScore.sort(
+      (a, b) => (a['score'] as double).compareTo(b['score'] as double),
+    );
+
+    if (pairsWithScore.isEmpty) return [];
+    return pairsWithScore.first['pair'] as List<Player>;
+  }
+
+  /// 플레이어 리스트에서 가능한 모든 인접 조합을 생성하고 기본 점수를 매겨 정렬함
+  List<Map<String, dynamic>> _generateScoredPairs(List<Player> players) {
+    final sortedPlayers = List<Player>.from(players)
+      ..sort((a, b) {
+        int rateComparison = a.rate.compareTo(b.rate);
+        if (rateComparison != 0) return rateComparison;
+        return _random.nextInt(3) - 1;
+      });
+
+    const int searchRange = 16;
+    final List<Map<String, dynamic>> pairsWithScore = [];
+
+    for (int i = 0; i < sortedPlayers.length; i++) {
+      for (
+        int j = i + 1;
+        j < min(i + 1 + searchRange, sortedPlayers.length);
+        j++
+      ) {
+        final playerA = sortedPlayers[i];
+        final playerB = sortedPlayers[j];
+        pairsWithScore.add({
+          'pair': [playerA, playerB],
+          'score': calculatePairScore(playerA, playerB),
+        });
+      }
+    }
+
+    pairsWithScore.sort(
+      (a, b) => (a['score'] as double).compareTo(b['score'] as double),
+    );
+
+    return pairsWithScore;
   }
 }
