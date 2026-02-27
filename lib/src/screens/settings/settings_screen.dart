@@ -138,6 +138,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               },
                             ),
                           ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '운영진 대기 (운영진 1명일 시 OFF)',
+                                style: TextStyle(
+                                  fontSize: iconAndFontSize,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Switch.adaptive(
+                                value: optionsProvider.reserveManager,
+                                activeThumbColor: Colors.blueAccent,
+                                onChanged: (bool value) {
+                                  optionsProvider.setReserveManager(value);
+                                },
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),

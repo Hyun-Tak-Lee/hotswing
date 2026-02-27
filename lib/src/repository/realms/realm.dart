@@ -7,8 +7,15 @@ class RealmProvider {
 
   RealmProvider._() {
     final config = Configuration.local(
-      [Player.schema,Options.schema],
-      // shouldDeleteIfMigrationNeeded: true,
+      [Player.schema, Options.schema],
+      schemaVersion: 1,
+      migrationCallback: (migration, oldSchemaVersion) {
+        if (oldSchemaVersion < 1) {
+          for (final obj in migration.newRealm.all<Options>()) {
+            obj.reserveManager = true;
+          }
+        }
+      },
     );
     _realm = Realm(config);
   }

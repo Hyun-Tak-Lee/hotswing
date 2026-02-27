@@ -18,6 +18,7 @@ class OptionsProvider with ChangeNotifier {
   double get waitedWeight => _options.waitedWeight;
   double get playedWeight => _options.playedWeight;
   double get playedWithWeight => _options.playedWithWeight;
+  bool get reserveManager => _options.reserveManager;
 
   OptionsProvider() {
     _loadOptions();
@@ -75,6 +76,13 @@ class OptionsProvider with ChangeNotifier {
         _minWeight,
         _maxWeight,
       );
+    });
+    notifyListeners();
+  }
+
+  void setReserveManager(bool newValue) {
+    _realm.write(() {
+      _options.reserveManager = newValue;
     });
     notifyListeners();
   }

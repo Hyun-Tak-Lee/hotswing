@@ -14,4 +14,5 @@ class _Options {
   late double waitedWeight;
   late double playedWeight;
   late double playedWithWeight;
+  late bool reserveManager;
 }

@@ -18,6 +18,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
     double waitedWeight,
     double playedWeight,
     double playedWithWeight,
+    bool reserveManager,
   ) {
     RealmObjectBase.set(this, 'id', id);
     RealmObjectBase.set(this, 'numberOfSections', numberOfSections);
@@ -26,6 +27,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.set(this, 'waitedWeight', waitedWeight);
     RealmObjectBase.set(this, 'playedWeight', playedWeight);
     RealmObjectBase.set(this, 'playedWithWeight', playedWithWeight);
+    RealmObjectBase.set(this, 'reserveManager', reserveManager);
   }
 
   Options._();
@@ -78,6 +80,13 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
       RealmObjectBase.set(this, 'playedWithWeight', value);
 
   @override
+  bool get reserveManager =>
+      RealmObjectBase.get<bool>(this, 'reserveManager') as bool;
+  @override
+  set reserveManager(bool value) =>
+      RealmObjectBase.set(this, 'reserveManager', value);
+
+  @override
   Stream<RealmObjectChanges<Options>> get changes =>
       RealmObjectBase.getChanges<Options>(this);
 
@@ -97,6 +106,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
       'waitedWeight': waitedWeight.toEJson(),
       'playedWeight': playedWeight.toEJson(),
       'playedWithWeight': playedWithWeight.toEJson(),
+      'reserveManager': reserveManager.toEJson(),
     };
   }
 
@@ -112,6 +122,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
         'waitedWeight': EJsonValue waitedWeight,
         'playedWeight': EJsonValue playedWeight,
         'playedWithWeight': EJsonValue playedWithWeight,
+        'reserveManager': EJsonValue reserveManager,
       } =>
         Options(
           fromEJson(id),
@@ -121,6 +132,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
           fromEJson(waitedWeight),
           fromEJson(playedWeight),
           fromEJson(playedWithWeight),
+          fromEJson(reserveManager),
         ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -137,6 +149,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
       SchemaProperty('waitedWeight', RealmPropertyType.double),
       SchemaProperty('playedWeight', RealmPropertyType.double),
       SchemaProperty('playedWithWeight', RealmPropertyType.double),
+      SchemaProperty('reserveManager', RealmPropertyType.bool),
     ]);
   }();
 
