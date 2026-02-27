@@ -18,19 +18,14 @@ class OptionsRepository {
       realm.write(() {
         _options = realm.add(
           Options(
-            0,
-            // id
-            3,
-            // numberOfSections
-            1.0,
-            // skillWeight
-            1.0,
-            // genderWeight
-            1.0,
-            // waitedWeight
-            1.0,
-            // playedWeight
+            0, // id
+            3, // numberOfSections
+            1.0, // skillWeight
+            1.0, // genderWeight
+            1.0, // waitedWeight
+            1.0, // playedWeight
             1.0, // playedWithWeight
+            true, // reserveManager
           ),
         );
       });
