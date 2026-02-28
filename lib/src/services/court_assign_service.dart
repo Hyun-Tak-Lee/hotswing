@@ -103,6 +103,12 @@ class CourtAssignService {
         playerB,
       ]);
 
+      // 3. 팀 간 실력(Rate) 차이에 따른 미세 조정 (평균 레이팅이 비슷할수록 소폭 가산점 부여)
+      teamModifier += _calculateTeamRateBonus(firstTeamPlayers, [
+        playerA,
+        playerB,
+      ]);
+
       entry['score'] = (entry['score'] as double) + teamModifier;
     }
 
@@ -168,6 +174,7 @@ class CourtAssignService {
       final opponents = [bestOpponent1!, bestOpponent2!];
       score += _calculatePlayedWithPenalty(candidate, opponents);
       score += _calculateTeamGenderBonus(opponents, [partner, candidate]);
+      score += _calculateTeamRateBonus(opponents, [partner, candidate]);
 
       if (score > highestScore) {
         highestScore = score;
@@ -312,6 +319,22 @@ class CourtAssignService {
         sameGenderMaxBonus;
   }
 
+  /// 팀 간 평균 레이팅의 차이가 적을수록 보너스를 주며, 차이가 클수록 기하급수적으로 큰 감점(패널티)을 부여
+  double _calculateTeamRateBonus(List<Player> teamA, List<Player> teamB) {
+    if (teamA.isEmpty || teamB.isEmpty) return 0.0;
+
+    final teamARateAvg =
+        teamA.fold(0.0, (sum, p) => sum + p.rate) / teamA.length;
+    final teamBRateAvg =
+        teamB.fold(0.0, (sum, p) => sum + p.rate) / teamB.length;
+    final teamRateDiff = (teamARateAvg - teamBRateAvg).abs();
+
+    // 차이가 0일 때 최고점(0.25 * skillWeight)을 부여합니다.
+    // 차이가 커질수록 제곱(square)에 비례하여 마이너스(감점)가 가파르게 커집니다.
+    // 1000.0은 감쇄 기준점입니다. 이 수치가 작을수록 더 빨리 감점됩니다.
+    return pow(teamRateDiff / 1000.0, 2) * -1 * _options.skillWeight;
+  }
+
   /// 두 플레이어 간의 매칭 점수를 계산 (높을수록 좋음)
   double calculatePairScore(Player player1, Player player2) {
     // 두 사람이 같은 그룹인지 확인
@@ -340,10 +363,10 @@ class CourtAssignService {
     // 중복 플레이 점수: 이미 매칭되었던 페어일 경우 감점 처리
     final gamesPlayedTogether =
         player1.gamesPlayedWith[player2.id.hexString] ?? 0;
-    final playedWithScore = 1.0 - (gamesPlayedTogether * 0.25);
+    final playedWithScore = 1.0 - (gamesPlayedTogether * 0.15);
 
     // 각 항목에 설정된 가중치를 곱하여 최종 점수 산출
-    return (skillScore * _options.skillWeight) +
+    return skillScore +
         genderScore +
         (waitedScore * _options.waitedWeight) +
         (playedScore * _options.playedWeight) +

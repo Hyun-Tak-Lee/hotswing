@@ -147,9 +147,9 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void loadPlayer(Player player, List<ObjectId> groups) {
+  void loadPlayer(Player player, List<ObjectId> groups, int lated) {
     addPlayerInCourt(player, groups);
-    _playerService.resetStats(player);
+    _playerService.resetStats(player, lated: lated);
     _playerService.updateGroups(player, groups);
 
     _saveLoadedPlayers();
@@ -376,14 +376,14 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void popStandByPlayers(int assignedIndex) {
+  bool popStandByPlayers(int assignedIndex) {
     if (assignedIndex < 0 || assignedIndex >= _assignedPlayers.length) {
-      return;
+      return false;
     }
 
     final List<Player?> currentAssignedTeam = _assignedPlayers[assignedIndex];
     if (currentAssignedTeam.any((player) => player != null)) {
-      return;
+      return false;
     }
 
     if (_standbyPlayers.isNotEmpty) {
@@ -393,8 +393,10 @@ class PlayersProvider with ChangeNotifier {
         _assignedPlayers[assignedIndex] = _standbyPlayers.removeAt(0);
         _saveLoadedPlayers();
         notifyListeners();
+        return true;
       }
     }
+    return false;
   }
 
   void movePlayersFromCourtToUnassigned({
@@ -456,18 +458,18 @@ class PlayersProvider with ChangeNotifier {
     );
   }
 
-  void assignNextPlayers(int sectionIndex, {required String targetCourtKind}) {
-    List<Player> currentPlayers = targetCourtKind == 'assigned'
-        ? getAssignedPlayersInCourt(sectionIndex)
-        : getStandbyPlayersInCourt(sectionIndex);
+  void assignNextPlayersToAssignedCourt(int sectionIndex) {
+    if (popStandByPlayers(sectionIndex)) return;
 
+    List<Player> currentPlayers = getAssignedPlayersInCourt(sectionIndex);
     List<Player> recommendedPlayers = getRecommendedPlayers(currentPlayers);
+    addPlayersToAssignedCourt(sectionIndex, recommendedPlayers);
+  }
 
-    if (targetCourtKind == 'assigned') {
-      addPlayersToAssignedCourt(sectionIndex, recommendedPlayers);
-    } else {
-      addPlayersToStandbyCourt(sectionIndex, recommendedPlayers);
-    }
+  void assignNextPlayersToStandbyCourt(int sectionIndex) {
+    List<Player> currentPlayers = getStandbyPlayersInCourt(sectionIndex);
+    List<Player> recommendedPlayers = getRecommendedPlayers(currentPlayers);
+    addPlayersToStandbyCourt(sectionIndex, recommendedPlayers);
   }
 
   void addPlayersToAssignedCourt(int sectionIndex, List<Player> playersToAdd) {

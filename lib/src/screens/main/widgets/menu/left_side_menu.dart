@@ -82,11 +82,6 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
             newWaited: result['waited'] as int,
             newGroups: result['groups'] as List<ObjectId>,
           );
-        } else if (result['loaded'] as bool) {
-          playersProvider.loadPlayer(
-            result['player'],
-            result['groups'] as List<ObjectId>,
-          );
         } else {
           int latedValue = 0;
           if (playersProvider.unassignedPlayers.isNotEmpty) {
@@ -94,16 +89,25 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                 .map((p) => p.played)
                 .reduce(max);
           }
-          playersProvider.addPlayer(
-            name: result['name'] as String,
-            rate: result['rate'] as int,
-            gender: result['gender'] as String,
-            role: result['role'] as String,
-            played: 0,
-            waited: 0,
-            lated: latedValue,
-            groups: result['groups'] as List<ObjectId>,
-          );
+
+          if (result['loaded'] as bool) {
+            playersProvider.loadPlayer(
+              result['player'],
+              result['groups'] as List<ObjectId>,
+              latedValue,
+            );
+          } else {
+            playersProvider.addPlayer(
+              name: result['name'] as String,
+              rate: result['rate'] as int,
+              gender: result['gender'] as String,
+              role: result['role'] as String,
+              played: 0,
+              waited: 0,
+              lated: latedValue,
+              groups: result['groups'] as List<ObjectId>,
+            );
+          }
         }
       }
     } catch (e) {

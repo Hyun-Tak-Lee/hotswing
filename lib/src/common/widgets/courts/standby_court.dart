@@ -87,9 +87,8 @@ class StandbyCourtSectionsView extends StatelessWidget {
                         Color(0xFF4ADE80),
                       ],
                       onTap: () {
-                        playersProvider.assignNextPlayers(
+                        playersProvider.assignNextPlayersToStandbyCourt(
                           sectionIndex,
-                          targetCourtKind: PlayerSectionKind.standby.value,
                         );
                       },
                       child: Text(

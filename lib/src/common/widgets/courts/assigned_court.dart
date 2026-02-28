@@ -85,9 +85,8 @@ class CourtSectionsView extends StatelessWidget {
                         const Color(0xFF81C784),
                       ],
                       onTap: () {
-                        playersProvider.assignNextPlayers(
+                        playersProvider.assignNextPlayersToAssignedCourt(
                           sectionIndex,
-                          targetCourtKind: PlayerSectionKind.assigned.value,
                         );
                       },
                       child: Text(
@@ -125,21 +124,6 @@ class CourtSectionsView extends StatelessWidget {
                         ),
                       ),
                     ),
-                  const SizedBox(width: 8.0),
-                  // 대기 코트 Pop 버튼
-                  _buildGradientButton(
-                    isTablet: isTablet,
-                    width: isTablet ? 50.0 : 40.0,
-                    height: isTablet ? 45.0 : 30.0,
-                    colors: [const Color(0xFF80CBC4), const Color(0xFF26A69A)],
-                    onTap: () =>
-                        playersProvider.popStandByPlayers(sectionIndex),
-                    child: Icon(
-                      Icons.add,
-                      size: isTablet ? 24.0 : 18.0,
-                      color: Colors.white,
-                    ),
-                  ),
                 ],
               );
             }).toList(),

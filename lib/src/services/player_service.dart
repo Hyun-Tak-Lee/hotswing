@@ -108,12 +108,12 @@ class PlayerService {
     _playerRepository.updatePlayer(player: player, groups: RealmList(groups));
   }
 
-  void resetStats(Player player) {
+  void resetStats(Player player, {int lated = 0}) {
     _playerRepository.updatePlayer(
       player: player,
       played: 0,
       waited: 0,
-      lated: 0,
+      lated: lated,
       gamesPlayedWith: RealmMap<int>({}),
     );
   }
