@@ -81,17 +81,17 @@ class ActivationService {
 
       // 입력한 비밀번호와 마스터 비밀번호 비교
       if (password.trim() == masterPassword) {
-        // 1. 현재 기기 ID 가져오기
+        // 현재 기기 ID 가져오기
         final deviceId = await getDeviceId();
 
-        // 2. 기기 ID + 비밀번호 함께 암호화
+        // 기기 ID + 비밀번호 함께 암호화
         final encryptedDeviceId = CryptoUtils.encryptDeviceId(
           deviceId,
-          masterPassword, // 비밀번호 포함 ⭐
+          masterPassword, // 비밀번호 포함
           secretKey,
         );
 
-        // 3. 활성화 처리 - 암호화된 기기 ID 저장
+        // 활성화 처리 - 암호화된 기기 ID 저장
         await _sharedProvider.saveString(_keyDeviceId, deviceId);
         await _sharedProvider.saveString(
           _keyEncryptedDeviceId,
@@ -124,12 +124,12 @@ class ActivationService {
   /// - 기기 B로 SharedPreferences 복사 → verify 불일치 ✗ 재활성화 요구
   Future<bool> verifyDevice() async {
     try {
-      // 1. 활성화되었는지 확인
+      // 활성화되었는지 확인
       if (!(await isActivated())) {
         return false;
       }
 
-      // 2. 저장된 암호화 값 가져오기
+      // 저장된 암호화 값 가져오기
       final encryptedDeviceId = await _sharedProvider.getString(
         _keyEncryptedDeviceId,
       );
@@ -139,10 +139,10 @@ class ActivationService {
         return false;
       }
 
-      // 3. 현재 기기 ID 가져오기
+      // 현재 기기 ID 가져오기
       final currentDeviceId = await getDeviceId();
 
-      // 4. .env에서 마스터 비밀번호와 시크릿 키 가져오기
+      // .env에서 마스터 비밀번호와 시크릿 키 가져오기
       final masterPassword = dotenv.env['MASTER_PASSWORD'];
       final secretKey = dotenv.env['SECRET_KEY'];
 
@@ -150,10 +150,10 @@ class ActivationService {
         return false;
       }
 
-      // 5. 검증 (기기 ID + 비밀번호 함께 검증) ⭐
+      // 검증 (기기 ID + 비밀번호 함께 검증)
       final isValid = CryptoUtils.verifyDeviceId(
         currentDeviceId,
-        masterPassword, // 비밀번호 포함 ⭐
+        masterPassword, // 비밀번호 포함
         encryptedDeviceId,
         secretKey,
       );

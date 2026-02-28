@@ -39,7 +39,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // 1. 코트 관리 섹션
+                // 코트 관리 섹션
                 _buildSectionHeader(
                   title: '코트 관리',
                   fontSize: headerFontSize,
@@ -169,7 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   duration: const Duration(milliseconds: 300),
                 ),
 
-                // 2. 매칭 조건 설정 섹션
+                // 매칭 조건 설정 섹션
                 const SizedBox(height: 16),
                 _buildSectionHeader(
                   title: '매칭 조건 설정',

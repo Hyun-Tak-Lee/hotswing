@@ -27,7 +27,7 @@ class MultiSelectForm extends StatefulWidget {
 
 class _MultiSelectFormState extends State<MultiSelectForm> {
   late List<ObjectId> _selectedOptions;
-  final int _maxSelection = 3;
+  final int _maxSelection = 1;
 
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;

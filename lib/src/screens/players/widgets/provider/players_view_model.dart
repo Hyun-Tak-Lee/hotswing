@@ -103,7 +103,7 @@ class PlayersViewModel extends ChangeNotifier {
       );
     }
 
-    // 1. 데이터 조회
+    // 데이터 조회
     _queryResults = _repository.getPlayers(
       query: queryBuilder.build(),
       args: queryBuilder.args,
@@ -111,7 +111,7 @@ class PlayersViewModel extends ChangeNotifier {
       sortAscending: true,
     );
 
-    // 2. 페이지 데이터 구성
+    // 페이지 데이터 구성
     int initialCount = _queryResults.length < _pageSize
         ? _queryResults.length
         : _pageSize;

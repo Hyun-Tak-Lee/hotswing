@@ -450,12 +450,8 @@ class PlayersProvider with ChangeNotifier {
   }
 
   List<Player> getRecommendedPlayers(List<Player> currentPlayersOnCourt) {
-    List<Player> tempUnassigned = _unassignedPlayers
-        .where((player) => player.activate == true)
-        .toList();
-
     return _courtService.getRecommendedPlayersForCourt(
-      unassignedPlayers: tempUnassigned,
+      unassignedPlayers: _unassignedPlayers,
       currentPlayersOnCourt: currentPlayersOnCourt,
     );
   }
