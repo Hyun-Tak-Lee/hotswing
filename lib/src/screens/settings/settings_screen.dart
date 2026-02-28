@@ -138,27 +138,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               },
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '운영진 대기 (운영진 1명일 시 OFF)',
-                                style: TextStyle(
-                                  fontSize: iconAndFontSize,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              Switch.adaptive(
-                                value: optionsProvider.reserveManager,
-                                activeThumbColor: Colors.blueAccent,
-                                onChanged: (bool value) {
-                                  optionsProvider.setReserveManager(value);
-                                },
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     ),
@@ -186,6 +165,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     padding: const EdgeInsets.only(top: 4.0),
                     child: Column(
                       children: [
+                        Container(
+                          margin: const EdgeInsets.symmetric(vertical: 8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0,
+                              vertical: 16.0,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '운영진 대기 (운영진 1명일 시 OFF)',
+                                  style: TextStyle(
+                                    fontSize: iconAndFontSize,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Switch.adaptive(
+                                  value: optionsProvider.reserveManager,
+                                  activeThumbColor: Colors.blueAccent,
+                                  onChanged: (bool value) {
+                                    optionsProvider.setReserveManager(value);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                         _buildSliderListItem(
                           context: context,
                           title: '실력 매칭',
