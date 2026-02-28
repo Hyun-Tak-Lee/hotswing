@@ -382,7 +382,7 @@ class CourtAssignService {
         return _random.nextInt(3) - 1;
       });
 
-    const int searchRange = 16;
+    const int searchRange = 20;
     final List<Map<String, dynamic>> pairsWithScore = [];
 
     for (int i = 0; i < sortedPlayers.length; i++) {

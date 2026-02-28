@@ -173,8 +173,6 @@ class PlayersViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 1000));
-
     int currentLength = _players.length;
     int nextCount = currentLength + _pageSize;
 
