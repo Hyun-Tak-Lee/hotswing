@@ -458,6 +458,20 @@ class PlayersProvider with ChangeNotifier {
     );
   }
 
+  void swapAssignedCourts(int indexA, int indexB) {
+    if (indexA < 0 ||
+        indexA >= _assignedPlayers.length ||
+        indexB < 0 ||
+        indexB >= _assignedPlayers.length) {
+      return;
+    }
+    List<Player?> temp = _assignedPlayers[indexA];
+    _assignedPlayers[indexA] = _assignedPlayers[indexB];
+    _assignedPlayers[indexB] = temp;
+    _saveLoadedPlayers();
+    notifyListeners();
+  }
+
   void assignNextPlayersToAssignedCourt(int sectionIndex) {
     if (popStandByPlayers(sectionIndex)) return;
 

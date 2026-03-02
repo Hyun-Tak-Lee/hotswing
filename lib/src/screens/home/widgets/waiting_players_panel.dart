@@ -233,8 +233,14 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
             ),
           ),
           PopupMenuButton<SortCriterion>(
+            tooltip: '정렬 기준',
             initialValue: _sortCriterion,
-            color: const Color(0xFFFAFAFA), // 눈 안 부신 부드러운 흰색
+            color: Colors.white,
+            elevation: 6,
+            offset: const Offset(0, 40),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             onSelected: (SortCriterion newValue) {
               setState(() {
                 _sortCriterion = newValue;
@@ -243,13 +249,55 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
             },
             itemBuilder: (BuildContext context) {
               return [
-                const PopupMenuItem<SortCriterion>(
+                PopupMenuItem<SortCriterion>(
                   value: SortCriterion.played,
-                  child: Text('경기 적은 순'),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.sort_rounded,
+                        color: Colors.blue.shade400,
+                        size: isTablet ? 24 : 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '경기 적은 순',
+                        style: TextStyle(
+                          fontSize: isTablet ? 16.0 : 14.0,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const PopupMenuItem<SortCriterion>(
+                PopupMenuItem<SortCriterion>(
                   value: SortCriterion.name,
-                  child: Text('이름 가나다 순'),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.sort_by_alpha_rounded,
+                        color: Colors.blue.shade400,
+                        size: isTablet ? 24 : 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '이름 가나다 순',
+                        style: TextStyle(
+                          fontSize: isTablet ? 16.0 : 14.0,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ];
             },
