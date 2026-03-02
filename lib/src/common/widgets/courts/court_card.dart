@@ -22,6 +22,7 @@ class CourtCard extends StatelessWidget {
   onPlayerDrop;
   final VoidCallback onCourtPlayerDragStarted;
   final VoidCallback onCourtPlayerDragEnded;
+  final Function(int sectionIndex, int subIndex)? onPlayerRemoved;
 
   const CourtCard({
     super.key,
@@ -32,6 +33,7 @@ class CourtCard extends StatelessWidget {
     required this.onPlayerDrop,
     required this.onCourtPlayerDragStarted,
     required this.onCourtPlayerDragEnded,
+    this.onPlayerRemoved,
   });
 
   @override
@@ -134,6 +136,9 @@ class CourtCard extends StatelessWidget {
           ),
       onDragStartedFromZone: onCourtPlayerDragStarted,
       onDragEndedFromZone: onCourtPlayerDragEnded,
+      onPlayerRemoved: onPlayerRemoved != null
+          ? () => onPlayerRemoved!(sectionIndex, subIndex)
+          : null,
     );
   }
 }

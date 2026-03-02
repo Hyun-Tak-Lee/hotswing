@@ -53,6 +53,15 @@ class CourtSectionsView extends StatelessWidget {
                 onPlayerDrop: onPlayerDrop,
                 onCourtPlayerDragStarted: onCourtPlayerDragStarted,
                 onCourtPlayerDragEnded: onCourtPlayerDragEnded,
+                onPlayerRemoved: (courtIndex, playerIndex) {
+                  final removed = playersProvider.removeAssignedPlayer(
+                    courtIndex,
+                    playerIndex,
+                  );
+                  if (removed != null) {
+                    playersProvider.addUnassignedPlayer(removed);
+                  }
+                },
                 headerActions: [
                   // 새로고침 버튼
                   _buildGradientButton(

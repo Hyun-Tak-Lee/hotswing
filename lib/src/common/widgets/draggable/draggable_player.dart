@@ -357,6 +357,7 @@ class PlayerDropZone extends StatelessWidget {
   final Color? backgroundColor;
   final VoidCallback? onDragStartedFromZone;
   final VoidCallback? onDragEndedFromZone;
+  final VoidCallback? onPlayerRemoved;
 
   const PlayerDropZone({
     super.key,
@@ -370,6 +371,7 @@ class PlayerDropZone extends StatelessWidget {
     this.backgroundColor,
     this.onDragStartedFromZone,
     this.onDragEndedFromZone,
+    this.onPlayerRemoved,
   });
 
   @override
@@ -409,7 +411,7 @@ class PlayerDropZone extends StatelessWidget {
             ? const Color(0xFFE2E8F0)
             : Colors.transparent;
 
-        return Container(
+        Widget content = Container(
           height: currentHeight,
           margin: EdgeInsets.all(isTablet ? 2.0 : 4.0),
           decoration: BoxDecoration(
@@ -453,6 +455,37 @@ class PlayerDropZone extends StatelessWidget {
                     ),
                   ),
           ),
+        );
+
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            content,
+            if (player != null &&
+                (sectionKind == 'assigned' || sectionKind == 'standby'))
+              Positioned(
+                top: 0,
+                right: 0,
+                child: GestureDetector(
+                  onTap: () {
+                    if (onPlayerRemoved != null) {
+                      onPlayerRemoved!();
+                    }
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(isTablet ? 6.0 : 4.0),
+                    margin: EdgeInsets.all(isTablet ? 6.0 : 4.0),
+                    child: Icon(
+                      Icons.close,
+                      size: isTablet ? 18.0 : 14.0,
+                      color: const Color(
+                        0xFF94A3B8,
+                      ), // Slate 400 (좀 더 연하고 깔끔하게 묻히는 색상)
+                    ),
+                  ),
+                ),
+              ),
+          ],
         );
       },
     );
