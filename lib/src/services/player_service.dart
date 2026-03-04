@@ -86,6 +86,7 @@ class PlayerService {
     int waited,
     int lated,
     List<ObjectId> groups,
+    DateTime? recentMatchDate,
   ) {
     _playerRepository.updatePlayer(
       player: player,
@@ -97,6 +98,7 @@ class PlayerService {
       waited: waited,
       lated: lated,
       groups: RealmList(groups),
+      recentMatchDate: recentMatchDate,
     );
   }
 
@@ -144,5 +146,16 @@ class PlayerService {
       playersInCourt: playersInCourt,
       games: games,
     );
+  }
+
+  void updateRecentMatchDate(Player player) {
+    _playerRepository.updatePlayer(
+      player: player,
+      recentMatchDate: DateTime.now(),
+    );
+  }
+
+  void cleanupInactivePlayers(int daysThreshold) {
+    _playerRepository.cleanupInactivePlayers(daysThreshold);
   }
 }

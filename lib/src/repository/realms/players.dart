@@ -44,6 +44,7 @@ class PlayerRepository {
     int? waited,
     int? lated,
     bool? activate,
+    DateTime? recentMatchDate,
     RealmMap<int>? gamesPlayedWith,
     RealmList<ObjectId>? groups,
   }) {
@@ -72,6 +73,9 @@ class PlayerRepository {
         }
         if (activate != null) {
           player.activate = activate;
+        }
+        if (recentMatchDate != null) {
+          player.recentMatchDate = recentMatchDate;
         }
         if (gamesPlayedWith != null) {
           player.gamesPlayedWith.clear();
@@ -183,5 +187,27 @@ class PlayerRepository {
 
   RealmResults<Player> getAllPlayers() {
     return _realm.all<Player>();
+  }
+
+  void cleanupInactivePlayers(int daysThreshold) {
+    try {
+      final thresholdDate = DateTime.now().subtract(
+        Duration(days: daysThreshold),
+      );
+      final inactivePlayers = _realm.query<Player>(
+        "recentMatchDate == nil || recentMatchDate < \$0",
+        [thresholdDate],
+      );
+
+      if (inactivePlayers.isNotEmpty) {
+        _realm.write(() {
+          _realm.deleteMany(inactivePlayers);
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Cleanup error: \$e");
+      }
+    }
   }
 }

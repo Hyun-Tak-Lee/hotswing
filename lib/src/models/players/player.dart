@@ -17,4 +17,6 @@ class _Player {
   bool activate = true;
   late Map<String, int> gamesPlayedWith;
   late List<ObjectId> groups;
+  @Indexed()
+  DateTime? recentMatchDate;
 }

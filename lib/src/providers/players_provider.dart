@@ -29,6 +29,7 @@ class PlayersProvider with ChangeNotifier {
 
   void initialized() async {
     try {
+      _playerService.cleanupInactivePlayers(90);
       await _loadInitialAssignedPlayersCount();
       await _loadInitialPlayers();
       _saveLoadedPlayers();
@@ -139,6 +140,7 @@ class PlayersProvider with ChangeNotifier {
       lated: lated,
       gamesPlayedWith: {},
       groups: RealmList<ObjectId>(groups),
+      recentMatchDate: DateTime.now(),
     );
     _playerService.addPlayer(newPlayer);
     addPlayerInCourt(newPlayer, groups);
@@ -151,6 +153,7 @@ class PlayersProvider with ChangeNotifier {
     addPlayerInCourt(player, groups);
     _playerService.resetStats(player, lated: lated);
     _playerService.updateGroups(player, groups);
+    _playerService.updateRecentMatchDate(player);
 
     _saveLoadedPlayers();
     notifyListeners();
@@ -189,6 +192,7 @@ class PlayersProvider with ChangeNotifier {
       newWaited,
       playerToUpdate.lated,
       newGroups,
+      null,
     );
 
     // 자신 이외의 플레이어들도 그룹 생성

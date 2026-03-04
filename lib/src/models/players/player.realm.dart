@@ -24,6 +24,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
     bool activate = true,
     Map<String, int> gamesPlayedWith = const {},
     Iterable<ObjectId> groups = const [],
+    DateTime? recentMatchDate,
   }) {
     if (!_defaultsSet) {
       _defaultsSet = RealmObjectBase.setDefaults<Player>({
@@ -52,6 +53,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       'groups',
       RealmList<ObjectId>(groups),
     );
+    RealmObjectBase.set(this, 'recentMatchDate', recentMatchDate);
   }
 
   Player._();
@@ -116,6 +118,13 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       throw RealmUnsupportedSetError();
 
   @override
+  DateTime? get recentMatchDate =>
+      RealmObjectBase.get<DateTime>(this, 'recentMatchDate') as DateTime?;
+  @override
+  set recentMatchDate(DateTime? value) =>
+      RealmObjectBase.set(this, 'recentMatchDate', value);
+
+  @override
   Stream<RealmObjectChanges<Player>> get changes =>
       RealmObjectBase.getChanges<Player>(this);
 
@@ -139,6 +148,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       'activate': activate.toEJson(),
       'gamesPlayedWith': gamesPlayedWith.toEJson(),
       'groups': groups.toEJson(),
+      'recentMatchDate': recentMatchDate.toEJson(),
     };
   }
 
@@ -165,6 +175,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
           activate: fromEJson(ejson['activate'], defaultValue: true),
           gamesPlayedWith: fromEJson(ejson['gamesPlayedWith']),
           groups: fromEJson(ejson['groups']),
+          recentMatchDate: fromEJson(ejson['recentMatchDate']),
         ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -196,6 +207,12 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
         'groups',
         RealmPropertyType.objectid,
         collectionType: RealmCollectionType.list,
+      ),
+      SchemaProperty(
+        'recentMatchDate',
+        RealmPropertyType.timestamp,
+        optional: true,
+        indexType: RealmIndexType.regular,
       ),
     ]);
   }();
