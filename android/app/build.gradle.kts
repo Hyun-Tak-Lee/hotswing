@@ -30,11 +30,24 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            // Key 를 알맞게 수정하세요
+            storeFile = file("C:\\Users\\12gus\\hotswing_key\\hotswing.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
-        release {
+        getByName("release") {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
+
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
