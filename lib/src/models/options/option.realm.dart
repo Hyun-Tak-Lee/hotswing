@@ -19,6 +19,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
     double playedWeight,
     double playedWithWeight,
     bool reserveManager,
+    int inactiveDaysThreshold,
   ) {
     RealmObjectBase.set(this, 'id', id);
     RealmObjectBase.set(this, 'numberOfSections', numberOfSections);
@@ -28,6 +29,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.set(this, 'playedWeight', playedWeight);
     RealmObjectBase.set(this, 'playedWithWeight', playedWithWeight);
     RealmObjectBase.set(this, 'reserveManager', reserveManager);
+    RealmObjectBase.set(this, 'inactiveDaysThreshold', inactiveDaysThreshold);
   }
 
   Options._();
@@ -87,6 +89,13 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
       RealmObjectBase.set(this, 'reserveManager', value);
 
   @override
+  int get inactiveDaysThreshold =>
+      RealmObjectBase.get<int>(this, 'inactiveDaysThreshold') as int;
+  @override
+  set inactiveDaysThreshold(int value) =>
+      RealmObjectBase.set(this, 'inactiveDaysThreshold', value);
+
+  @override
   Stream<RealmObjectChanges<Options>> get changes =>
       RealmObjectBase.getChanges<Options>(this);
 
@@ -107,6 +116,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
       'playedWeight': playedWeight.toEJson(),
       'playedWithWeight': playedWithWeight.toEJson(),
       'reserveManager': reserveManager.toEJson(),
+      'inactiveDaysThreshold': inactiveDaysThreshold.toEJson(),
     };
   }
 
@@ -123,6 +133,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
         'playedWeight': EJsonValue playedWeight,
         'playedWithWeight': EJsonValue playedWithWeight,
         'reserveManager': EJsonValue reserveManager,
+        'inactiveDaysThreshold': EJsonValue inactiveDaysThreshold,
       } =>
         Options(
           fromEJson(id),
@@ -133,6 +144,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
           fromEJson(playedWeight),
           fromEJson(playedWithWeight),
           fromEJson(reserveManager),
+          fromEJson(inactiveDaysThreshold),
         ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -150,6 +162,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
       SchemaProperty('playedWeight', RealmPropertyType.double),
       SchemaProperty('playedWithWeight', RealmPropertyType.double),
       SchemaProperty('reserveManager', RealmPropertyType.bool),
+      SchemaProperty('inactiveDaysThreshold', RealmPropertyType.int),
     ]);
   }();
 

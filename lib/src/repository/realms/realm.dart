@@ -8,7 +8,7 @@ class RealmProvider {
   RealmProvider._() {
     final config = Configuration.local(
       [Player.schema, Options.schema],
-      schemaVersion: 2,
+      schemaVersion: 3,
       migrationCallback: (migration, oldSchemaVersion) {
         if (oldSchemaVersion < 1) {
           for (final obj in migration.newRealm.all<Options>()) {
@@ -18,6 +18,11 @@ class RealmProvider {
         if (oldSchemaVersion < 2) {
           for (final obj in migration.newRealm.all<Player>()) {
             obj.recentMatchDate = DateTime.now();
+          }
+        }
+        if (oldSchemaVersion < 3) {
+          for (final obj in migration.newRealm.all<Options>()) {
+            obj.inactiveDaysThreshold = 90;
           }
         }
       },

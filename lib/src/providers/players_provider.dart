@@ -29,7 +29,7 @@ class PlayersProvider with ChangeNotifier {
 
   void initialized() async {
     try {
-      _playerService.cleanupInactivePlayers(90);
+      _playerService.cleanupInactivePlayers(_options.inactiveDaysThreshold);
       await _loadInitialAssignedPlayersCount();
       await _loadInitialPlayers();
       _saveLoadedPlayers();

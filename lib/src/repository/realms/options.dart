@@ -26,6 +26,7 @@ class OptionsRepository {
             1.0, // playedWeight
             1.0, // playedWithWeight
             true, // reserveManager
+            90, // inactiveDaysThreshold
           ),
         );
       });

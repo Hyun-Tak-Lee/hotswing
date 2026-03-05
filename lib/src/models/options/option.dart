@@ -15,4 +15,5 @@ class _Options {
   late double playedWeight;
   late double playedWithWeight;
   late bool reserveManager;
+  late int inactiveDaysThreshold; // 비활성 플레이어 자동 삭제 기간 (일)
 }

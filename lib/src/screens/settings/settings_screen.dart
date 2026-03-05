@@ -14,6 +14,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _isCourtExpanded = true;
   bool _isMatchingExpanded = true;
+  bool _isPlayerExpanded = true;
 
   @override
   Widget build(BuildContext context) {
@@ -266,6 +267,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
 
                 const SizedBox(height: 48), // 하단 여백 추가
+                // 플레이어 관리 섹션
+                const SizedBox(height: 16),
+                _buildSectionHeader(
+                  title: '플레이어 관리',
+                  fontSize: headerFontSize,
+                  isExpanded: _isPlayerExpanded,
+                  onToggle: () =>
+                      setState(() => _isPlayerExpanded = !_isPlayerExpanded),
+                ),
+                AnimatedCrossFade(
+                  firstChild: const SizedBox(width: double.infinity),
+                  secondChild: Padding(
+                    padding: const EdgeInsets.only(top: 4.0, bottom: 24.0),
+                    child: _buildIntSliderListItem(
+                      context: context,
+                      title: '미활동 플레이어 정리 기간',
+                      leftText: '30일',
+                      rightText: '180일',
+                      value: optionsProvider.inactiveDaysThreshold,
+                      min: 30,
+                      max: 180,
+                      divisions: 30,
+                      unit: '일',
+                      onChanged: (int value) =>
+                          optionsProvider.setInactiveDaysThreshold(value),
+                      iconAndFontSize: iconAndFontSize,
+                    ),
+                  ),
+                  crossFadeState: _isPlayerExpanded
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
+                  duration: const Duration(milliseconds: 300),
+                ),
+
+                const SizedBox(height: 48),
               ]),
             ),
           ),
@@ -408,6 +444,110 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 divisions: 20,
                 label: value.toStringAsFixed(1),
                 onChanged: onChanged,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIntSliderListItem({
+    required BuildContext context,
+    required String title,
+    required String leftText,
+    required String rightText,
+    required int value,
+    required int min,
+    required int max,
+    required int divisions,
+    required String unit,
+    required ValueChanged<int> onChanged,
+    required double iconAndFontSize,
+  }) {
+    final displayValue = '$value$unit';
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: iconAndFontSize,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  leftText,
+                  style: TextStyle(
+                    fontSize: iconAndFontSize * 0.8,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    displayValue,
+                    style: TextStyle(
+                      fontSize: iconAndFontSize * 0.9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent.shade700,
+                    ),
+                  ),
+                ),
+                Text(
+                  rightText,
+                  style: TextStyle(
+                    fontSize: iconAndFontSize * 0.8,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: Colors.blueAccent,
+                inactiveTrackColor: Colors.blue.withValues(alpha: 0.2),
+                thumbColor: Colors.white,
+                overlayColor: Colors.blueAccent.withValues(alpha: 0.2),
+                valueIndicatorColor: Colors.blueAccent,
+                valueIndicatorTextStyle: const TextStyle(color: Colors.white),
+                trackHeight: 6.0,
+              ),
+              child: Slider(
+                value: value.toDouble(),
+                min: min.toDouble(),
+                max: max.toDouble(),
+                divisions: divisions,
+                label: '$value$unit',
+                onChanged: (double v) => onChanged(v.round()),
               ),
             ),
           ],
