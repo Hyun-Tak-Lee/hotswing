@@ -9,8 +9,14 @@ import 'package:hotswing/src/enums/player_feature.dart';
 class PlayerListTile extends StatelessWidget {
   final Player player;
   final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
 
-  const PlayerListTile({super.key, required this.player, this.onDelete});
+  const PlayerListTile({
+    super.key,
+    required this.player,
+    this.onDelete,
+    this.onEdit,
+  });
 
   String _getRoleLabel(String roleValue) {
     try {
@@ -96,8 +102,15 @@ class PlayerListTile extends StatelessWidget {
                       skillLevel: skillLevel,
                       rate: player.rate,
                     ),
+                    if (onEdit != null) ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.grey),
+                        onPressed: onEdit,
+                      ),
+                    ],
                     if (onDelete != null) ...[
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 8),
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.grey),
                         onPressed: onDelete,
@@ -122,6 +135,15 @@ class PlayerListTile extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (onEdit != null)
+                      IconButton(
+                        icon: const Icon(
+                          Icons.edit,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
+                        onPressed: onEdit,
+                      ),
                     if (onDelete != null)
                       IconButton(
                         icon: const Icon(

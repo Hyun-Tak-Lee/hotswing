@@ -45,6 +45,10 @@ class PlayersViewModel extends ChangeNotifier {
   final Set<String> _selectedSkills = {};
   Set<String> get selectedSkills => _selectedSkills;
 
+  // 현재 수정 중인 플레이어 ID
+  ObjectId? _editingPlayerId;
+  ObjectId? get editingPlayerId => _editingPlayerId;
+
   // 한 번에 불러올 데이터 개수
   static const int _pageSize = 30;
 
@@ -196,7 +200,47 @@ class PlayersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 선택 모드 설정
+  // 플레이어 정보 수정
+  void updatePlayer({
+    required Player player,
+    required String name,
+    required String role,
+    required int rate,
+    required String gender,
+    required int played,
+    required int waited,
+    required List<ObjectId> groups,
+  }) {
+    _repository.updatePlayer(
+      player: player,
+      name: name,
+      role: role,
+      rate: rate,
+      gender: gender,
+      played: played,
+      waited: waited,
+      groups: RealmList<ObjectId>(groups),
+    );
+
+    // 목록 데이터 갱신
+    notifyListeners();
+  }
+
+  // 수정 모드 토글
+  void toggleEditMode(ObjectId? playerId) {
+    if (_editingPlayerId == playerId) {
+      _editingPlayerId = null;
+    } else {
+      _editingPlayerId = playerId;
+      // 수정 모드 진입 시 선택 모드는 해제
+      if (playerId != null) {
+        setSelectionMode(false);
+      }
+    }
+    notifyListeners();
+  }
+
+  // 선택 모드 종료 및 초기화
   void setSelectionMode(bool enabled) {
     _isSelectionMode = enabled;
     if (!enabled) {

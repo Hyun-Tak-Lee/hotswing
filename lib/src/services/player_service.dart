@@ -155,7 +155,14 @@ class PlayerService {
     );
   }
 
-  void cleanupInactivePlayers(int daysThreshold) {
-    _playerRepository.cleanupInactivePlayers(daysThreshold);
+  void cleanupInactivePlayers(
+    int daysThreshold,
+    List<ObjectId> activePlayerIds,
+  ) {
+    _playerRepository.cleanupInactivePlayers(daysThreshold, activePlayerIds);
+  }
+
+  void cleanupGuestPlayers(List<ObjectId> activePlayerIds) {
+    _playerRepository.cleanupGuestPlayers(activePlayerIds);
   }
 }

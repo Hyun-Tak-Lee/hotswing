@@ -5,6 +5,7 @@ import 'package:hotswing/src/screens/players/widgets/player_list_tile.dart';
 import 'package:hotswing/src/screens/players/widgets/players_filter_bottom_sheet.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/common/widgets/dialogs/confirmation_dialog.dart';
+import 'package:hotswing/src/screens/players/widgets/player_edit_form.dart';
 
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 
@@ -206,42 +207,62 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
                     final isSelected = viewModel.selectedPlayerIds.contains(
                       player.id,
                     );
+                    final isEditing = player.id == viewModel.editingPlayerId;
 
-                    return GestureDetector(
-                      onLongPress: () {
-                        if (!viewModel.isSelectionMode) {
-                          viewModel.setSelectionMode(true);
-                          viewModel.toggleSelection(player.id);
-                        }
-                      },
-                      onTap: () {
-                        if (viewModel.isSelectionMode) {
-                          viewModel.toggleSelection(player.id);
-                        }
-                      },
-                      child: Row(
-                        children: [
-                          if (viewModel.isSelectionMode)
-                            Checkbox(
-                              value: isSelected,
-                              onChanged: (bool? value) {
-                                viewModel.toggleSelection(player.id);
-                              },
-                            ),
-                          Expanded(
-                            child: PlayerListTile(
-                              player: player,
-                              onDelete: viewModel.isSelectionMode
-                                  ? null
-                                  : () => _showDeleteDialog(
-                                      context,
-                                      viewModel,
-                                      player,
-                                    ),
-                            ),
+                    return Column(
+                      children: [
+                        GestureDetector(
+                          onLongPress: () {
+                            if (!viewModel.isSelectionMode) {
+                              viewModel.setSelectionMode(true);
+                              viewModel.toggleSelection(player.id);
+                            }
+                          },
+                          onTap: () {
+                            if (viewModel.isSelectionMode) {
+                              viewModel.toggleSelection(player.id);
+                            }
+                          },
+                          child: Row(
+                            children: [
+                              if (viewModel.isSelectionMode)
+                                Checkbox(
+                                  value: isSelected,
+                                  onChanged: (bool? value) {
+                                    viewModel.toggleSelection(player.id);
+                                  },
+                                ),
+                              Expanded(
+                                child: PlayerListTile(
+                                  player: player,
+                                  onDelete: viewModel.isSelectionMode
+                                      ? null
+                                      : () => _showDeleteDialog(
+                                          context,
+                                          viewModel,
+                                          player,
+                                        ),
+                                  onEdit: viewModel.isSelectionMode
+                                      ? null
+                                      : () =>
+                                            viewModel.toggleEditMode(player.id),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                          child: isEditing
+                              ? PlayerEditForm(
+                                  player: player,
+                                  onCancel: () =>
+                                      viewModel.toggleEditMode(null),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ],
                     );
                   } else {
                     return const Padding(

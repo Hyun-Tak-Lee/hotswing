@@ -174,7 +174,6 @@ class PlayerRepository {
   void deletePlayers(List<ObjectId> ids) {
     try {
       _realm.write(() {
-        // Realm query for 'id IN $0' with list of ids
         final playersToDelete = _realm.query<Player>("id IN \$0", [ids]);
         _realm.deleteMany(playersToDelete);
       });
@@ -189,14 +188,17 @@ class PlayerRepository {
     return _realm.all<Player>();
   }
 
-  void cleanupInactivePlayers(int daysThreshold) {
+  void cleanupInactivePlayers(
+    int daysThreshold,
+    List<ObjectId> activePlayerIds,
+  ) {
     try {
       final thresholdDate = DateTime.now().subtract(
         Duration(days: daysThreshold),
       );
       final inactivePlayers = _realm.query<Player>(
-        "recentMatchDate == nil || recentMatchDate < \$0",
-        [thresholdDate],
+        "(recentMatchDate == nil || recentMatchDate < \$0) AND NOT (id IN \$1)",
+        [thresholdDate, activePlayerIds],
       );
 
       if (inactivePlayers.isNotEmpty) {
@@ -207,6 +209,25 @@ class PlayerRepository {
     } catch (e) {
       if (kDebugMode) {
         print("Cleanup error: \$e");
+      }
+    }
+  }
+
+  void cleanupGuestPlayers(List<ObjectId> activePlayerIds) {
+    try {
+      final guestPlayers = _realm.query<Player>(
+        "role == 'guest' AND NOT (id IN \$0)",
+        [activePlayerIds],
+      );
+
+      if (guestPlayers.isNotEmpty) {
+        _realm.write(() {
+          _realm.deleteMany(guestPlayers);
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Cleanup guest error: \$e");
       }
     }
   }

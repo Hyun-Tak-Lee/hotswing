@@ -29,9 +29,16 @@ class PlayersProvider with ChangeNotifier {
 
   void initialized() async {
     try {
-      _playerService.cleanupInactivePlayers(_options.inactiveDaysThreshold);
       await _loadInitialAssignedPlayersCount();
       await _loadInitialPlayers();
+
+      final activePlayerIds = _players.keys.toList();
+      _playerService.cleanupInactivePlayers(
+        _options.inactiveDaysThreshold,
+        activePlayerIds,
+      );
+      _playerService.cleanupGuestPlayers(activePlayerIds);
+
       _saveLoadedPlayers();
     } finally {
       notifyListeners();
@@ -230,12 +237,12 @@ class PlayersProvider with ChangeNotifier {
   }
 
   void clearPlayers() {
-    // 게스트 유저 삭제
     _players.clear();
     _unassignedPlayers.clear();
     for (int i = 0; i < _assignedPlayers.length; i++) {
       _assignedPlayers[i] = List.filled(4, null);
     }
+    _saveLoadedPlayers();
     notifyListeners();
   }
 
