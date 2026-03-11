@@ -127,6 +127,69 @@ class StandbyCourtSectionsView extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
+                    const SizedBox(width: 8.0),
+                    PopupMenuButton<int>(
+                      tooltip: '코트 이동/교환',
+                      color: Colors.white,
+                      elevation: 6,
+                      offset: const Offset(0, 40),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      onSelected: (int targetIndex) {
+                        playersProvider.swapStandbyCourts(
+                          sectionIndex,
+                          targetIndex,
+                        );
+                      },
+                      itemBuilder: (BuildContext context) {
+                        return List.generate(sectionData.length, (index) {
+                          if (index == sectionIndex) return null;
+                          return PopupMenuItem<int>(
+                            value: index,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.swap_horiz_rounded,
+                                  color: Colors.blue.shade400,
+                                  size: isTablet ? 24 : 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  '${index + 1}번 코트와 교환',
+                                  style: TextStyle(
+                                    fontSize: isTablet ? 16.0 : 14.0,
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).whereType<PopupMenuEntry<int>>().toList();
+                      },
+                      child: IgnorePointer(
+                        child: _buildGradientButton(
+                          isTablet: isTablet,
+                          width: isTablet ? 50.0 : 40.0,
+                          height: isTablet ? 45.0 : 30.0,
+                          colors: const [
+                            Color(0xFF64B5F6),
+                            Color(0xFF2196F3),
+                          ],
+                          onTap: () {},
+                          child: Icon(
+                            Icons.swap_horiz,
+                            size: isTablet ? 24.0 : 18.0,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 );
               }),
