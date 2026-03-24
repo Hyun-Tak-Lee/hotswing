@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/repository/realms/players.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
-import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:hotswing/src/common/utils/database/realm_query_builder.dart';
 import 'package:realm/realm.dart';
 
@@ -84,27 +83,9 @@ class PlayersViewModel extends ChangeNotifier {
         .addInCondition('role', _selectedRoles.map((e) => e.value))
         .addInCondition('gender', _selectedGenders.map((e) => e.value));
 
-    // 선택된 급수를 기반으로 rate 범위 조건 구성
+    // 선택된 급수를 기반으로 grade 조건 구성
     if (_selectedSkills.isNotEmpty) {
-      final entries = skillLevelToRate.entries.toList();
-      List<List<num>> rateRanges = [];
-      for (var skill in _selectedSkills) {
-        int index = entries.indexWhere((e) => e.key == skill);
-        if (index != -1) {
-          int min = index == 0
-              ? 0
-              : (entries[index - 1].value + entries[index].value) ~/ 2;
-          int max = index == entries.length - 1
-              ? 10000
-              : (entries[index].value + entries[index + 1].value) ~/ 2;
-          rateRanges.add([min, max]);
-        }
-      }
-      queryBuilder.addMultiRangeOrCondition(
-        'rate',
-        rateRanges,
-        includeMax: false,
-      );
+      queryBuilder.addInCondition('grade', _selectedSkills.toList());
     }
 
     // 데이터 조회
@@ -206,6 +187,7 @@ class PlayersViewModel extends ChangeNotifier {
     required String name,
     required String role,
     required int rate,
+    required String grade,
     required String gender,
     required int played,
     required int waited,
@@ -216,6 +198,7 @@ class PlayersViewModel extends ChangeNotifier {
       name: name,
       role: role,
       rate: rate,
+      grade: grade,
       gender: gender,
       played: played,
       waited: waited,

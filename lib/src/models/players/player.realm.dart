@@ -17,6 +17,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
     String name,
     String role,
     int rate,
+    String grade,
     String gender, {
     int played = 0,
     int waited = 0,
@@ -38,6 +39,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.set(this, 'name', name);
     RealmObjectBase.set(this, 'role', role);
     RealmObjectBase.set(this, 'rate', rate);
+    RealmObjectBase.set(this, 'grade', grade);
     RealmObjectBase.set(this, 'gender', gender);
     RealmObjectBase.set(this, 'played', played);
     RealmObjectBase.set(this, 'waited', waited);
@@ -77,6 +79,11 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
   int get rate => RealmObjectBase.get<int>(this, 'rate') as int;
   @override
   set rate(int value) => RealmObjectBase.set(this, 'rate', value);
+
+  @override
+  String get grade => RealmObjectBase.get<String>(this, 'grade') as String;
+  @override
+  set grade(String value) => RealmObjectBase.set(this, 'grade', value);
 
   @override
   String get gender => RealmObjectBase.get<String>(this, 'gender') as String;
@@ -141,6 +148,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       'name': name.toEJson(),
       'role': role.toEJson(),
       'rate': rate.toEJson(),
+      'grade': grade.toEJson(),
       'gender': gender.toEJson(),
       'played': played.toEJson(),
       'waited': waited.toEJson(),
@@ -161,6 +169,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
         'name': EJsonValue name,
         'role': EJsonValue role,
         'rate': EJsonValue rate,
+        'grade': EJsonValue grade,
         'gender': EJsonValue gender,
       } =>
         Player(
@@ -168,6 +177,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
           fromEJson(name),
           fromEJson(role),
           fromEJson(rate),
+          fromEJson(grade),
           fromEJson(gender),
           played: fromEJson(ejson['played'], defaultValue: 0),
           waited: fromEJson(ejson['waited'], defaultValue: 0),
@@ -193,6 +203,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       ),
       SchemaProperty('role', RealmPropertyType.string),
       SchemaProperty('rate', RealmPropertyType.int),
+      SchemaProperty('grade', RealmPropertyType.string),
       SchemaProperty('gender', RealmPropertyType.string),
       SchemaProperty('played', RealmPropertyType.int),
       SchemaProperty('waited', RealmPropertyType.int),

@@ -10,6 +10,7 @@ class _Player {
   late String name;
   late String role;
   late int rate;
+  late String grade;
   late String gender;
   int played = 0;
   int waited = 0;

@@ -6,7 +6,6 @@ import 'package:realm/realm.dart';
 import 'dart:math';
 
 import '../../../../providers/players_provider.dart';
-import '../../../../common/utils/game/skill_utils.dart';
 import '../../../../common/widgets/tags/player_info_tag.dart';
 import '../../../../common/widgets/tags/player_skill_rate.dart';
 import '../../../../common/widgets/dialogs/add_player_dialog.dart';
@@ -76,6 +75,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
             playerId: existingPlayer.id,
             newName: result['name'] as String,
             newRate: result['rate'] as int,
+            newGrade: result['grade'] as String,
             newGender: result['gender'] as String,
             newRole: result['role'] as String,
             newPlayed: result['played'] as int,
@@ -100,6 +100,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
             playersProvider.addPlayer(
               name: result['name'] as String,
               rate: result['rate'] as int,
+              grade: result['grade'] as String,
               gender: result['gender'] as String,
               role: result['role'] as String,
               played: 0,
@@ -264,7 +265,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                                 color: Colors.indigoAccent,
                               ),
                               PlayerSkillRateWidget(
-                                skillLevel: rateToSkillLevel(player.rate),
+                                skillLevel: player.grade,
                                 rate: player.rate,
                               ),
                             ],

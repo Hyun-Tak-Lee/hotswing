@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
-import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:hotswing/src/common/widgets/dialogs/game_played_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
@@ -47,9 +46,6 @@ class DraggablePlayerItem extends StatelessWidget {
     this.onDragEnded,
   });
 
-  String _getSkillLevelString(int rate) {
-    return rateToSkillLevel(rate);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +57,7 @@ class DraggablePlayerItem extends StatelessWidget {
     final double skillFontSize = isTablet ? 18.0 : 16.0;
     final double detailFontSize = 16.0;
 
-    String skillLevelDisplay = _getSkillLevelString(player.rate);
+    String skillLevelDisplay = player.grade;
     final textColor = const Color(0xFF1E293B); // Slate 800 (세련된 진회색)
     final detailTextColor = const Color(0xFF64748B); // Slate 500
 

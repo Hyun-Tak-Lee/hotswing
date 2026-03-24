@@ -39,6 +39,7 @@ class PlayerRepository {
     String? name,
     String? role,
     int? rate,
+    String? grade,
     String? gender,
     int? played,
     int? waited,
@@ -58,6 +59,9 @@ class PlayerRepository {
         }
         if (rate != null) {
           player.rate = rate;
+        }
+        if (grade != null) {
+          player.grade = grade;
         }
         if (gender != null) {
           player.gender = gender;

@@ -1,5 +1,6 @@
 import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:realm/realm.dart';
 
 class RealmProvider {
@@ -8,7 +9,7 @@ class RealmProvider {
   RealmProvider._() {
     final config = Configuration.local(
       [Player.schema, Options.schema],
-      schemaVersion: 3,
+      schemaVersion: 4,
       migrationCallback: (migration, oldSchemaVersion) {
         if (oldSchemaVersion < 1) {
           for (final obj in migration.newRealm.all<Options>()) {
@@ -23,6 +24,11 @@ class RealmProvider {
         if (oldSchemaVersion < 3) {
           for (final obj in migration.newRealm.all<Options>()) {
             obj.inactiveDaysThreshold = 90;
+          }
+        }
+        if (oldSchemaVersion < 4) {
+          for (final obj in migration.newRealm.all<Player>()) {
+            obj.grade = rateToSkillLevel(obj.rate);
           }
         }
       },

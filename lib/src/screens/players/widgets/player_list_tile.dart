@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
-import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/tags/player_info_tag.dart';
 import 'package:hotswing/src/common/widgets/tags/player_skill_rate.dart';
@@ -32,9 +31,6 @@ class PlayerListTile extends StatelessWidget {
     return genderValue;
   }
 
-  String _getSkillLevel(int rate) {
-    return rateToSkillLevel(rate);
-  }
 
   Color _getRoleColor(String roleValue) {
     if (roleValue == 'manager') return Colors.orange;
@@ -45,7 +41,7 @@ class PlayerListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final skillLevel = _getSkillLevel(player.rate);
+    final skillLevel = player.grade;
     final isTablet = ResponsiveUtils.isTablet(context);
 
     final textScale = ResponsiveUtils.getTextScale(context);

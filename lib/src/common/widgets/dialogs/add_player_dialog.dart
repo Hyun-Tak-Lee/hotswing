@@ -56,7 +56,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _id = widget.player!.id;
       _name = widget.player!.name;
       _rate = widget.player!.rate;
-      _selectedSkillLevel = rateToSkillLevel(widget.player!.rate);
+      _selectedSkillLevel = widget.player!.grade;
       _selectedGender = PlayerGender.values.cast<PlayerGender?>().firstWhere(
         (element) => element?.value == widget.player!.gender,
         orElse: () => null,
@@ -99,7 +99,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _name = player.name;
       _rate = player.rate;
       _rateController.text = player.rate.toString();
-      _selectedSkillLevel = rateToSkillLevel(player.rate);
+      _selectedSkillLevel = player.grade;
       _selectedGender = PlayerGender.values.cast<PlayerGender?>().firstWhere(
         (element) => element?.value == player.gender,
         orElse: () => null,
@@ -123,6 +123,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       Navigator.of(context).pop({
         'name': _name,
         'rate': _rate,
+        'grade': _selectedSkillLevel,
         'gender': _selectedGender?.value,
         'role': role,
         'played': _playCount,
@@ -321,7 +322,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                             itemCount: options.length,
                             itemBuilder: (context, index) {
                               final option = options.elementAt(index);
-                              final skillLevel = rateToSkillLevel(option.rate);
+                              final skillLevel = option.grade;
                               return ListTile(
                                 title: Text('${option.name} ($skillLevel)'),
                                 onTap: () => onSelected(option),
@@ -377,14 +378,13 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     );
   }
 
-  /// 레이팅 및 급수를 주어진 [newRate]로 업데이트합니다.
+  /// 레이팅을 주어진 [newRate]로 업데이트합니다.
   /// 값은 0에서 [_maxRate] 사이로 제한됩니다.
-  void _updateRateAndSkillLevel(int newRate) {
+  void _updateRate(int newRate) {
     final clampedRate = newRate.clamp(0, _maxRate);
     setState(() {
       _rate = clampedRate;
       _rateController.text = clampedRate.toString();
-      _selectedSkillLevel = rateToSkillLevel(clampedRate);
     });
   }
 
@@ -420,9 +420,9 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   : (newValue) {
                       setState(() {
                         _selectedSkillLevel = newValue;
-                        if (newValue != null) {
-                          _rate = skillLevelToRate[newValue];
-                          _rateController.text = _rate?.toString() ?? '';
+                        if (newValue != null &&
+                            skillLevelToRate.containsKey(newValue)) {
+                          _updateRate(skillLevelToRate[newValue]!);
                         }
                       });
                     },
@@ -461,7 +461,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       int.tryParse(_rateController.text) ?? (_rate ?? 0);
                   int newRate = ((currentRate - 1) ~/ 50) * 50;
                   if (newRate < 0) newRate = 0;
-                  _updateRateAndSkillLevel(newRate);
+                  _updateRate(newRate);
                 },
         ),
         Expanded(
@@ -494,7 +494,6 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                 }
                 setState(() {
                   _rate = parsed;
-                  _selectedSkillLevel = rateToSkillLevel(parsed!);
                 });
               }
             },
@@ -520,7 +519,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       int.tryParse(_rateController.text) ?? (_rate ?? 0);
                   int newRate = (currentRate ~/ 50) * 50 + 50;
                   if (newRate > _maxRate) newRate = _maxRate;
-                  _updateRateAndSkillLevel(newRate);
+                  _updateRate(newRate);
                 },
         ),
       ],

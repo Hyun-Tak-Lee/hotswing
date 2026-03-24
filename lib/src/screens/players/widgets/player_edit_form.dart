@@ -32,7 +32,7 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
     super.initState();
     _nameController = TextEditingController(text: widget.player.name);
     _currentRate = widget.player.rate;
-    _currentSkillLevel = rateToSkillLevel(_currentRate);
+    _currentSkillLevel = widget.player.grade;
     _currentGender = widget.player.gender;
     _isManager = widget.player.role == "manager";
   }
@@ -46,7 +46,6 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
   void _updateRate(int newRate) {
     setState(() {
       _currentRate = newRate.clamp(0, 7500);
-      _currentSkillLevel = rateToSkillLevel(_currentRate);
     });
   }
 
@@ -63,6 +62,7 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
         name: _nameController.text,
         role: role,
         rate: _currentRate,
+        grade: _currentSkillLevel,
         gender: _currentGender,
         played: widget.player.played,
         waited: widget.player.waited,
@@ -267,7 +267,12 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
                   selected: isSelected,
                   onSelected: (selected) {
                     if (selected) {
-                      _updateRate(skillLevelToRate[level]!);
+                      setState(() {
+                        _currentSkillLevel = level;
+                        if (skillLevelToRate.containsKey(level)) {
+                          _updateRate(skillLevelToRate[level]!);
+                        }
+                      });
                     }
                   },
                   selectedColor: Colors.blue.shade100,
