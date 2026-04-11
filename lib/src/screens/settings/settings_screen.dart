@@ -73,14 +73,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                '코트 수 설정',
-                                style: TextStyle(
-                                  fontSize: iconAndFontSize,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                              Expanded(
+                                child: Text(
+                                  '코트 수 설정',
+                                  style: TextStyle(
+                                    fontSize: iconAndFontSize,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
                                 ),
                               ),
                               Container(
@@ -103,6 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ),
                                 ),
                               ),
+                              const Expanded(child: SizedBox()),
                             ],
                           ),
                           const SizedBox(height: 16),
@@ -257,6 +259,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               optionsProvider.setPlayedWithWeight(value),
                           iconAndFontSize: iconAndFontSize,
                         ),
+                        _buildIntSliderListItem(
+                          context: context,
+                          title: '무작위 수치',
+                          leftText: '정밀 매칭',
+                          rightText: '다양한 매칭',
+                          value: optionsProvider.randomPoolSize,
+                          min: 1,
+                          max: 5,
+                          divisions: 4,
+                          unit: '',
+                          onChanged: (int value) =>
+                              optionsProvider.setRandomPoolSize(value),
+                          iconAndFontSize: iconAndFontSize,
+                        ),
                       ],
                     ),
                   ),
@@ -391,13 +407,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 12),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  leftText,
-                  style: TextStyle(
-                    fontSize: iconAndFontSize * 0.8,
-                    color: Colors.grey.shade600,
+                Expanded(
+                  child: Text(
+                    leftText,
+                    style: TextStyle(
+                      fontSize: iconAndFontSize * 0.8,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
                 ),
                 Container(
@@ -418,11 +435,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
-                Text(
-                  rightText,
-                  style: TextStyle(
-                    fontSize: iconAndFontSize * 0.8,
-                    color: Colors.grey.shade600,
+                Expanded(
+                  child: Text(
+                    rightText,
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                      fontSize: iconAndFontSize * 0.8,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
                 ),
               ],
@@ -495,13 +515,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 12),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  leftText,
-                  style: TextStyle(
-                    fontSize: iconAndFontSize * 0.8,
-                    color: Colors.grey.shade600,
+                Expanded(
+                  child: Text(
+                    leftText,
+                    style: TextStyle(
+                      fontSize: iconAndFontSize * 0.8,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
                 ),
                 Container(
@@ -522,11 +543,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
-                Text(
-                  rightText,
-                  style: TextStyle(
-                    fontSize: iconAndFontSize * 0.8,
-                    color: Colors.grey.shade600,
+                Expanded(
+                  child: Text(
+                    rightText,
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                      fontSize: iconAndFontSize * 0.8,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
                 ),
               ],

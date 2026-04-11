@@ -9,7 +9,7 @@ class RealmProvider {
   RealmProvider._() {
     final config = Configuration.local(
       [Player.schema, Options.schema],
-      schemaVersion: 4,
+      schemaVersion: 5,
       migrationCallback: (migration, oldSchemaVersion) {
         if (oldSchemaVersion < 1) {
           for (final obj in migration.newRealm.all<Options>()) {
@@ -29,6 +29,11 @@ class RealmProvider {
         if (oldSchemaVersion < 4) {
           for (final obj in migration.newRealm.all<Player>()) {
             obj.grade = rateToSkillLevel(obj.rate);
+          }
+        }
+        if (oldSchemaVersion < 5) {
+          for (final obj in migration.newRealm.all<Options>()) {
+            obj.randomPoolSize = 1;
           }
         }
       },

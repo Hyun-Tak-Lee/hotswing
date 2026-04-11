@@ -20,6 +20,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
     double playedWithWeight,
     bool reserveManager,
     int inactiveDaysThreshold,
+    int randomPoolSize,
   ) {
     RealmObjectBase.set(this, 'id', id);
     RealmObjectBase.set(this, 'numberOfSections', numberOfSections);
@@ -30,6 +31,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.set(this, 'playedWithWeight', playedWithWeight);
     RealmObjectBase.set(this, 'reserveManager', reserveManager);
     RealmObjectBase.set(this, 'inactiveDaysThreshold', inactiveDaysThreshold);
+    RealmObjectBase.set(this, 'randomPoolSize', randomPoolSize);
   }
 
   Options._();
@@ -96,6 +98,13 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
       RealmObjectBase.set(this, 'inactiveDaysThreshold', value);
 
   @override
+  int get randomPoolSize =>
+      RealmObjectBase.get<int>(this, 'randomPoolSize') as int;
+  @override
+  set randomPoolSize(int value) =>
+      RealmObjectBase.set(this, 'randomPoolSize', value);
+
+  @override
   Stream<RealmObjectChanges<Options>> get changes =>
       RealmObjectBase.getChanges<Options>(this);
 
@@ -117,6 +126,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
       'playedWithWeight': playedWithWeight.toEJson(),
       'reserveManager': reserveManager.toEJson(),
       'inactiveDaysThreshold': inactiveDaysThreshold.toEJson(),
+      'randomPoolSize': randomPoolSize.toEJson(),
     };
   }
 
@@ -134,6 +144,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
         'playedWithWeight': EJsonValue playedWithWeight,
         'reserveManager': EJsonValue reserveManager,
         'inactiveDaysThreshold': EJsonValue inactiveDaysThreshold,
+        'randomPoolSize': EJsonValue randomPoolSize,
       } =>
         Options(
           fromEJson(id),
@@ -145,6 +156,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
           fromEJson(playedWithWeight),
           fromEJson(reserveManager),
           fromEJson(inactiveDaysThreshold),
+          fromEJson(randomPoolSize),
         ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -163,6 +175,7 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
       SchemaProperty('playedWithWeight', RealmPropertyType.double),
       SchemaProperty('reserveManager', RealmPropertyType.bool),
       SchemaProperty('inactiveDaysThreshold', RealmPropertyType.int),
+      SchemaProperty('randomPoolSize', RealmPropertyType.int),
     ]);
   }();
 

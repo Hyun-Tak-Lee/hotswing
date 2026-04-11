@@ -438,8 +438,8 @@ class PlayersProvider with ChangeNotifier {
     for (int i = 0; i < playersInCourt.length; i++) {
       Player? player = playersInCourt[i];
       if (player != null) {
-        _playerService.playedFinish(player);
         if (played == 1) {
+          _playerService.playedFinish(player);
           _playerService.addGamesPlayedWith(player, playersInCourt, played);
         }
 

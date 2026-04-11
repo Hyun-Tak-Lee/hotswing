@@ -14,8 +14,9 @@ class CourtAssignService {
     required List<Player> currentPlayersOnCourt,
   }) {
     // 1. 비활성화 유저 필터링
-    List<Player> activePlayers =
-        unassignedPlayers.where((p) => p.activate).toList();
+    List<Player> activePlayers = unassignedPlayers
+        .where((p) => p.activate)
+        .toList();
 
     // 2. 우선 전체 활성 유저를 대상으로 매칭 시도
     List<Player> results = _matchPlayers(
@@ -29,8 +30,9 @@ class CourtAssignService {
 
       if (managers.isNotEmpty) {
         // 배정된 인원 중 매니저가 몇 명인지 세어봄으로써 남은 매니저 유무 확인
-        int assignedManagersCount =
-            results.where((p) => p.role == 'manager').length;
+        int assignedManagersCount = results
+            .where((p) => p.role == 'manager')
+            .length;
         bool allManagersAssigned = assignedManagersCount == managers.length;
 
         // 남은 매니저가 없다면, 가장 대기하기 적합한 매니저 1명을 배제하고 재매칭
@@ -143,13 +145,8 @@ class CourtAssignService {
       entry['score'] = (entry['score'] as double) + teamModifier;
     }
 
-    // 패널티 적용 후 재정렬
-    pairsWithScore.sort(
-      (a, b) => (b['score'] as double).compareTo(a['score'] as double),
-    );
-
     if (pairsWithScore.isEmpty) return [];
-    return pairsWithScore.first['pair'] as List<Player>;
+    return _selectTopCandidate<List<Player>>(pairsWithScore, 'pair') ?? [];
   }
 
   /// 3명의 플레이어가 있을 때 3명 중 매칭 점수가 가장 높은 2명을 한 팀으로 가정한 뒤,
@@ -187,8 +184,7 @@ class CourtAssignService {
           p.id.hexString != bestOpponent2!.id.hexString,
     );
 
-    Player? bestMatch;
-    double highestScore = -double.infinity;
+    List<Map<String, dynamic>> candidates = [];
 
     for (var candidate in unassignedPlayers) {
       // 그룹 매칭 유효성 검사
@@ -207,13 +203,11 @@ class CourtAssignService {
       score += _calculateTeamGenderBonus(opponents, [partner, candidate]);
       score += _calculateTeamRateBonus(opponents, [partner, candidate]);
 
-      if (score > highestScore) {
-        highestScore = score;
-        bestMatch = candidate;
-      }
+      candidates.add({'player': candidate, 'score': score});
     }
 
-    return bestMatch;
+    if (candidates.isEmpty) return null;
+    return _selectTopCandidate<Player>(candidates, 'player');
   }
 
   /// 코트가 비어있을 때 4명을 완전히 새로 매칭하는 헬퍼 메서드
@@ -240,14 +234,14 @@ class CourtAssignService {
     return [...firstTeam, ...secondTeam];
   }
 
-  /// 점수가 가장 높은 최적의 팀(페어) 하나를 반환
+  /// 점수가 가장 높은 최적의 팀(페어) 하나를 반환 (최상위 2개 팀 중 랜덤 선택)
   List<Player> getBestMatchPair({
     required List<Player> unassignedPlayers,
     required List<Player> currentPlayersOnCourt,
   }) {
     final pairs = _generateScoredPairs(unassignedPlayers);
     if (pairs.isEmpty) return [];
-    return pairs.first['pair'] as List<Player>;
+    return _selectTopCandidate<List<Player>>(pairs, 'pair') ?? [];
   }
 
   /// 특정 플레이어와 가장 매칭 점수가 높은 1명을 반환
@@ -257,9 +251,7 @@ class CourtAssignService {
   }) {
     if (unassignedPlayers.isEmpty) return null;
 
-    Player? bestMatch;
-    // 초기값 설정
-    double highestScore = -double.infinity;
+    List<Map<String, dynamic>> candidates = [];
 
     for (var player in unassignedPlayers) {
       // 그룹 매칭 유효성 검사
@@ -272,16 +264,37 @@ class CourtAssignService {
         return player;
       }
 
-      if (score > highestScore) {
-        highestScore = score;
-        bestMatch = player;
-      }
+      candidates.add({'player': player, 'score': score});
     }
 
-    return bestMatch;
+    if (candidates.isEmpty) return null;
+    return _selectTopCandidate<Player>(candidates, 'player');
   }
 
   // --- 매칭 헬퍼 메서드 추가 ---
+  T? _selectTopCandidate<T>(
+    List<Map<String, dynamic>> candidates,
+    String valueKey,
+  ) {
+    if (candidates.isEmpty) return null;
+
+    // 공통 정렬 로직 사용 (무작위성 확보 및 점수 정렬)
+    _shuffleAndSort(candidates);
+
+    final poolSize = min(_options.randomPoolSize, candidates.length);
+    return candidates[_random.nextInt(poolSize)][valueKey] as T;
+  }
+
+  /// 리스트를 무작위로 섞은 후 점수 내림차순으로 정렬하는 공통 로직
+  void _shuffleAndSort(List<Map<String, dynamic>> candidates) {
+    if (candidates.isEmpty) return;
+
+    // 정렬 전 무작위로 섞어서 점수가 같을 때의 무작위성 확보
+    candidates.shuffle(_random);
+    candidates.sort(
+      (a, b) => (b['score'] as double).compareTo(a['score'] as double),
+    );
+  }
 
   /// 대상 플레이어(target)와 후보 플레이어(candidate)가 유효한 매칭 후보인지 확인
   bool _isValidGroupCandidate(Player target, Player candidate) {
@@ -406,12 +419,8 @@ class CourtAssignService {
 
   /// 플레이어 리스트에서 가능한 모든 인접 조합을 생성하고 기본 점수를 매겨 정렬함
   List<Map<String, dynamic>> _generateScoredPairs(List<Player> players) {
-    final sortedPlayers = List<Player>.from(players)
-      ..sort((a, b) {
-        int rateComparison = a.rate.compareTo(b.rate);
-        if (rateComparison != 0) return rateComparison;
-        return _random.nextInt(3) - 1;
-      });
+    final sortedPlayers = List<Player>.from(players)..shuffle(_random);
+    sortedPlayers.sort((a, b) => a.rate.compareTo(b.rate));
 
     const int searchRange = 20;
     final List<Map<String, dynamic>> pairsWithScore = [];
@@ -449,14 +458,8 @@ class CourtAssignService {
       }
     }
 
-    pairsWithScore.sort(
-      (a, b) => (b['score'] as double).compareTo(a['score'] as double),
-    );
-
     return pairsWithScore;
   }
-
-
 
   /// 매니저(대기자)로서 가장 적합한 플레이어 하나를 선정
   /// 플레이 횟수 및 대기 횟수 기준 적합자 선정

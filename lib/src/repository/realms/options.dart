@@ -27,6 +27,7 @@ class OptionsRepository {
             1.0, // playedWithWeight
             true, // reserveManager
             90, // inactiveDaysThreshold
+            1, // randomPoolSize
           ),
         );
       });

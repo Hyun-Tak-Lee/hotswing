@@ -13,6 +13,8 @@ class OptionsProvider with ChangeNotifier {
   static const double _maxWeight = 2.0;
   static const int _minInactiveDays = 30;
   static const int _maxInactiveDays = 180;
+  static const int _minRandomPoolSize = 1;
+  static const int _maxRandomPoolSize = 5;
 
   int get numberOfSections => _options.numberOfSections;
   double get skillWeight => _options.skillWeight;
@@ -22,6 +24,7 @@ class OptionsProvider with ChangeNotifier {
   double get playedWithWeight => _options.playedWithWeight;
   bool get reserveManager => _options.reserveManager;
   int get inactiveDaysThreshold => _options.inactiveDaysThreshold;
+  int get randomPoolSize => _options.randomPoolSize;
 
   OptionsProvider() {
     _loadOptions();
@@ -95,6 +98,16 @@ class OptionsProvider with ChangeNotifier {
       _options.inactiveDaysThreshold = newValue.clamp(
         _minInactiveDays,
         _maxInactiveDays,
+      );
+    });
+    notifyListeners();
+  }
+
+  void setRandomPoolSize(int newValue) {
+    _realm.write(() {
+      _options.randomPoolSize = newValue.clamp(
+        _minRandomPoolSize,
+        _maxRandomPoolSize,
       );
     });
     notifyListeners();

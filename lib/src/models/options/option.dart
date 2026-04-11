@@ -16,4 +16,5 @@ class _Options {
   late double playedWithWeight;
   late bool reserveManager;
   late int inactiveDaysThreshold; // 비활성 플레이어 자동 삭제 기간 (일)
+  late int randomPoolSize; // 매칭 시 랜덤 선택 범위 (1~5)
 }
