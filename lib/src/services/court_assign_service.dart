@@ -13,45 +13,76 @@ class CourtAssignService {
     required List<Player> unassignedPlayers,
     required List<Player> currentPlayersOnCourt,
   }) {
-    // 비활성화 유저 및 매니저 필터링
-    List<Player> availablePlayers = _filterUnnecessaryPlayers(
-      unassignedPlayers,
+    // 1. 비활성화 유저 필터링
+    List<Player> activePlayers =
+        unassignedPlayers.where((p) => p.activate).toList();
+
+    // 2. 우선 전체 활성 유저를 대상으로 매칭 시도
+    List<Player> results = _matchPlayers(
+      availablePlayers: activePlayers,
+      currentPlayersOnCourt: currentPlayersOnCourt,
     );
 
-    // 인원이 적을 경우 즉시 배치
-    if (availablePlayers.length + currentPlayersOnCourt.length <= 4) {
-      return availablePlayers;
+    // 3. 매니저 예약(최소 1명 남기기) 옵션 처리
+    if (_options.reserveManager) {
+      final managers = activePlayers.where((p) => p.role == 'manager').toList();
+
+      if (managers.isNotEmpty) {
+        // 배정된 인원 중 매니저가 몇 명인지 세어봄으로써 남은 매니저 유무 확인
+        int assignedManagersCount =
+            results.where((p) => p.role == 'manager').length;
+        bool allManagersAssigned = assignedManagersCount == managers.length;
+
+        // 남은 매니저가 없다면, 가장 대기하기 적합한 매니저 1명을 배제하고 재매칭
+        if (allManagersAssigned) {
+          final bestManagerCandidate = _selectBestManagerCandidate(managers);
+          if (bestManagerCandidate != null) {
+            final activePlayersWithoutManager = activePlayers
+                .where(
+                  (p) => p.id.hexString != bestManagerCandidate.id.hexString,
+                )
+                .toList();
+            results = _matchPlayers(
+              availablePlayers: activePlayersWithoutManager,
+              currentPlayersOnCourt: currentPlayersOnCourt,
+            );
+          }
+        }
+      }
     }
 
-    List<Player> results;
+    return results;
+  }
+
+  /// 현재 코트 상태에 따른 분기로 적절한 매칭 결과를 반환하는 헬퍼 메서드
+  List<Player> _matchPlayers({
+    required List<Player> availablePlayers,
+    required List<Player> currentPlayersOnCourt,
+  }) {
+    if (availablePlayers.length + currentPlayersOnCourt.length <= 4) {
+      return availablePlayers.toList();
+    }
 
     switch (currentPlayersOnCourt.length) {
       case 1:
-        results = _assignForOnePlayerOnCourt(
+        return _assignForOnePlayerOnCourt(
           unassignedPlayers: availablePlayers,
           currentPlayersOnCourt: currentPlayersOnCourt,
         );
-        break;
       case 2:
-        results = _getBestMatchSecondPair(
+        return _getBestMatchSecondPair(
           unassignedPlayers: availablePlayers,
           firstTeamPlayers: currentPlayersOnCourt,
         );
-        break;
       case 3:
         final fourthPlayer = _getBestMatchForThreePlayers(
           existingPlayers: currentPlayersOnCourt,
           unassignedPlayers: availablePlayers,
         );
-        results = fourthPlayer != null ? [fourthPlayer] : [];
-        break;
+        return fourthPlayer != null ? [fourthPlayer] : [];
       default:
-        // 코트가 비어 있는 경우
-        results = _assignForEmptyCourt(unassignedPlayers: availablePlayers);
-        break;
+        return _assignForEmptyCourt(unassignedPlayers: availablePlayers);
     }
-
-    return results;
   }
 
   /// 1명이 이미 코트에 있을 때 추가 매칭을 수행하는 헬퍼 메서드
@@ -363,7 +394,7 @@ class CourtAssignService {
     // 중복 플레이 점수: 이미 매칭되었던 페어일 경우 감점 처리
     final gamesPlayedTogether =
         player1.gamesPlayedWith[player2.id.hexString] ?? 0;
-    final playedWithScore = 1.0 - (gamesPlayedTogether * 0.15);
+    final playedWithScore = 1.0 - (gamesPlayedTogether * 0.2);
 
     // 각 항목에 설정된 가중치를 곱하여 최종 점수 산출
     return skillScore +
@@ -425,25 +456,7 @@ class CourtAssignService {
     return pairsWithScore;
   }
 
-  /// 매칭에서 제외할 불필요한 유저(비활성화 유저, 매니저 등)를 걸러낸 후의 목록을 반환
-  List<Player> _filterUnnecessaryPlayers(List<Player> unassignedPlayers) {
-    // 비활성화 유저 제외
-    List<Player> filteredPlayers = unassignedPlayers
-        .where((p) => p.activate)
-        .toList();
 
-    // 매니저 예약 설정 시 매니저 1명 제외
-    if (_options.reserveManager) {
-      final bestManagerCandidate = _selectBestManagerCandidate(filteredPlayers);
-      if (bestManagerCandidate != null) {
-        filteredPlayers.removeWhere(
-          (p) => p.id.hexString == bestManagerCandidate.id.hexString,
-        );
-      }
-    }
-
-    return filteredPlayers;
-  }
 
   /// 매니저(대기자)로서 가장 적합한 플레이어 하나를 선정
   /// 플레이 횟수 및 대기 횟수 기준 적합자 선정
