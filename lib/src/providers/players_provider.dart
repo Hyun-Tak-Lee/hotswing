@@ -392,7 +392,15 @@ class PlayersProvider with ChangeNotifier {
   }
 
   bool popStandByPlayers(int assignedIndex) {
+    return popStandByPlayerByIndex(assignedIndex, 0);
+  }
+
+  bool popStandByPlayerByIndex(int assignedIndex, int standbyIndex) {
     if (assignedIndex < 0 || assignedIndex >= _assignedPlayers.length) {
+      return false;
+    }
+
+    if (standbyIndex < 0 || standbyIndex >= _standbyPlayers.length) {
       return false;
     }
 
@@ -401,16 +409,15 @@ class PlayersProvider with ChangeNotifier {
       return false;
     }
 
-    if (_standbyPlayers.isNotEmpty) {
-      final List<Player?> playerToAssign = _standbyPlayers.first;
-      final bool isFullTeam = playerToAssign.every((player) => player != null);
-      if (isFullTeam) {
-        _assignedPlayers[assignedIndex] = _standbyPlayers.removeAt(0);
-        _saveLoadedPlayers();
-        notifyListeners();
-        return true;
-      }
+    final List<Player?> playerToAssign = _standbyPlayers[standbyIndex];
+    final bool isFullTeam = playerToAssign.every((player) => player != null);
+    if (isFullTeam) {
+      _assignedPlayers[assignedIndex] = _standbyPlayers.removeAt(standbyIndex);
+      _saveLoadedPlayers();
+      notifyListeners();
+      return true;
     }
+
     return false;
   }
 
@@ -502,8 +509,6 @@ class PlayersProvider with ChangeNotifier {
   }
 
   void assignNextPlayersToAssignedCourt(int sectionIndex) {
-    if (popStandByPlayers(sectionIndex)) return;
-
     List<Player> currentPlayers = getAssignedPlayersInCourt(sectionIndex);
     List<Player> recommendedPlayers = getRecommendedPlayers(currentPlayers);
     addPlayersToAssignedCourt(sectionIndex, recommendedPlayers);

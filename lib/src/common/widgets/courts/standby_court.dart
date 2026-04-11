@@ -6,6 +6,7 @@ import 'package:hotswing/src/models/players/player.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
+import 'package:hotswing/src/common/constants/app_colors.dart';
 
 class StandbyCourtSectionsView extends StatelessWidget {
   final Function(
@@ -68,10 +69,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       isTablet: isTablet,
                       width: isTablet ? 50.0 : 40.0,
                       height: isTablet ? 45.0 : 30.0,
-                      colors: const [
-                        Color(0xFFFCA5A5), // 더 세련된 부드러운 레드
-                        Color(0xFFF87171),
-                      ],
+                      colors: AppColors.remove,
                       onTap: () {
                         playersProvider.movePlayersFromCourtToUnassigned(
                           sectionIndex: sectionIndex,
@@ -85,16 +83,12 @@ class StandbyCourtSectionsView extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(width: 8.0),
                     // 자동 매칭 버튼
                     _buildGradientButton(
                       isTablet: isTablet,
                       width: isTablet ? 120.0 : 80.0,
                       height: isTablet ? 45.0 : 30.0,
-                      colors: const [
-                        Color(0xFF86EFAC), // 세련된 파스텔 그린
-                        Color(0xFF4ADE80),
-                      ],
+                      colors: AppColors.autoMatch,
                       onTap: () {
                         playersProvider.assignNextPlayersToStandbyCourt(
                           sectionIndex,
@@ -109,16 +103,12 @@ class StandbyCourtSectionsView extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8.0),
                     // 코트 삭제 버튼
                     _buildGradientButton(
                       isTablet: isTablet,
                       width: isTablet ? 50.0 : 40.0,
                       height: isTablet ? 45.0 : 30.0,
-                      colors: const [
-                        Color(0xFFFDBA74), // 편안한 오렌지
-                        Color(0xFFFB923C),
-                      ],
+                      colors: AppColors.removeCourt,
                       onTap: () =>
                           playersProvider.removeStandByPlayers(sectionIndex),
                       child: Icon(
@@ -127,12 +117,14 @@ class StandbyCourtSectionsView extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(width: 8.0),
                     PopupMenuButton<int>(
                       tooltip: '코트 이동/교환',
                       color: Colors.white,
                       elevation: 6,
                       offset: const Offset(0, 40),
+                      constraints: const BoxConstraints(
+                        minWidth: 80,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -147,18 +139,19 @@ class StandbyCourtSectionsView extends StatelessWidget {
                           if (index == sectionIndex) return null;
                           return PopupMenuItem<int>(
                             value: index,
+                            height: 40,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
+                              horizontal: 12,
                             ),
                             child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   Icons.swap_horiz_rounded,
                                   color: Colors.blue.shade400,
                                   size: isTablet ? 24 : 20,
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 8),
                                 Text(
                                   '${index + 1}번 코트와 교환',
                                   style: TextStyle(
@@ -177,10 +170,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                           isTablet: isTablet,
                           width: isTablet ? 50.0 : 40.0,
                           height: isTablet ? 45.0 : 30.0,
-                          colors: const [
-                            Color(0xFF64B5F6),
-                            Color(0xFF2196F3),
-                          ],
+                          colors: AppColors.swap,
                           onTap: () {},
                           child: Icon(
                             Icons.swap_horiz,
@@ -200,10 +190,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFFFEF3C7), // 파스텔 앰버 (대기존의 따뜻한 느낌)
-                      Color(0xFFFDE68A),
-                    ],
+                    colors: AppColors.standbyZone,
                   ),
                   borderRadius: BorderRadius.circular(20.0),
                   border: Border.all(color: Colors.white, width: 2.0),
@@ -224,7 +211,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       child: Icon(
                         Icons.add,
                         size: isTablet ? 60.0 : 40.0,
-                        color: const Color(0xFFD97706), // 어두운 앰버로 눈 편안하게
+                        color: AppColors.standbyZoneIcon, // 어두운 앰버로 눈 편안하게
                       ),
                     ),
                   ),

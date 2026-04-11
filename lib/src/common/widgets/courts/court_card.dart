@@ -70,9 +70,11 @@ class CourtCard extends StatelessWidget {
       child: Column(
         children: [
           // 헤더: 코트 이름 + 액션 버튼들
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: isTablet ? 8.0 : 4.0,
+            runSpacing: 4.0,
             children: [
               Text(
                 '${sectionIndex + 1} 코트',
@@ -82,7 +84,6 @@ class CourtCard extends StatelessWidget {
                   color: const Color(0xFF065F46), // 진한 에메랄드 바탕 텍스트
                 ),
               ),
-              SizedBox(width: isTablet ? 32.0 : 16.0),
               ...headerActions,
             ],
           ),

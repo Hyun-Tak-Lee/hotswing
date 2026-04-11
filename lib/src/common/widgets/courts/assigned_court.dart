@@ -6,6 +6,7 @@ import 'package:hotswing/src/models/players/player.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
+import 'package:hotswing/src/common/constants/app_colors.dart';
 
 class CourtSectionsView extends StatelessWidget {
   final Function(
@@ -68,7 +69,7 @@ class CourtSectionsView extends StatelessWidget {
                     isTablet: isTablet,
                     width: isTablet ? 50.0 : 40.0,
                     height: isTablet ? 45.0 : 30.0,
-                    colors: [const Color(0xFFEF9A9A), const Color(0xFFE57373)],
+                    colors: AppColors.remove,
                     onTap: () {
                       playersProvider.movePlayersFromCourtToUnassigned(
                         sectionIndex: sectionIndex,
@@ -82,40 +83,19 @@ class CourtSectionsView extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(width: 8.0),
                   // 자동 매칭 / 경기 종료 버튼
                   if (!isGameStarted)
-                    _buildGradientButton(
+                    AutoMatchSplitButton(
                       isTablet: isTablet,
-                      width: isTablet ? 120.0 : 80.0,
-                      height: isTablet ? 45.0 : 30.0,
-                      colors: [
-                        const Color(0xFFA5D6A7),
-                        const Color(0xFF81C784),
-                      ],
-                      onTap: () {
-                        playersProvider.assignNextPlayersToAssignedCourt(
-                          sectionIndex,
-                        );
-                      },
-                      child: Text(
-                        '자동 매칭',
-                        style: TextStyle(
-                          fontSize: isTablet ? 20.0 : 12.0,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      item: item,
+                      sectionIndex: sectionIndex,
                     )
                   else
                     _buildGradientButton(
                       isTablet: isTablet,
                       width: isTablet ? 150.0 : 90.0,
                       height: isTablet ? 45.0 : 30.0,
-                      colors: [
-                        const Color(0xFFFFB74D),
-                        const Color(0xFFE57373),
-                      ],
+                      colors: AppColors.finish,
                       onTap: () {
                         playersProvider
                             .incrementWaitedTimeForAllUnassignedPlayers();
@@ -133,12 +113,15 @@ class CourtSectionsView extends StatelessWidget {
                         ),
                       ),
                     ),
-                  const SizedBox(width: 8.0),
                   PopupMenuButton<int>(
                     tooltip: '코트 이동/교환',
                     color: Colors.white,
                     elevation: 6,
-                    offset: const Offset(0, 40),
+                    position: PopupMenuPosition.under,
+                    offset: const Offset(0, 4),
+                    constraints: const BoxConstraints(
+                      minWidth: 80,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -153,18 +136,19 @@ class CourtSectionsView extends StatelessWidget {
                         if (index == sectionIndex) return null;
                         return PopupMenuItem<int>(
                           value: index,
+                          height: 40,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                            horizontal: 12,
                           ),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.swap_horiz_rounded,
                                 color: Colors.blue.shade400,
                                 size: isTablet ? 24 : 20,
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 8),
                               Text(
                                 '${index + 1}번 코트와 교환',
                                 style: TextStyle(
@@ -183,10 +167,7 @@ class CourtSectionsView extends StatelessWidget {
                         isTablet: isTablet,
                         width: isTablet ? 50.0 : 40.0,
                         height: isTablet ? 45.0 : 30.0,
-                        colors: [
-                          const Color(0xFF64B5F6),
-                          const Color(0xFF2196F3),
-                        ],
+                        colors: AppColors.swap,
                         onTap: () {},
                         child: Icon(
                           Icons.swap_horiz,
@@ -239,6 +220,173 @@ class CourtSectionsView extends StatelessWidget {
           child: Center(child: child),
         ),
       ),
+    );
+  }
+}
+
+class AutoMatchSplitButton extends StatefulWidget {
+  final bool isTablet;
+  final List<Player?> item;
+  final int sectionIndex;
+
+  const AutoMatchSplitButton({
+    super.key,
+    required this.isTablet,
+    required this.item,
+    required this.sectionIndex,
+  });
+
+  @override
+  State<AutoMatchSplitButton> createState() => _AutoMatchSplitButtonState();
+}
+
+class _AutoMatchSplitButtonState extends State<AutoMatchSplitButton> {
+  final MenuController _menuController = MenuController();
+
+  @override
+  Widget build(BuildContext context) {
+    final playersProvider = Provider.of<PlayersProvider>(context);
+    final standbyCourts = playersProvider.standbyPlayers;
+    final hasFullStandby =
+        standbyCourts.any((court) => court.every((p) => p != null));
+    final isCourtEmpty = widget.item.every((p) => p == null);
+
+    final width = widget.isTablet ? 160.0 : 110.0;
+    final height = widget.isTablet ? 45.0 : 30.0;
+
+    return MenuAnchor(
+      controller: _menuController,
+      style: MenuStyle(
+        minimumSize: WidgetStatePropertyAll(Size(width, 0)),
+        maximumSize: WidgetStatePropertyAll(Size(width, double.infinity)),
+        backgroundColor: const WidgetStatePropertyAll(Colors.white),
+        elevation: const WidgetStatePropertyAll(8),
+        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        ),
+      ),
+      menuChildren: standbyCourts
+          .asMap()
+          .entries
+          .where((e) => e.value.every((p) => p != null))
+          .map((entry) {
+        int idx = entry.key;
+        return SizedBox(
+          width: width,
+          child: MenuItemButton(
+            style: MenuItemButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              minimumSize: Size(width, 48),
+            ),
+            onPressed: () {
+              playersProvider.popStandByPlayerByIndex(widget.sectionIndex, idx);
+            },
+            leadingIcon: Icon(
+              Icons.login,
+              color: Colors.green.shade400,
+              size: widget.isTablet ? 24 : 18,
+            ),
+            child: Text(
+              '대기 ${idx + 1}번팀',
+              style: TextStyle(
+                fontSize: widget.isTablet ? 16 : 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+      builder: (context, controller, child) {
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: AppColors.autoMatch,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.autoMatch.last.withAlpha(100),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: Row(
+              children: [
+                // 왼쪽: 자동 매칭 액션 영역
+                Expanded(
+                  child: InkWell(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(15.0),
+                      bottomLeft: Radius.circular(15.0),
+                    ),
+                    onTap: () {
+                      playersProvider
+                          .assignNextPlayersToAssignedCourt(widget.sectionIndex);
+                    },
+                    child: Center(
+                      child: Text(
+                        '자동 매칭',
+                        style: TextStyle(
+                          fontSize: widget.isTablet ? 18.0 : 12.0,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // 구분선
+                VerticalDivider(
+                  color: Colors.white.withAlpha(100),
+                  width: 1,
+                  thickness: 1,
+                  indent: 8,
+                  endIndent: 8,
+                ),
+                // 오른쪽: 드롭다운 화살표 영역
+                InkWell(
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(15.0),
+                    bottomRight: Radius.circular(15.0),
+                  ),
+                  onTap: (hasFullStandby && isCourtEmpty)
+                      ? () {
+                          if (controller.isOpen) {
+                            controller.close();
+                          } else {
+                            controller.open();
+                          }
+                        }
+                      : null,
+                  child: SizedBox(
+                    width: widget.isTablet ? 40.0 : 30.0,
+                    height: double.infinity,
+                    child: Center(
+                      child: Icon(
+                        controller.isOpen
+                            ? Icons.arrow_drop_up
+                            : Icons.arrow_drop_down,
+                        color: (hasFullStandby && isCourtEmpty)
+                            ? Colors.white
+                            : Colors.white.withAlpha(100),
+                        size: widget.isTablet ? 28 : 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
