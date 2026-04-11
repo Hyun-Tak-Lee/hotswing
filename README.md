@@ -16,3 +16,7 @@ key 파일을 `C:\Users\12gus\hotswing_key\hotswing.keystore`에 저장하세요
 ## Realm migration
 
 dart run build_runner clean
+
+## flutter build
+
+flutter build apk --release
