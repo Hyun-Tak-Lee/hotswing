@@ -20,3 +20,5 @@ dart run build_runner clean
 ## flutter build
 
 flutter build apk --release
+
+/build/app/outputs/flutter-apk/app-release.apk

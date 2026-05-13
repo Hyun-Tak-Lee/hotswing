@@ -15,6 +15,7 @@ class _Player {
   int played = 0;
   int waited = 0;
   int lated = 0;
+  int playTime = 0;
   bool activate = true;
   late Map<String, int> gamesPlayedWith;
   late List<ObjectId> groups;

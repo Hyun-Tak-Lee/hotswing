@@ -22,6 +22,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
     int played = 0,
     int waited = 0,
     int lated = 0,
+    int playTime = 0,
     bool activate = true,
     Map<String, int> gamesPlayedWith = const {},
     Iterable<ObjectId> groups = const [],
@@ -32,6 +33,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
         'played': 0,
         'waited': 0,
         'lated': 0,
+        'playTime': 0,
         'activate': true,
       });
     }
@@ -44,6 +46,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.set(this, 'played', played);
     RealmObjectBase.set(this, 'waited', waited);
     RealmObjectBase.set(this, 'lated', lated);
+    RealmObjectBase.set(this, 'playTime', playTime);
     RealmObjectBase.set(this, 'activate', activate);
     RealmObjectBase.set<RealmMap<int>>(
       this,
@@ -106,6 +109,11 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
   set lated(int value) => RealmObjectBase.set(this, 'lated', value);
 
   @override
+  int get playTime => RealmObjectBase.get<int>(this, 'playTime') as int;
+  @override
+  set playTime(int value) => RealmObjectBase.set(this, 'playTime', value);
+
+  @override
   bool get activate => RealmObjectBase.get<bool>(this, 'activate') as bool;
   @override
   set activate(bool value) => RealmObjectBase.set(this, 'activate', value);
@@ -153,6 +161,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       'played': played.toEJson(),
       'waited': waited.toEJson(),
       'lated': lated.toEJson(),
+      'playTime': playTime.toEJson(),
       'activate': activate.toEJson(),
       'gamesPlayedWith': gamesPlayedWith.toEJson(),
       'groups': groups.toEJson(),
@@ -182,6 +191,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
           played: fromEJson(ejson['played'], defaultValue: 0),
           waited: fromEJson(ejson['waited'], defaultValue: 0),
           lated: fromEJson(ejson['lated'], defaultValue: 0),
+          playTime: fromEJson(ejson['playTime'], defaultValue: 0),
           activate: fromEJson(ejson['activate'], defaultValue: true),
           gamesPlayedWith: fromEJson(ejson['gamesPlayedWith']),
           groups: fromEJson(ejson['groups']),
@@ -208,6 +218,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       SchemaProperty('played', RealmPropertyType.int),
       SchemaProperty('waited', RealmPropertyType.int),
       SchemaProperty('lated', RealmPropertyType.int),
+      SchemaProperty('playTime', RealmPropertyType.int),
       SchemaProperty('activate', RealmPropertyType.bool),
       SchemaProperty(
         'gamesPlayedWith',

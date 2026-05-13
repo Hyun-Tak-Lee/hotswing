@@ -41,11 +41,24 @@ class PlayerSessionService {
     }).toList();
   }
 
+  Future<List<DateTime?>> loadCourtStartTimes() async {
+    List<String> stringList = await _sharedProvider.getStringList(
+      "courtStartTimes",
+    );
+    return stringList.map((str) {
+      if (str.isEmpty) {
+        return null;
+      }
+      return DateTime.tryParse(str);
+    }).toList();
+  }
+
   Future<void> saveSession({
     required Map<ObjectId, Player> players,
     required List<Player> unassignedPlayers,
     required List<List<Player?>> assignedPlayers,
     required List<List<Player?>> standbyPlayers,
+    required List<DateTime?> courtStartTimes,
   }) async {
     final List<String> playerIdLists = players.keys
         .map((key) => key.toString())
@@ -71,6 +84,10 @@ class PlayerSessionService {
         .map((player) => player.id.toString())
         .toList();
 
+    final List<String> startTimeStrings = courtStartTimes
+        .map((dt) => dt?.toIso8601String() ?? "")
+        .toList();
+
     await _sharedProvider.saveStringList(
       "assignedPlayers",
       assignedPlayersIdListNested,
@@ -84,5 +101,6 @@ class PlayerSessionService {
       unassignedPlayersIdList,
     );
     await _sharedProvider.saveStringList("players", playerIdLists);
+    await _sharedProvider.saveStringList("courtStartTimes", startTimeStrings);
   }
 }

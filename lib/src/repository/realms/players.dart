@@ -44,6 +44,7 @@ class PlayerRepository {
     int? played,
     int? waited,
     int? lated,
+    int? playTime,
     bool? activate,
     DateTime? recentMatchDate,
     RealmMap<int>? gamesPlayedWith,
@@ -74,6 +75,9 @@ class PlayerRepository {
         }
         if (lated != null) {
           player.lated = lated;
+        }
+        if (playTime != null) {
+          player.playTime = playTime;
         }
         if (activate != null) {
           player.activate = activate;

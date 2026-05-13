@@ -51,37 +51,131 @@ class GamePlayedDialog extends StatelessWidget {
       ..sort();
     final bool hasNotPlayedWith = notPlayedWithNames.isNotEmpty;
 
+    // 함께 플레이한 사람 정렬: 1순위 - 기록 낮은 순 (오름차순), 2순위 - 이름 가나다순
+    final sortedEntries = gamesPlayedWithMap.entries.toList()
+      ..sort((a, b) {
+        final int countComparison = a.value.compareTo(b.value);
+        if (countComparison != 0) return countComparison;
+        return a.key.compareTo(b.key);
+      });
+
+    // 전적 항목 표현을 위한 소형 위젯 빌더
+    Widget buildSummaryItem(String label, String value, Color valueColor) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12.0,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF64748B), // Slate 500
+            ),
+          ),
+          const SizedBox(height: 6.0),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 15.0,
+              fontWeight: FontWeight.bold,
+              color: valueColor,
+            ),
+          ),
+        ],
+      );
+    }
+
+    // 요약 카드 내 수직 디바이더 빌더
+    Widget buildSummaryDivider() {
+      return Container(height: 24.0, width: 1.2, color: Colors.grey.shade300);
+    }
+
+    // 상세 시간 포맷팅
+    final String formattedPlayTime =
+        '${player.playTime ~/ 60}분 ${player.playTime % 60}초';
+
+    // 종합 대시보드 요약 카드 위젯 정의
+    final playerSummaryCard = Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC), // Slate 50
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: const Color(0xFFE2E8F0)), // Slate 200
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          buildSummaryItem(
+            '총 플레이',
+            '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}회',
+            const Color(0xFF2563EB), // Blue 600
+          ),
+          buildSummaryDivider(),
+          buildSummaryItem(
+            '누적 대기',
+            '${player.waited}회',
+            const Color(0xFF475569), // Slate 600
+          ),
+          buildSummaryDivider(),
+          buildSummaryItem(
+            '총 플레이 시간',
+            formattedPlayTime,
+            const Color(0xFF0F766E), // Teal 700
+          ),
+        ],
+      ),
+    );
+
     return AlertDialog(
-      title: Text('${player.name}님과 함께 플레이한 사람', style: titleStyle),
+      title: Text('${player.name}님 상세 정보', style: titleStyle),
       content: SizedBox(
         width: dialogWidth,
         height: dialogHeight,
-        child: Scrollbar(
-          thumbVisibility: true,
-          child: ListView.separated(
-            itemCount: gamesPlayedWithMap.length + (hasNotPlayedWith ? 1 : 0),
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (BuildContext context, int index) {
-              if (hasNotPlayedWith && index == 0) {
-                return ListTile(
-                  dense: true,
-                  title: Text('기록 없음', style: listTitleStyle),
-                  subtitle: Text(
-                    sortedNotPlayedWithNames.join(', '),
-                    style: subStyle,
-                  ),
-                );
-              } else {
-                final mapIndex = hasNotPlayedWith ? index - 1 : index;
-                final entry = gamesPlayedWithMap.entries.elementAt(mapIndex);
-                return ListTile(
-                  dense: true,
-                  title: Text(entry.key, style: bodyStyle),
-                  trailing: Text('${entry.value} 회', style: bodyStyle),
-                );
-              }
-            },
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // 1. 상단 전적 요약 카드 고정 노출
+            playerSummaryCard,
+            const SizedBox(height: 16.0),
+            // 2. 기존 이력 리스트로 이어지는 서브 타이틀
+            Padding(
+              padding: const EdgeInsets.only(left: 4.0, bottom: 6.0),
+              child: Text('함께 플레이한 사람', style: listTitleStyle),
+            ),
+            // 3. 스크롤 가능한 히스토리 목록 리스트뷰
+            Expanded(
+              child: Scrollbar(
+                thumbVisibility: true,
+                child: ListView.separated(
+                  itemCount: sortedEntries.length + (hasNotPlayedWith ? 1 : 0),
+                  separatorBuilder: (context, index) =>
+                      const Divider(height: 1),
+                  itemBuilder: (BuildContext context, int index) {
+                    if (hasNotPlayedWith && index == 0) {
+                      return ListTile(
+                        dense: true,
+                        title: Text('기록 없음', style: listTitleStyle),
+                        subtitle: Text(
+                          sortedNotPlayedWithNames.join(', '),
+                          style: subStyle,
+                        ),
+                      );
+                    } else {
+                      final mapIndex = hasNotPlayedWith ? index - 1 : index;
+                      final entry = sortedEntries[mapIndex];
+                      return ListTile(
+                        dense: true,
+                        title: Text(entry.key, style: bodyStyle),
+                        trailing: Text('${entry.value} 회', style: bodyStyle),
+                      );
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       actions: <Widget>[

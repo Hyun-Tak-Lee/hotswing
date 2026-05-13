@@ -19,6 +19,7 @@ class PlayersProvider with ChangeNotifier {
   final List<List<Player?>> _assignedPlayers = [];
   final List<List<Player?>> _standbyPlayers = [];
   final List<Player> _unassignedPlayers = [];
+  final List<DateTime?> _courtStartTimes = [];
 
   PlayersProvider() {
     _options = OptionsRepository.instance.getOptions();
@@ -78,6 +79,14 @@ class PlayersProvider with ChangeNotifier {
         standbyIds.map((ids) => _playerService.findPlayersByIds(ids)),
       );
     }
+
+    final startTimes = await _sessionService.loadCourtStartTimes();
+    _courtStartTimes.clear();
+    if (startTimes.isNotEmpty) {
+      _courtStartTimes.addAll(startTimes);
+    } else {
+      _courtStartTimes.addAll(List.filled(_assignedPlayers.length, null));
+    }
   }
 
   Future<void> _loadInitialAssignedPlayersCount() async {
@@ -91,6 +100,7 @@ class PlayersProvider with ChangeNotifier {
       unassignedPlayers: _unassignedPlayers,
       assignedPlayers: _assignedPlayers,
       standbyPlayers: _standbyPlayers,
+      courtStartTimes: _courtStartTimes,
     );
   }
 
@@ -102,6 +112,8 @@ class PlayersProvider with ChangeNotifier {
       List.unmodifiable(_assignedPlayers);
 
   List<List<Player?>> get standbyPlayers => List.unmodifiable(_standbyPlayers);
+
+  List<DateTime?> get courtStartTimes => List.unmodifiable(_courtStartTimes);
 
   List<Player> getPlayers() {
     var playerList = _players.values.toList();
@@ -202,6 +214,7 @@ class PlayersProvider with ChangeNotifier {
       newPlayed,
       newWaited,
       playerToUpdate.lated,
+      playerToUpdate.playTime,
       newGroups,
       null,
     );
@@ -285,10 +298,12 @@ class PlayersProvider with ChangeNotifier {
         }
       }
       _assignedPlayers.removeRange(newCount, currentCount);
+      _courtStartTimes.removeRange(newCount, currentCount);
     } else if (newCount > currentCount) {
       _assignedPlayers.addAll(
         List.generate(newCount - currentCount, (_) => List.filled(4, null)),
       );
+      _courtStartTimes.addAll(List.filled(newCount - currentCount, null));
     }
     notifyListeners();
   }
@@ -325,6 +340,18 @@ class PlayersProvider with ChangeNotifier {
     }
   }
 
+  void _updateCourtStartTime(int courtIndex) {
+    if (courtIndex < 0 || courtIndex >= _assignedPlayers.length) return;
+    final playerCount = _assignedPlayers[courtIndex].where((p) => p != null).length;
+    if (playerCount == 4) {
+      if (_courtStartTimes[courtIndex] == null) {
+        _courtStartTimes[courtIndex] = DateTime.now();
+      }
+    } else {
+      _courtStartTimes[courtIndex] = null;
+    }
+  }
+
   void addAssignedPlayer(Player? player, int courtIndex, int playerIndex) {
     if (player == null) return;
     if (courtIndex < 0 || courtIndex >= _assignedPlayers.length) return;
@@ -332,6 +359,7 @@ class PlayersProvider with ChangeNotifier {
       return;
     }
     _assignedPlayers[courtIndex][playerIndex] = player;
+    _updateCourtStartTime(courtIndex);
     _saveLoadedPlayers();
     notifyListeners();
   }
@@ -343,6 +371,7 @@ class PlayersProvider with ChangeNotifier {
     }
     Player? removed = _assignedPlayers[courtIndex][playerIndex];
     _assignedPlayers[courtIndex][playerIndex] = null;
+    _updateCourtStartTime(courtIndex);
 
     if (removed != null) {
       _saveLoadedPlayers();
@@ -413,6 +442,7 @@ class PlayersProvider with ChangeNotifier {
     final bool isFullTeam = playerToAssign.every((player) => player != null);
     if (isFullTeam) {
       _assignedPlayers[assignedIndex] = _standbyPlayers.removeAt(standbyIndex);
+      _updateCourtStartTime(assignedIndex);
       _saveLoadedPlayers();
       notifyListeners();
       return true;
@@ -435,11 +465,20 @@ class PlayersProvider with ChangeNotifier {
     }
     List<Player?> playersInCourt = List.from(targetCourtPlayers[sectionIndex]);
 
+    int elapsedSeconds = 0;
+    if (targetCourtKind == "assigned" && sectionIndex < _courtStartTimes.length) {
+      final startTime = _courtStartTimes[sectionIndex];
+      if (played == 1 && startTime != null) {
+        elapsedSeconds = DateTime.now().difference(startTime).inSeconds;
+      }
+      _courtStartTimes[sectionIndex] = null;
+    }
+
     for (int i = 0; i < playersInCourt.length; i++) {
       Player? player = playersInCourt[i];
       if (player != null) {
         if (played == 1) {
-          _playerService.playedFinish(player);
+          _playerService.playedFinish(player, elapsedSeconds: elapsedSeconds);
           _playerService.addGamesPlayedWith(player, playersInCourt, played);
         }
 
@@ -490,6 +529,11 @@ class PlayersProvider with ChangeNotifier {
     List<Player?> temp = _assignedPlayers[indexA];
     _assignedPlayers[indexA] = _assignedPlayers[indexB];
     _assignedPlayers[indexB] = temp;
+
+    DateTime? tempTime = _courtStartTimes[indexA];
+    _courtStartTimes[indexA] = _courtStartTimes[indexB];
+    _courtStartTimes[indexB] = tempTime;
+
     _saveLoadedPlayers();
     notifyListeners();
   }
@@ -534,6 +578,7 @@ class PlayersProvider with ChangeNotifier {
         addIndex++;
       }
     }
+    _updateCourtStartTime(sectionIndex);
     _saveLoadedPlayers();
     notifyListeners();
   }

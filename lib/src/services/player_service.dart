@@ -86,6 +86,7 @@ class PlayerService {
     int played,
     int waited,
     int lated,
+    int playTime,
     List<ObjectId> groups,
     DateTime? recentMatchDate,
   ) {
@@ -99,6 +100,7 @@ class PlayerService {
       played: played,
       waited: waited,
       lated: lated,
+      playTime: playTime,
       groups: RealmList(groups),
       recentMatchDate: recentMatchDate,
     );
@@ -118,6 +120,7 @@ class PlayerService {
       played: 0,
       waited: 0,
       lated: lated,
+      playTime: 0,
       gamesPlayedWith: RealmMap<int>({}),
     );
   }
@@ -130,11 +133,12 @@ class PlayerService {
     _playerRepository.updatePlayer(player: player, waited: player.waited + 1);
   }
 
-  void playedFinish(Player player) {
+  void playedFinish(Player player, {int elapsedSeconds = 0}) {
     _playerRepository.updatePlayer(
       player: player,
       played: player.played + 1,
       waited: 0,
+      playTime: player.playTime + elapsedSeconds,
     );
   }
 

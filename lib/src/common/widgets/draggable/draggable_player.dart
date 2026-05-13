@@ -46,7 +46,6 @@ class DraggablePlayerItem extends StatelessWidget {
     this.onDragEnded,
   });
 
-
   @override
   Widget build(BuildContext context) {
     final playersProvider = Provider.of<PlayersProvider>(context);
@@ -60,6 +59,14 @@ class DraggablePlayerItem extends StatelessWidget {
     String skillLevelDisplay = player.grade;
     final textColor = const Color(0xFF1E293B); // Slate 800 (세련된 진회색)
     final detailTextColor = const Color(0xFF64748B); // Slate 500
+
+    // 시간 표시 포맷팅 (MM:SS)
+    final String minutesStr = (player.playTime ~/ 60).toString().padLeft(
+      2,
+      '0',
+    );
+    final String secondsStr = (player.playTime % 60).toString().padLeft(2, '0');
+    final String timeDisplay = '$minutesStr:$secondsStr';
 
     // 순수 UI 표현을 위한 위젯
     Widget playerItemDisplay = Container(
@@ -168,14 +175,65 @@ class DraggablePlayerItem extends StatelessWidget {
                 ],
               ),
               SizedBox(height: isTablet ? 2.0 : 4.0),
-              Text(
-                '플레이: ${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}  |  대기: ${player.waited}',
-                style: TextStyle(
-                  fontSize: detailFontSize,
-                  color: detailTextColor,
-                ),
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.play_circle_outline_rounded,
+                    size: detailFontSize - 2.0,
+                    color: detailTextColor,
+                  ),
+                  const SizedBox(width: 3.0),
+                  Text(
+                    '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}',
+                    style: TextStyle(
+                      fontSize: detailFontSize - 1.0,
+                      color: detailTextColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Container(
+                    height: 10.0,
+                    width: 1.2,
+                    color: Colors.grey.shade300,
+                    margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                  ),
+                  Icon(
+                    Icons.hourglass_empty_rounded,
+                    size: detailFontSize - 2.0,
+                    color: detailTextColor,
+                  ),
+                  const SizedBox(width: 3.0),
+                  Text(
+                    '${player.waited}',
+                    style: TextStyle(
+                      fontSize: detailFontSize - 1.0,
+                      color: detailTextColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Container(
+                    height: 10.0,
+                    width: 1.2,
+                    color: Colors.grey.shade300,
+                    margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                  ),
+                  Icon(
+                    Icons.timer_outlined,
+                    size: detailFontSize - 2.0,
+                    color: detailTextColor,
+                  ),
+                  const SizedBox(width: 3.0),
+                  Text(
+                    timeDisplay,
+                    style: TextStyle(
+                      fontSize: detailFontSize - 1.0,
+                      color: detailTextColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
