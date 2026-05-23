@@ -5,6 +5,7 @@ import 'package:hotswing/src/common/widgets/dialogs/game_played_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 // 드래그되는 플레이어의 데이터와 원래 소속 섹션 정보를 전달하기 위한 클래스
 class PlayerDragData {
@@ -50,6 +51,9 @@ class DraggablePlayerItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final playersProvider = Provider.of<PlayersProvider>(context);
     final isTablet = ResponsiveUtils.isTablet(context);
+    final baseColors = context.baseColors;
+    final playerColors = context.playerColors;
+    final courtColors = context.courtColors;
 
     // 태블릿(높이 160.0)에 다 들어가도록 글자 크기 조정
     final double nameFontSize = isTablet ? 25.0 : 20.0;
@@ -57,8 +61,8 @@ class DraggablePlayerItem extends StatelessWidget {
     final double detailFontSize = 16.0;
 
     String skillLevelDisplay = player.grade;
-    final textColor = const Color(0xFF1E293B); // Slate 800 (세련된 진회색)
-    final detailTextColor = const Color(0xFF64748B); // Slate 500
+    final textColor = courtColors.playerItemTextPrimary;
+    final detailTextColor = courtColors.playerItemTextSecondary;
 
     // 시간 표시 포맷팅 (MM:SS)
     final String minutesStr = (player.playTime ~/ 60).toString().padLeft(
@@ -94,7 +98,7 @@ class DraggablePlayerItem extends StatelessWidget {
                     Icon(
                       Icons.star_rounded,
                       size: isTablet ? 28.0 : 20.0,
-                      color: const Color(0xFFFFB74D), // 별색상: 주황/금색
+                      color: playerColors.roleManager, // 별색상
                     ),
                     const SizedBox(width: 4.0),
                   ],
@@ -123,7 +127,7 @@ class DraggablePlayerItem extends StatelessWidget {
                           style: TextStyle(
                             fontSize: nameFontSize - 2.0,
                             fontWeight: FontWeight.bold,
-                            color: Colors.blueAccent.shade700,
+                            color: courtColors.playerItemGenderText,
                           ),
                         ),
                       ],
@@ -146,21 +150,21 @@ class DraggablePlayerItem extends StatelessWidget {
                     skillLevelDisplay,
                     style: TextStyle(
                       fontSize: skillFontSize + 4,
-                      color: Colors.blueAccent.shade700,
+                      color: courtColors.playerItemGenderText,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                   Container(
                     height: 12,
                     width: 1.5,
-                    color: Colors.grey.shade400,
+                    color: courtColors.playerItemDivider,
                     margin: const EdgeInsets.symmetric(horizontal: 8),
                   ),
                   Text(
                     'Rate ',
                     style: TextStyle(
                       fontSize: detailFontSize - 2,
-                      color: Colors.black54,
+                      color: courtColors.playerItemRateLabel,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -196,7 +200,7 @@ class DraggablePlayerItem extends StatelessWidget {
                   Container(
                     height: 10.0,
                     width: 1.2,
-                    color: Colors.grey.shade300,
+                    color: courtColors.playerItemDivider,
                     margin: const EdgeInsets.symmetric(horizontal: 8.0),
                   ),
                   Icon(
@@ -305,11 +309,11 @@ class DraggablePlayerItem extends StatelessWidget {
               horizontal: 12.0,
             ),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: baseColors.cardBg,
               borderRadius: BorderRadius.circular(12.0),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withAlpha(30),
+                  color: baseColors.cardShadow,
                   blurRadius: 15.0,
                   offset: const Offset(0, 8),
                 ),
@@ -326,7 +330,7 @@ class DraggablePlayerItem extends StatelessWidget {
                       Icon(
                         Icons.star_rounded,
                         size: isTablet ? 18.0 : 14.0,
-                        color: const Color(0xFFFFB74D),
+                        color: playerColors.roleManager,
                       ),
                       const SizedBox(width: 4.0),
                     ],
@@ -342,7 +346,7 @@ class DraggablePlayerItem extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: nameFontSize,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1E293B),
+                                color: courtColors.playerItemTextPrimary,
                                 decoration: TextDecoration.none,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -354,7 +358,7 @@ class DraggablePlayerItem extends StatelessWidget {
                             style: TextStyle(
                               fontSize: nameFontSize - 2.0,
                               fontWeight: FontWeight.bold,
-                              color: Colors.blueAccent.shade700,
+                              color: courtColors.playerItemGenderText,
                               decoration: TextDecoration.none,
                             ),
                           ),
@@ -430,6 +434,7 @@ class PlayerDropZone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
     // 태블릿 화면에서 코트를 더 많이 볼 수 있도록 세로 길이 축소 (기존 240 -> 160)
     final double currentHeight = isTablet ? 160.0 : 140.0;
@@ -454,15 +459,15 @@ class PlayerDropZone extends StatelessWidget {
         bool isHovering = candidateData.isNotEmpty && isDropEnabled;
 
         Color determinedDefaultBgColor = player == null
-            ? const Color(0xFFF8FAFC) // 빈 영역은 부드러운 연회색
+            ? courtColors.dropZoneEmptyBg
             : !player!.activate
-            ? const Color(0xFFCBD5E1).withAlpha(120) // 비활성은 눈에 띄게 더 투명하고 흐리게
-            : const Color(0xFFFFFFFF); // 활성 플레이어는 깔끔한 흰색
+            ? courtColors.dropZoneInactiveBg
+            : courtColors.dropZoneActiveBg;
         Color hoveringBgColor = player == null
-            ? const Color(0xFFE2E8F0)
-            : const Color(0xFFF8FAFC);
+            ? courtColors.dropZoneHoverBg
+            : courtColors.dropZoneActiveBg;
         Color borderColor = player == null
-            ? const Color(0xFFE2E8F0)
+            ? courtColors.dropZoneBorder
             : Colors.transparent;
 
         Widget content = Container(
@@ -532,9 +537,7 @@ class PlayerDropZone extends StatelessWidget {
                     child: Icon(
                       Icons.close,
                       size: isTablet ? 18.0 : 14.0,
-                      color: const Color(
-                        0xFF94A3B8,
-                      ), // Slate 400 (좀 더 연하고 깔끔하게 묻히는 색상)
+                      color: courtColors.dropZoneCloseIcon,
                     ),
                   ),
                 ),

@@ -12,6 +12,7 @@ import '../../../../common/widgets/dialogs/add_player_dialog.dart';
 import '../../../../common/widgets/dialogs/confirmation_dialog.dart';
 import '../../../../common/utils/ui/responsive_utils.dart';
 import '../../../../enums/player_feature.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class LeftSideMenu extends StatefulWidget {
   const LeftSideMenu({super.key, required this.isMobileSize});
@@ -42,11 +43,11 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
     return genderValue;
   }
 
-  Color _getRoleColor(String roleValue) {
+  Color _getRoleColor(BuildContext context, String roleValue) {
     if (roleValue == 'manager') return Colors.orange;
     if (roleValue == 'user') return Colors.green;
     if (roleValue == 'guest') return Colors.grey;
-    return Colors.black;
+    return Theme.of(context).colorScheme.onSurface;
   }
 
   Future<void> _showAddPlayerDialog(
@@ -145,6 +146,8 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
     final iconAndFontSize = isTablet ? 32.0 : 24.0;
     final baseFontSize = (isTablet ? 18.0 : 14.0) * textScale;
     final titleFontSize = baseFontSize + 2;
+    final baseColors = context.baseColors;
+    final playerColors = context.playerColors;
 
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.75,
@@ -154,11 +157,11 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           SizedBox(
             height: isTablet ? 180 : 120,
             child: DrawerHeader(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xFFF3E5F5), // 라벤더 미스트 (연보라)
-                    Color(0xFFE1F5FE), // 연하늘
+                    baseColors.gradientStart,
+                    baseColors.gradientEnd,
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -169,7 +172,10 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                 children: [
                   Text(
                     '참여자 (${players.length}명)',
-                    style: TextStyle(fontSize: iconAndFontSize),
+                    style: TextStyle(
+                      fontSize: iconAndFontSize,
+                      color: baseColors.textPrimary,
+                    ),
                   ),
                   Row(
                     children: [
@@ -215,8 +221,8 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: player.activate == false
-                      ? [const Color(0x55333333), const Color(0x55333333)]
-                      : [Colors.blue.shade50, Colors.purple.shade50],
+                      ? [playerColors.playerItemInactive, playerColors.playerItemInactive]
+                      : [playerColors.playerItemActiveStart, playerColors.playerItemActiveEnd],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -246,6 +252,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                             style: TextStyle(
                               fontSize: titleFontSize,
                               fontWeight: FontWeight.bold,
+                              color: baseColors.textPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -258,7 +265,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                             children: [
                               PlayerInfoTag(
                                 text: _getRoleLabel(player.role),
-                                color: _getRoleColor(player.role),
+                                color: _getRoleColor(context, player.role),
                               ),
                               PlayerInfoTag(
                                 text: _getGenderLabel(player.gender),
@@ -282,7 +289,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                                     .join(' , '),
                                 style: TextStyle(
                                   fontSize: baseFontSize * 0.8,
-                                  color: Colors.black54,
+                                  color: baseColors.textSecondary,
                                 ),
                               ),
                             ),

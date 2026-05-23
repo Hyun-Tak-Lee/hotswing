@@ -6,8 +6,8 @@ import 'package:hotswing/src/screens/players/widgets/players_filter_bottom_sheet
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/common/widgets/dialogs/confirmation_dialog.dart';
 import 'package:hotswing/src/screens/players/widgets/player_edit_form.dart';
-
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class PlayersScreen extends StatelessWidget {
   const PlayersScreen({super.key});
@@ -81,15 +81,20 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
   Widget build(BuildContext context) {
     final viewModel = Provider.of<PlayersViewModel>(context);
     final isTablet = ResponsiveUtils.isTablet(context);
+    final baseColors = context.baseColors;
+    final playerColors = context.playerColors;
 
     return Column(
       children: [
         Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFE0C3FC), Color(0xFF8EC5FC)],
+              colors: [
+                playerColors.playerHeaderGradientStart,
+                playerColors.playerHeaderGradientEnd
+              ],
             ),
           ),
           child: SafeArea(
@@ -101,7 +106,7 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
                   // 좌측 영역
                   if (viewModel.isSelectionMode)
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.black87),
+                      icon: Icon(Icons.close, color: playerColors.playerHeaderFg),
                       onPressed: () => viewModel.setSelectionMode(false),
                     )
                   else
@@ -112,8 +117,8 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
                       child: viewModel.isSelectionMode
                           ? Text(
                               '${viewModel.selectedPlayerIds.length} 선택됨',
-                              style: const TextStyle(
-                                color: Colors.black87,
+                              style: TextStyle(
+                                color: playerColors.playerHeaderFg,
                                 fontSize: 20,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -122,18 +127,20 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
                               height: 40,
                               margin: const EdgeInsets.symmetric(horizontal: 8),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.8),
+                                color: playerColors.playerSearchBg,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: TextField(
-                                decoration: const InputDecoration(
+                                style: TextStyle(color: baseColors.textPrimary),
+                                decoration: InputDecoration(
                                   hintText: '회원 이름 검색',
+                                  hintStyle: TextStyle(color: baseColors.textSecondary),
                                   prefixIcon: Icon(
                                     Icons.search,
-                                    color: Colors.black54,
+                                    color: playerColors.playerHeaderFgVariant,
                                   ),
                                   border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(
+                                  contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
                                     vertical: 10,
                                   ),
@@ -150,27 +157,27 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
                   if (viewModel.isSelectionMode) ...[
                     TextButton(
                       onPressed: () => viewModel.selectAll(),
-                      child: const Text(
+                      child: Text(
                         'All',
                         style: TextStyle(
-                          color: Colors.black87,
+                          color: playerColors.playerHeaderFg,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.black87),
+                      icon: Icon(Icons.delete, color: playerColors.playerHeaderFg),
                       onPressed: () =>
                           _showMultiDeleteDialog(context, viewModel),
                     ),
                   ] else ...[
                     IconButton(
-                      icon: const Icon(Icons.checklist, color: Colors.black87),
+                      icon: Icon(Icons.checklist, color: playerColors.playerHeaderFg),
                       onPressed: () => viewModel.setSelectionMode(true),
                     ),
                   ],
                   IconButton(
-                    icon: const Icon(Icons.sort, color: Colors.black87),
+                    icon: Icon(Icons.sort, color: playerColors.playerHeaderFg),
                     onPressed: () => _showFilterBottomSheet(context),
                   ),
                 ],

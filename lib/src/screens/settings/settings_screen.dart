@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
+import 'package:hotswing/src/providers/theme_provider.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,17 +14,32 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  bool _isThemeExpanded = true;
   bool _isCourtExpanded = true;
   bool _isMatchingExpanded = true;
   bool _isPlayerExpanded = true;
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final optionsProvider = Provider.of<OptionsProvider>(context);
     final playersProvider = Provider.of<PlayersProvider>(
       context,
       listen: false,
     );
+
+    final baseColors = context.baseColors;
+    final colorScheme = context.colorScheme;
+
+    // 라이트 모드 이전 색상 완벽 복원 및 다크 모드 적응을 위한 변수 정의
+    final dynamicCardBg = baseColors.cardBg;
+    final dynamicCardShadow = baseColors.cardShadow;
+    final dynamicBorder = Border.all(color: baseColors.cardBorderColor);
+    final dynamicText = baseColors.textPrimary;
+    final dynamicPrimary = baseColors.primaryAccent;
+    final dynamicDarkAccent = baseColors.darkAccent;
+    final dynamicInactiveTrack = baseColors.inactiveTrack;
+    final dynamicThumb = baseColors.thumbColor;
 
     final isTablet = ResponsiveUtils.isTablet(context);
     final textScale = ResponsiveUtils.getTextScale(context);
@@ -40,6 +57,90 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
+                // 테마 설정 섹션
+                _buildSectionHeader(
+                  title: '테마 설정',
+                  fontSize: headerFontSize,
+                  isExpanded: _isThemeExpanded,
+                  onToggle: () =>
+                      setState(() => _isThemeExpanded = !_isThemeExpanded),
+                  colorScheme: colorScheme,
+                ),
+                AnimatedCrossFade(
+                  firstChild: const SizedBox(width: double.infinity),
+                  secondChild: Container(
+                    margin: const EdgeInsets.only(bottom: 24.0, top: 4.0),
+                    decoration: BoxDecoration(
+                      color: dynamicCardBg,
+                      borderRadius: BorderRadius.circular(16),
+                      border: dynamicBorder,
+                      boxShadow: [
+                        BoxShadow(
+                          color: dynamicCardShadow,
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0,
+                        vertical: 16.0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '화면 모드 설정',
+                            style: TextStyle(
+                              fontSize: iconAndFontSize,
+                              fontWeight: FontWeight.bold,
+                              color: dynamicText,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: SegmentedButton<ThemeMode>(
+                              segments: const <ButtonSegment<ThemeMode>>[
+                                ButtonSegment<ThemeMode>(
+                                  value: ThemeMode.system,
+                                  label: Text('시스템 설정'),
+                                  icon: Icon(Icons.brightness_auto),
+                                ),
+                                ButtonSegment<ThemeMode>(
+                                  value: ThemeMode.light,
+                                  label: Text('라이트 모드'),
+                                  icon: Icon(Icons.light_mode),
+                                ),
+                                ButtonSegment<ThemeMode>(
+                                  value: ThemeMode.dark,
+                                  label: Text('다크 모드'),
+                                  icon: Icon(Icons.dark_mode),
+                                ),
+                              ],
+                              selected: <ThemeMode>{themeProvider.themeMode},
+                              onSelectionChanged:
+                                  (Set<ThemeMode> newSelection) {
+                                    themeProvider.setThemeMode(
+                                      newSelection.first,
+                                    );
+                                  },
+                              showSelectedIcon: false,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  crossFadeState: _isThemeExpanded
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
+                  duration: const Duration(milliseconds: 300),
+                ),
+                const SizedBox(height: 16),
+
                 // 코트 관리 섹션
                 _buildSectionHeader(
                   title: '코트 관리',
@@ -47,17 +148,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   isExpanded: _isCourtExpanded,
                   onToggle: () =>
                       setState(() => _isCourtExpanded = !_isCourtExpanded),
+                  colorScheme: colorScheme,
                 ),
                 AnimatedCrossFade(
                   firstChild: const SizedBox(width: double.infinity),
                   secondChild: Container(
                     margin: const EdgeInsets.only(bottom: 24.0, top: 4.0),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: dynamicCardBg,
                       borderRadius: BorderRadius.circular(16),
+                      border: dynamicBorder,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
+                          color: dynamicCardShadow,
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                           spreadRadius: 1,
@@ -80,7 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   style: TextStyle(
                                     fontSize: iconAndFontSize,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                                    color: dynamicText,
                                   ),
                                 ),
                               ),
@@ -90,7 +193,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.blueAccent.withValues(
+                                  color: dynamicPrimary.withValues(
                                     alpha: 0.1,
                                   ),
                                   borderRadius: BorderRadius.circular(12),
@@ -100,7 +203,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   style: TextStyle(
                                     fontSize: iconAndFontSize,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.blueAccent.shade700,
+                                    color: dynamicDarkAccent,
                                   ),
                                 ),
                               ),
@@ -110,15 +213,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           const SizedBox(height: 16),
                           SliderTheme(
                             data: SliderTheme.of(context).copyWith(
-                              activeTrackColor: Colors.blueAccent,
-                              inactiveTrackColor: Colors.blue.withValues(
+                              activeTrackColor: dynamicPrimary,
+                              inactiveTrackColor: dynamicInactiveTrack,
+                              thumbColor: dynamicThumb,
+                              overlayColor: dynamicPrimary.withValues(
                                 alpha: 0.2,
                               ),
-                              thumbColor: Colors.white,
-                              overlayColor: Colors.blueAccent.withValues(
-                                alpha: 0.2,
-                              ),
-                              valueIndicatorColor: Colors.blueAccent,
+                              valueIndicatorColor: dynamicPrimary,
                               trackHeight: 6.0,
                             ),
                             child: Slider(
@@ -160,6 +261,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onToggle: () => setState(
                     () => _isMatchingExpanded = !_isMatchingExpanded,
                   ),
+                  colorScheme: colorScheme,
                 ),
 
                 AnimatedCrossFade(
@@ -171,11 +273,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Container(
                           margin: const EdgeInsets.symmetric(vertical: 8.0),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: dynamicCardBg,
                             borderRadius: BorderRadius.circular(16),
+                            border: dynamicBorder,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
+                                color: dynamicCardShadow,
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                                 spreadRadius: 1,
@@ -195,12 +298,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   style: TextStyle(
                                     fontSize: iconAndFontSize,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                                    color: dynamicText,
                                   ),
                                 ),
                                 Switch.adaptive(
                                   value: optionsProvider.reserveManager,
-                                  activeThumbColor: Colors.blueAccent,
+                                  activeTrackColor: dynamicPrimary,
                                   onChanged: (bool value) {
                                     optionsProvider.setReserveManager(value);
                                   },
@@ -218,6 +321,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onChanged: (double value) =>
                               optionsProvider.setSkillWeight(value),
                           iconAndFontSize: iconAndFontSize,
+                          colorScheme: colorScheme,
                         ),
                         _buildSliderListItem(
                           context: context,
@@ -228,6 +332,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onChanged: (double value) =>
                               optionsProvider.setGenderWeight(value),
                           iconAndFontSize: iconAndFontSize,
+                          colorScheme: colorScheme,
                         ),
                         _buildSliderListItem(
                           context: context,
@@ -238,6 +343,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onChanged: (double value) =>
                               optionsProvider.setWaitedWeight(value),
                           iconAndFontSize: iconAndFontSize,
+                          colorScheme: colorScheme,
                         ),
                         _buildSliderListItem(
                           context: context,
@@ -248,6 +354,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onChanged: (double value) =>
                               optionsProvider.setPlayedWeight(value),
                           iconAndFontSize: iconAndFontSize,
+                          colorScheme: colorScheme,
                         ),
                         _buildSliderListItem(
                           context: context,
@@ -258,6 +365,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onChanged: (double value) =>
                               optionsProvider.setPlayedWithWeight(value),
                           iconAndFontSize: iconAndFontSize,
+                          colorScheme: colorScheme,
                         ),
                         _buildIntSliderListItem(
                           context: context,
@@ -272,6 +380,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onChanged: (int value) =>
                               optionsProvider.setRandomPoolSize(value),
                           iconAndFontSize: iconAndFontSize,
+                          colorScheme: colorScheme,
                         ),
                       ],
                     ),
@@ -291,6 +400,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   isExpanded: _isPlayerExpanded,
                   onToggle: () =>
                       setState(() => _isPlayerExpanded = !_isPlayerExpanded),
+                  colorScheme: colorScheme,
                 ),
                 AnimatedCrossFade(
                   firstChild: const SizedBox(width: double.infinity),
@@ -309,6 +419,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onChanged: (int value) =>
                           optionsProvider.setInactiveDaysThreshold(value),
                       iconAndFontSize: iconAndFontSize,
+                      colorScheme: colorScheme,
                     ),
                   ),
                   crossFadeState: _isPlayerExpanded
@@ -331,7 +442,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required double fontSize,
     required bool isExpanded,
     required VoidCallback onToggle,
+    required ColorScheme colorScheme,
   }) {
+    final baseColors = context.baseColors;
+    final primaryColor = baseColors.primaryAccent;
+    final textColor = baseColors.textPrimary;
+    final iconColor =
+        colorScheme.brightness == Brightness.dark ? colorScheme.onSurfaceVariant : Colors.grey.shade600;
+
     return InkWell(
       onTap: onToggle,
       borderRadius: BorderRadius.circular(8),
@@ -343,7 +461,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               width: 4,
               height: fontSize * 1.2,
               decoration: BoxDecoration(
-                color: Colors.blueAccent,
+                color: primaryColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -354,13 +472,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: TextStyle(
                   fontSize: fontSize,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: textColor,
                 ),
               ),
             ),
             Icon(
               isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-              color: Colors.grey.shade600,
+              color: iconColor,
               size: fontSize * 1.2,
             ),
           ],
@@ -377,15 +495,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required double value,
     required ValueChanged<double> onChanged,
     required double iconAndFontSize,
+    required ColorScheme colorScheme,
   }) {
+    final baseColors = context.baseColors;
+    final cardBg = baseColors.cardBg;
+    final shadowColor = baseColors.cardShadow;
+    final textColor = baseColors.textPrimary;
+    final textVariantColor = baseColors.textSecondary;
+    final primaryColor = baseColors.primaryAccent;
+    final darkAccent = baseColors.darkAccent;
+    final inactiveTrack = baseColors.inactiveTrack;
+    final thumbColor = baseColors.thumbColor;
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: baseColors.cardBorderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: shadowColor,
             blurRadius: 8,
             offset: const Offset(0, 2),
             spreadRadius: 1,
@@ -402,7 +532,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(
                 fontSize: iconAndFontSize,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: textColor,
               ),
             ),
             const SizedBox(height: 12),
@@ -413,7 +543,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     leftText,
                     style: TextStyle(
                       fontSize: iconAndFontSize * 0.8,
-                      color: Colors.grey.shade600,
+                      color: textVariantColor,
                     ),
                   ),
                 ),
@@ -423,7 +553,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.blueAccent.withValues(alpha: 0.1),
+                    color: primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -431,7 +561,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: TextStyle(
                       fontSize: iconAndFontSize * 0.9,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent.shade700,
+                      color: darkAccent,
                     ),
                   ),
                 ),
@@ -441,7 +571,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     textAlign: TextAlign.end,
                     style: TextStyle(
                       fontSize: iconAndFontSize * 0.8,
-                      color: Colors.grey.shade600,
+                      color: textVariantColor,
                     ),
                   ),
                 ),
@@ -449,12 +579,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                activeTrackColor: Colors.blueAccent,
-                inactiveTrackColor: Colors.blue.withValues(alpha: 0.2),
-                thumbColor: Colors.white,
-                overlayColor: Colors.blueAccent.withValues(alpha: 0.2),
-                valueIndicatorColor: Colors.blueAccent,
-                valueIndicatorTextStyle: const TextStyle(color: Colors.white),
+                activeTrackColor: primaryColor,
+                inactiveTrackColor: inactiveTrack,
+                thumbColor: thumbColor,
+                overlayColor: primaryColor.withValues(alpha: 0.2),
+                valueIndicatorColor: primaryColor,
+                valueIndicatorTextStyle: TextStyle(
+                  color: baseColors.sliderIndicatorText,
+                ),
                 trackHeight: 6.0,
               ),
               child: Slider(
@@ -484,16 +616,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String unit,
     required ValueChanged<int> onChanged,
     required double iconAndFontSize,
+    required ColorScheme colorScheme,
   }) {
     final displayValue = '$value$unit';
+    final baseColors = context.baseColors;
+    final cardBg = baseColors.cardBg;
+    final shadowColor = baseColors.cardShadow;
+    final textColor = baseColors.textPrimary;
+    final textVariantColor = baseColors.textSecondary;
+    final primaryColor = baseColors.primaryAccent;
+    final darkAccent = baseColors.darkAccent;
+    final inactiveTrack = baseColors.inactiveTrack;
+    final thumbColor = baseColors.thumbColor;
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: baseColors.cardBorderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: shadowColor,
             blurRadius: 8,
             offset: const Offset(0, 2),
             spreadRadius: 1,
@@ -510,7 +654,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(
                 fontSize: iconAndFontSize,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: textColor,
               ),
             ),
             const SizedBox(height: 12),
@@ -521,7 +665,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     leftText,
                     style: TextStyle(
                       fontSize: iconAndFontSize * 0.8,
-                      color: Colors.grey.shade600,
+                      color: textVariantColor,
                     ),
                   ),
                 ),
@@ -531,7 +675,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.blueAccent.withValues(alpha: 0.1),
+                    color: primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -539,7 +683,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: TextStyle(
                       fontSize: iconAndFontSize * 0.9,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent.shade700,
+                      color: darkAccent,
                     ),
                   ),
                 ),
@@ -549,7 +693,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     textAlign: TextAlign.end,
                     style: TextStyle(
                       fontSize: iconAndFontSize * 0.8,
-                      color: Colors.grey.shade600,
+                      color: textVariantColor,
                     ),
                   ),
                 ),
@@ -557,12 +701,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                activeTrackColor: Colors.blueAccent,
-                inactiveTrackColor: Colors.blue.withValues(alpha: 0.2),
-                thumbColor: Colors.white,
-                overlayColor: Colors.blueAccent.withValues(alpha: 0.2),
-                valueIndicatorColor: Colors.blueAccent,
-                valueIndicatorTextStyle: const TextStyle(color: Colors.white),
+                activeTrackColor: primaryColor,
+                inactiveTrackColor: inactiveTrack,
+                thumbColor: thumbColor,
+                overlayColor: primaryColor.withValues(alpha: 0.2),
+                valueIndicatorColor: primaryColor,
+                valueIndicatorTextStyle: TextStyle(
+                  color: baseColors.sliderIndicatorText,
+                ),
                 trackHeight: 6.0,
               ),
               child: Slider(

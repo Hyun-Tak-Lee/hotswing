@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class GamePlayedDialog extends StatelessWidget {
   final Player player;
@@ -16,6 +17,11 @@ class GamePlayedDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final playerColors = context.playerColors;
+    final formColors = context.formColors;
+    final dialogColors = context.dialogColors;
+
     final mediaQuery = MediaQuery.of(context);
     final screenWidth = mediaQuery.size.width;
     final screenHeight = mediaQuery.size.height;
@@ -29,23 +35,23 @@ class GamePlayedDialog extends StatelessWidget {
     final titleStyle = ResponsiveUtils.getResponsiveStyle(
       context,
       textTheme.headlineSmall,
-    );
+    )?.copyWith(color: baseColors.textPrimary);
     final listTitleStyle = ResponsiveUtils.getResponsiveStyle(
       context,
       textTheme.titleMedium,
-    )?.copyWith(fontWeight: FontWeight.bold);
+    )?.copyWith(fontWeight: FontWeight.bold, color: baseColors.textPrimary);
     final bodyStyle = ResponsiveUtils.getResponsiveStyle(
       context,
       textTheme.bodyLarge,
-    );
+    )?.copyWith(color: baseColors.textPrimary);
     final subStyle = ResponsiveUtils.getResponsiveStyle(
       context,
       textTheme.bodyMedium,
-    );
+    )?.copyWith(color: baseColors.textSecondary);
     final buttonStyle = ResponsiveUtils.getResponsiveStyle(
       context,
       textTheme.titleMedium,
-    );
+    )?.copyWith(color: baseColors.textPrimary);
 
     final sortedNotPlayedWithNames = List<String>.from(notPlayedWithNames)
       ..sort();
@@ -66,10 +72,10 @@ class GamePlayedDialog extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12.0,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF64748B), // Slate 500
+              color: baseColors.textSecondary,
             ),
           ),
           const SizedBox(height: 6.0),
@@ -87,7 +93,7 @@ class GamePlayedDialog extends StatelessWidget {
 
     // 요약 카드 내 수직 디바이더 빌더
     Widget buildSummaryDivider() {
-      return Container(height: 24.0, width: 1.2, color: Colors.grey.shade300);
+      return Container(height: 24.0, width: 1.2, color: formColors.filterDivider);
     }
 
     // 상세 시간 포맷팅
@@ -99,9 +105,9 @@ class GamePlayedDialog extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC), // Slate 50
+        color: dialogColors.dialogSummaryBg,
         borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(color: const Color(0xFFE2E8F0)), // Slate 200
+        border: Border.all(color: dialogColors.dialogSummaryBorder),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -109,25 +115,27 @@ class GamePlayedDialog extends StatelessWidget {
           buildSummaryItem(
             '총 플레이',
             '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}회',
-            const Color(0xFF2563EB), // Blue 600
+            baseColors.primaryAccent,
           ),
           buildSummaryDivider(),
           buildSummaryItem(
             '누적 대기',
             '${player.waited}회',
-            const Color(0xFF475569), // Slate 600
+            baseColors.textSecondary,
           ),
           buildSummaryDivider(),
           buildSummaryItem(
             '총 플레이 시간',
             formattedPlayTime,
-            const Color(0xFF0F766E), // Teal 700
+            playerColors.genderTag,
           ),
         ],
       ),
     );
 
     return AlertDialog(
+      backgroundColor: baseColors.cardBg,
+      surfaceTintColor: Colors.transparent,
       title: Text('${player.name}님 상세 정보', style: titleStyle),
       content: SizedBox(
         width: dialogWidth,
@@ -151,7 +159,7 @@ class GamePlayedDialog extends StatelessWidget {
                 child: ListView.separated(
                   itemCount: sortedEntries.length + (hasNotPlayedWith ? 1 : 0),
                   separatorBuilder: (context, index) =>
-                      const Divider(height: 1),
+                      Divider(height: 1, color: formColors.filterDivider),
                   itemBuilder: (BuildContext context, int index) {
                     if (hasNotPlayedWith && index == 0) {
                       return ListTile(

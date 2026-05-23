@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
@@ -37,6 +38,8 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
     final playerList = List<Player>.from(playersProvider.unassignedPlayers);
@@ -76,17 +79,17 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
             child: FractionallySizedBox(
               child: Column(
                 children: [
-                  _buildHeader(context, isTablet, playerList.length),
+                  _buildHeader(context, isTablet, playerList.length, baseColors, courtColors),
                   SizedBox(height: isTablet ? 8.0 : 4.0),
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Color(0xFFF8FAFC), // 눈이 가장 편안한 Slate 50
-                            Color(0xFFF1F5F9), // Slate 100
+                            courtColors.waitingPanelBgStart,
+                            courtColors.waitingPanelBgEnd,
                           ],
                         ),
                         boxShadow: [
@@ -190,11 +193,18 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isTablet, int count) {
+  Widget _buildHeader(
+    BuildContext context,
+    bool isTablet,
+    int count,
+    BaseColors baseColors,
+    CourtColors courtColors,
+  ) {
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: courtColors.waitingPanelHeaderBg,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(5),
@@ -216,7 +226,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: courtColors.waitingPanelHeaderTitle,
                     ),
                   ),
                   const TextSpan(text: " "),
@@ -226,7 +236,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                   style: TextStyle(
                     fontSize: isTablet ? 18.0 : 16.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent,
+                    color: baseColors.primaryAccent,
                   ),
                 ),
               ],
@@ -235,7 +245,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
           PopupMenuButton<SortCriterion>(
             tooltip: '정렬 기준',
             initialValue: _sortCriterion,
-            color: Colors.white,
+            color: courtColors.waitingPanelHeaderBg,
             elevation: 6,
             offset: const Offset(0, 40),
             shape: RoundedRectangleBorder(
@@ -259,7 +269,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                     children: [
                       Icon(
                         Icons.sort_rounded,
-                        color: Colors.blue.shade400,
+                        color: baseColors.primaryAccent,
                         size: isTablet ? 24 : 20,
                       ),
                       const SizedBox(width: 12),
@@ -267,7 +277,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                         '경기 적은 순',
                         style: TextStyle(
                           fontSize: isTablet ? 16.0 : 14.0,
-                          color: Colors.black87,
+                          color: baseColors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -284,7 +294,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                     children: [
                       Icon(
                         Icons.sort_by_alpha_rounded,
-                        color: Colors.blue.shade400,
+                        color: baseColors.primaryAccent,
                         size: isTablet ? 24 : 20,
                       ),
                       const SizedBox(width: 12),
@@ -292,7 +302,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                         '이름 가나다 순',
                         style: TextStyle(
                           fontSize: isTablet ? 16.0 : 14.0,
-                          color: Colors.black87,
+                          color: baseColors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -308,9 +318,9 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                       vertical: 6.0,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE3F2FD), // 연한 파스텔 블루 배경
+                      color: courtColors.waitingPanelSortBtnBg,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFBBDEFB)),
+                      border: Border.all(color: courtColors.waitingPanelSortBtnBorder),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -321,7 +331,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                               : '이름 가나다 순',
                           style: TextStyle(
                             fontSize: 14.0,
-                            color: Colors.black87,
+                            color: baseColors.textPrimary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -329,14 +339,14 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                         Icon(
                           Icons.keyboard_arrow_down_rounded,
                           size: 18.0,
-                          color: Colors.grey[600],
+                          color: baseColors.textSecondary,
                         ),
                       ],
                     ),
                   )
-                : const Padding(
-                    padding: EdgeInsets.all(4.0),
-                    child: Icon(Icons.sort, size: 24.0, color: Colors.black54),
+                : Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Icon(Icons.sort, size: 24.0, color: baseColors.textSecondary),
                   ),
           ),
         ],

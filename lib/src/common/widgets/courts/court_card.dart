@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 /// 단일 코트를 렌더링하는 공통 위젯.
 /// [CourtSectionsView]와 [StandbyCourtSectionsView]에서 공유합니다.
@@ -38,6 +39,7 @@ class CourtCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
 
     return Container(
@@ -50,12 +52,12 @@ class CourtCard extends StatelessWidget {
         horizontal: 5.0,
       ),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFFECFDF5), // 파스텔 에메랄드 (눈이 편안한 톤)
-            Color(0xFFD1FAE5),
+            courtColors.courtCardBgStart,
+            courtColors.courtCardBgEnd,
           ],
         ),
         boxShadow: [
@@ -81,7 +83,7 @@ class CourtCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: isTablet ? 32.0 : 20.0,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF065F46), // 진한 에메랄드 바탕 텍스트
+                  color: courtColors.courtCardText,
                 ),
               ),
               ...headerActions,

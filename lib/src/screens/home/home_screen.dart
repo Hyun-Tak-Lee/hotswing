@@ -10,6 +10,7 @@ import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/screens/home/widgets/court_view_selector.dart';
 import 'package:hotswing/src/screens/home/widgets/waiting_players_panel.dart';
 import 'package:provider/provider.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -122,6 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
     final isMobileSize = !isTablet;
 
@@ -167,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          const VerticalDivider(width: 1.0, color: Colors.grey),
+          VerticalDivider(width: 1.0, color: courtColors.homeDivider),
           Expanded(
             flex: 1,
             child: WaitingPlayersPanel(

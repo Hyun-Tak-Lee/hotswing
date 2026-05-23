@@ -4,6 +4,7 @@ import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/tags/player_info_tag.dart';
 import 'package:hotswing/src/common/widgets/tags/player_skill_rate.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class PlayerListTile extends StatelessWidget {
   final Player player;
@@ -32,17 +33,19 @@ class PlayerListTile extends StatelessWidget {
   }
 
 
-  Color _getRoleColor(String roleValue) {
-    if (roleValue == 'manager') return Colors.orange;
-    if (roleValue == 'user') return Colors.green;
-    if (roleValue == 'guest') return Colors.grey;
-    return Colors.black;
+  Color _getRoleColor(PlayerColors playerColors, String roleValue) {
+    if (roleValue == 'manager') return playerColors.roleManager;
+    if (roleValue == 'user') return playerColors.roleUser;
+    if (roleValue == 'guest') return playerColors.roleGuest;
+    return Colors.grey;
   }
 
   @override
   Widget build(BuildContext context) {
     final skillLevel = player.grade;
     final isTablet = ResponsiveUtils.isTablet(context);
+    final baseColors = context.baseColors;
+    final playerColors = context.playerColors;
 
     final textScale = ResponsiveUtils.getTextScale(context);
     final baseFontSize = 14.0 * textScale;
@@ -51,7 +54,7 @@ class PlayerListTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue.shade50, Colors.purple.shade50],
+          colors: [playerColors.playerItemActiveStart, playerColors.playerItemActiveEnd],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -70,13 +73,17 @@ class PlayerListTile extends StatelessWidget {
           style: TextStyle(
             fontSize: baseFontSize + 2,
             fontWeight: FontWeight.bold,
+            color: baseColors.textPrimary,
           ),
         ),
         subtitle: isTablet
             ? null
             : Text(
                 '${_getRoleLabel(player.role)} | ${_getGenderLabel(player.gender)}',
-                style: TextStyle(fontSize: baseFontSize - 2),
+                style: TextStyle(
+                  fontSize: baseFontSize - 2,
+                  color: baseColors.textSecondary,
+                ),
               ),
         trailing: SizedBox(
           width: isTablet ? 400 : 120,
@@ -86,12 +93,12 @@ class PlayerListTile extends StatelessWidget {
                   children: [
                     PlayerInfoTag(
                       text: _getRoleLabel(player.role),
-                      color: _getRoleColor(player.role),
+                      color: _getRoleColor(playerColors, player.role),
                     ),
                     const SizedBox(width: 8),
                     PlayerInfoTag(
                       text: _getGenderLabel(player.gender),
-                      color: Colors.indigoAccent,
+                      color: playerColors.genderTag,
                     ),
                     const SizedBox(width: 16),
                     PlayerSkillRateWidget(
@@ -101,14 +108,14 @@ class PlayerListTile extends StatelessWidget {
                     if (onEdit != null) ...[
                       const SizedBox(width: 8),
                       IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.grey),
+                        icon: Icon(Icons.edit, color: baseColors.textSecondary),
                         onPressed: onEdit,
                       ),
                     ],
                     if (onDelete != null) ...[
                       const SizedBox(width: 8),
                       IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.grey),
+                        icon: Icon(Icons.delete, color: baseColors.textSecondary),
                         onPressed: onDelete,
                       ),
                     ],
@@ -133,19 +140,19 @@ class PlayerListTile extends StatelessWidget {
                     ),
                     if (onEdit != null)
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.edit,
                           size: 20,
-                          color: Colors.grey,
+                          color: baseColors.textSecondary,
                         ),
                         onPressed: onEdit,
                       ),
                     if (onDelete != null)
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.delete,
                           size: 20,
-                          color: Colors.grey,
+                          color: baseColors.textSecondary,
                         ),
                         onPressed: onDelete,
                       ),

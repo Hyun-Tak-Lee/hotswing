@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class MainNavigationRail extends StatelessWidget {
   final int selectedIndex;
@@ -12,6 +13,8 @@ class MainNavigationRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+
     return SizedBox(
       width: 72,
       child: NavigationRail(
@@ -19,26 +22,26 @@ class MainNavigationRail extends StatelessWidget {
         onDestinationSelected: onDestinationSelected,
         labelType: NavigationRailLabelType.all,
         backgroundColor: Colors.transparent, // 전체 그라데이션이 투과되어 보임
-        indicatorColor: const Color(0xFFD1C4E9),
+        indicatorColor: baseColors.navBarIndicator,
         indicatorShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        selectedLabelTextStyle: const TextStyle(
-          color: Color(0xFF3E2723),
+        selectedLabelTextStyle: TextStyle(
+          color: baseColors.navBarSelected,
           fontWeight: FontWeight.bold,
           fontSize: 12,
         ),
-        unselectedLabelTextStyle: const TextStyle(
-          color: Color(0xFF4E342E),
+        unselectedLabelTextStyle: TextStyle(
+          color: baseColors.navBarUnselected,
           fontSize: 11,
           fontWeight: FontWeight.w500,
         ),
-        selectedIconTheme: const IconThemeData(
-          color: Color(0xFF3E2723),
+        selectedIconTheme: IconThemeData(
+          color: baseColors.navBarSelected,
           size: 30,
         ),
-        unselectedIconTheme: const IconThemeData(
-          color: Color(0xFF4E342E),
+        unselectedIconTheme: IconThemeData(
+          color: baseColors.navBarUnselected,
           size: 26,
         ),
         groupAlignment: 0.0,
@@ -79,3 +82,4 @@ class MainNavigationRail extends StatelessWidget {
     );
   }
 }
+

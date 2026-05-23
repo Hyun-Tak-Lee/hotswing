@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class PlayerSkillRateWidget extends StatelessWidget {
   final String skillLevel;
@@ -15,6 +16,7 @@ class PlayerSkillRateWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtils.isTablet(context);
     final textScale = ResponsiveUtils.getTextScale(context);
+    final playerColors = context.playerColors;
 
     final double labelFontSize = (isTablet ? 12.0 : 10.0) * textScale;
     final double valueFontSize = (isTablet ? 16.0 : 14.0) * textScale;
@@ -29,7 +31,7 @@ class PlayerSkillRateWidget extends StatelessWidget {
           skillLevel,
           style: TextStyle(
             fontSize: valueFontSize + 2, // 급수 강조
-            color: Colors.blueAccent.shade700,
+            color: playerColors.rateWidgetSkill,
             fontWeight: FontWeight.w900,
           ),
         ),
@@ -43,7 +45,7 @@ class PlayerSkillRateWidget extends StatelessWidget {
           'Rate ',
           style: TextStyle(
             fontSize: labelFontSize,
-            color: Colors.black54,
+            color: playerColors.rateWidgetLabel,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -51,7 +53,7 @@ class PlayerSkillRateWidget extends StatelessWidget {
           rate.toString(),
           style: TextStyle(
             fontSize: rateFontSize,
-            color: Colors.black87,
+            color: playerColors.rateWidgetValue,
             fontWeight: FontWeight.bold,
           ),
         ),

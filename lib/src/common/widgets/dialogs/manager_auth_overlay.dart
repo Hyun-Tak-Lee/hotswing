@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/services/manager_auth_service.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 enum _AuthMode {
   verifyManager,
@@ -104,6 +105,10 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final playerColors = context.playerColors;
+    final formColors = context.formColors;
+
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -143,13 +148,14 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
         width: 400,
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: baseColors.cardBg,
           borderRadius: BorderRadius.circular(24),
-          boxShadow: const [
+          border: Border.all(color: baseColors.cardBorderColor),
+          boxShadow: [
             BoxShadow(
-              color: Colors.black26,
+              color: baseColors.cardShadow,
               blurRadius: 20,
-              offset: Offset(0, 10),
+              offset: const Offset(0, 10),
             ),
           ],
         ),
@@ -160,7 +166,7 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
             Align(
               alignment: Alignment.topRight,
               child: IconButton(
-                icon: const Icon(Icons.close),
+                icon: Icon(Icons.close, color: baseColors.textSecondary),
                 onPressed: () => Navigator.of(context).pop(false),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -170,18 +176,22 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
             Icon(
               Icons.admin_panel_settings,
               size: 64,
-              color: Theme.of(context).primaryColor,
+              color: baseColors.primaryAccent,
             ),
             const SizedBox(height: 24),
             Text(
               title,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: baseColors.textPrimary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: const TextStyle(color: Colors.grey),
+              style: TextStyle(color: baseColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -189,14 +199,28 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
               controller: _passwordController,
               obscureText: true,
               autofocus: true,
+              style: TextStyle(color: baseColors.textPrimary),
               decoration: InputDecoration(
                 labelText: '비밀번호',
+                labelStyle: TextStyle(color: baseColors.textSecondary),
                 hintText: hintText,
+                hintStyle: TextStyle(color: baseColors.textSecondary),
                 errorText: _errorMessage,
-                prefixIcon: const Icon(Icons.lock),
+                prefixIcon: Icon(Icons.lock, color: baseColors.textSecondary),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: formColors.inputBorder),
                 ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: formColors.inputBorder),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: formColors.inputFocusBorder, width: 2),
+                ),
+                filled: true,
+                fillColor: playerColors.playerInputFill,
               ),
               onSubmitted: (_) => _handleSubmit(),
             ),
@@ -207,6 +231,8 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
               child: ElevatedButton(
                 onPressed: _handleSubmit,
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: baseColors.primaryAccent,
+                  foregroundColor: baseColors.sliderIndicatorText,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -229,9 +255,9 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
                     _errorMessage = null;
                   });
                 },
-                child: const Text(
+                child: Text(
                   '비밀번호를 잊으셨나요? (재설정)',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: baseColors.textSecondary),
                 ),
               ),
             ],
@@ -262,7 +288,7 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
                   _currentMode == _AuthMode.setNewManagerPassword
                       ? '비밀번호 변경 없이 진입하기'
                       : '마스터 비밀번호로 즉시 진입',
-                  style: const TextStyle(color: Colors.blueAccent),
+                  style: TextStyle(color: baseColors.primaryAccent),
                 ),
               ),
             ],

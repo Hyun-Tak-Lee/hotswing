@@ -8,6 +8,7 @@ import 'package:hotswing/src/screens/main/widgets/navigation/main_navigation_bar
 import 'package:hotswing/src/screens/main/widgets/navigation/main_navigation_rail.dart';
 import 'package:hotswing/src/screens/main/widgets/menu/left_side_menu.dart';
 import 'package:hotswing/src/screens/main/widgets/menu/right_side_menu.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -57,17 +58,27 @@ class _MainWrapperState extends State<MainWrapper> {
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtils.isTablet(context);
+    final baseColors = context.baseColors;
+
+    // 다크모드 여부에 따른 그라데이션 배경색 정의
+    final gradientColors = [
+      baseColors.gradientStart,
+      baseColors.gradientEnd,
+    ];
+
+    // 다크모드 여부에 따른 메인 컨텐츠 영역의 배경색
+    final contentBgColor = baseColors.contentBg;
+
+    // 다크모드 여부에 따른 메뉴 아이콘 색상
+    final iconColor = baseColors.menuIcon;
 
     if (isTablet) {
       return Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFF3E5F5), // 라벤더 미스트 (연보라)
-              Color(0xFFE1F5FE), // 연하늘
-            ],
+            colors: gradientColors,
           ),
         ),
         child: Scaffold(
@@ -80,7 +91,7 @@ class _MainWrapperState extends State<MainWrapper> {
             leading: IconButton(
               icon: const Icon(Icons.menu_rounded),
               iconSize: 30.0,
-              color: const Color(0xFF5D4037),
+              color: iconColor,
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
               },
@@ -92,7 +103,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 child: IconButton(
                   icon: const Icon(Icons.menu_rounded),
                   iconSize: 30.0,
-                  color: const Color(0xFF5D4037),
+                  color: iconColor,
                   onPressed: () {
                     _scaffoldKey.currentState?.openEndDrawer();
                   },
@@ -116,9 +127,9 @@ class _MainWrapperState extends State<MainWrapper> {
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.only(top: 0, right: 0, bottom: 0),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF5F5F5), // 눈의 피로를 줄이기 위한 부드러운 오프화이트
-                    borderRadius: BorderRadius.only(
+                  decoration: BoxDecoration(
+                    color: contentBgColor,
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                     ),
                   ),
@@ -133,14 +144,11 @@ class _MainWrapperState extends State<MainWrapper> {
     }
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFF3E5F5), // 라벤더 미스트 (연보라)
-            Color(0xFFE1F5FE), // 연하늘
-          ],
+          colors: gradientColors,
         ),
       ),
       child: Scaffold(
@@ -152,7 +160,7 @@ class _MainWrapperState extends State<MainWrapper> {
           leading: IconButton(
             icon: const Icon(Icons.menu_rounded),
             iconSize: 28.0, // 터치 영역 확보를 위해 약간 크게 설정
-            color: const Color(0xFF5D4037), // 대비를 위한 따뜻한 다크 브라운
+            color: iconColor,
             onPressed: () {
               _scaffoldKey.currentState?.openDrawer();
             },
@@ -161,7 +169,7 @@ class _MainWrapperState extends State<MainWrapper> {
             IconButton(
               icon: const Icon(Icons.menu_rounded),
               iconSize: 28.0,
-              color: const Color(0xFF5D4037),
+              color: iconColor,
               onPressed: () {
                 _scaffoldKey.currentState?.openEndDrawer();
               },
@@ -171,9 +179,9 @@ class _MainWrapperState extends State<MainWrapper> {
         drawer: const LeftSideMenu(isMobileSize: true),
         endDrawer: const RightSideMenu(isMobileSize: true),
         body: Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFFF5F5F5), // 눈의 피로를 줄이기 위한 부드러운 오프화이트
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: contentBgColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           clipBehavior: Clip.antiAlias,
           child: _buildContent(),

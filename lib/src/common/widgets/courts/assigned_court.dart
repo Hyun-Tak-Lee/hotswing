@@ -6,7 +6,7 @@ import 'package:hotswing/src/models/players/player.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
-import 'package:hotswing/src/common/constants/app_colors.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class CourtSectionsView extends StatelessWidget {
   final Function(
@@ -31,6 +31,8 @@ class CourtSectionsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
     final sectionData = playersProvider.assignedPlayers;
@@ -69,7 +71,7 @@ class CourtSectionsView extends StatelessWidget {
                     isTablet: isTablet,
                     width: isTablet ? 50.0 : 40.0,
                     height: isTablet ? 45.0 : 30.0,
-                    colors: AppColors.remove,
+                    colors: [courtColors.btnRemoveStart, courtColors.btnRemoveEnd],
                     onTap: () {
                       playersProvider.movePlayersFromCourtToUnassigned(
                         sectionIndex: sectionIndex,
@@ -95,7 +97,7 @@ class CourtSectionsView extends StatelessWidget {
                       isTablet: isTablet,
                       width: isTablet ? 150.0 : 90.0,
                       height: isTablet ? 45.0 : 30.0,
-                      colors: AppColors.finish,
+                      colors: [courtColors.btnFinishStart, courtColors.btnFinishEnd],
                       onTap: () {
                         playersProvider
                             .incrementWaitedTimeForAllUnassignedPlayers();
@@ -115,7 +117,7 @@ class CourtSectionsView extends StatelessWidget {
                     ),
                   PopupMenuButton<int>(
                     tooltip: '코트 이동/교환',
-                    color: Colors.white,
+                    color: baseColors.cardBg,
                     elevation: 6,
                     position: PopupMenuPosition.under,
                     offset: const Offset(0, 4),
@@ -145,7 +147,7 @@ class CourtSectionsView extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.swap_horiz_rounded,
-                                color: Colors.blue.shade400,
+                                color: baseColors.primaryAccent,
                                 size: isTablet ? 24 : 20,
                               ),
                               const SizedBox(width: 8),
@@ -153,7 +155,7 @@ class CourtSectionsView extends StatelessWidget {
                                 '${index + 1}번 코트와 교환',
                                 style: TextStyle(
                                   fontSize: isTablet ? 16.0 : 14.0,
-                                  color: Colors.black87,
+                                  color: baseColors.textPrimary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -167,7 +169,7 @@ class CourtSectionsView extends StatelessWidget {
                         isTablet: isTablet,
                         width: isTablet ? 50.0 : 40.0,
                         height: isTablet ? 45.0 : 30.0,
-                        colors: AppColors.swap,
+                        colors: [courtColors.btnSwapStart, courtColors.btnSwapEnd],
                         onTap: () {},
                         child: Icon(
                           Icons.swap_horiz,
@@ -245,6 +247,8 @@ class _AutoMatchSplitButtonState extends State<AutoMatchSplitButton> {
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final courtColors = context.courtColors;
     final playersProvider = Provider.of<PlayersProvider>(context);
     final standbyCourts = playersProvider.standbyPlayers;
     final hasFullStandby =
@@ -259,7 +263,7 @@ class _AutoMatchSplitButtonState extends State<AutoMatchSplitButton> {
       style: MenuStyle(
         minimumSize: WidgetStatePropertyAll(Size(width, 0)),
         maximumSize: WidgetStatePropertyAll(Size(width, double.infinity)),
-        backgroundColor: const WidgetStatePropertyAll(Colors.white),
+        backgroundColor: WidgetStatePropertyAll(baseColors.cardBg),
         elevation: const WidgetStatePropertyAll(8),
         padding: const WidgetStatePropertyAll(EdgeInsets.zero),
         shape: WidgetStatePropertyAll(
@@ -292,6 +296,7 @@ class _AutoMatchSplitButtonState extends State<AutoMatchSplitButton> {
               style: TextStyle(
                 fontSize: widget.isTablet ? 16 : 13,
                 fontWeight: FontWeight.w600,
+                color: baseColors.textPrimary,
               ),
             ),
           ),
@@ -305,11 +310,11 @@ class _AutoMatchSplitButtonState extends State<AutoMatchSplitButton> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: AppColors.autoMatch,
+              colors: [courtColors.btnAutoMatchStart, courtColors.btnAutoMatchEnd],
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.autoMatch.last.withAlpha(100),
+                color: courtColors.btnAutoMatchEnd.withAlpha(100),
                 blurRadius: 6,
                 offset: const Offset(0, 3),
               ),

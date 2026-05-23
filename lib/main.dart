@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:hotswing/src/providers/theme_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/services/activation_service.dart';
@@ -21,6 +22,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => PlayersProvider()),
         ChangeNotifierProvider(create: (_) => OptionsProvider()),
       ],

@@ -4,6 +4,7 @@ import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/screens/players/widgets/provider/players_view_model.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/utils/game/skill_utils.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class PlayersFilterBottomSheet extends StatefulWidget {
   const PlayersFilterBottomSheet({super.key});
@@ -32,6 +33,9 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
     final viewModel = Provider.of<PlayersViewModel>(context);
     final isTablet = ResponsiveUtils.isTablet(context);
 
+    final baseColors = context.baseColors;
+    final formColors = context.formColors;
+
     final double tabFontSize = isTablet ? 20.0 : 16.0;
     final double chipFontSize = isTablet ? 18.0 : 16.0;
 
@@ -41,9 +45,9 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
       constraints: BoxConstraints(
         minHeight: MediaQuery.of(context).size.height * minHeightRatio,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+      decoration: BoxDecoration(
+        color: baseColors.cardBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24.0)),
       ),
       padding: const EdgeInsets.only(
         top: 24.0,
@@ -72,7 +76,11 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
             ),
 
             const SizedBox(height: 16),
-            const Divider(height: 1, thickness: 1, color: Color(0xFFE5E7EB)),
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: formColors.filterDivider,
+            ),
             const SizedBox(height: 24),
 
             // Filter Options
@@ -109,6 +117,7 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
   }
 
   Widget _buildTab(String title, int index, double fontSize) {
+    final formColors = context.formColors;
     final isSelected = _selectedTabIndex == index;
     return GestureDetector(
       onTap: () {
@@ -123,7 +132,9 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
             style: TextStyle(
               fontSize: fontSize,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected ? Colors.black87 : Colors.black45,
+              color: isSelected
+                  ? formColors.filterTabActiveText
+                  : formColors.filterTabInactiveText,
             ),
           ),
           const SizedBox(height: 8),
@@ -131,7 +142,9 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
             height: 3,
             width: 40,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF2563EB) : Colors.transparent,
+              color: isSelected
+                  ? formColors.filterTabIndicator
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(1.5),
             ),
           ),
@@ -147,6 +160,8 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
     required String Function(T) labelBuilder,
     required double chipFontSize,
   }) {
+    final formColors = context.formColors;
+
     return Wrap(
       spacing: 12.0,
       runSpacing: 12.0,
@@ -160,8 +175,8 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: isSelected
-                  ? const Color(0xFF2563EB)
-                  : const Color(0xFFF9FAFB),
+                  ? formColors.filterChipActiveBg
+                  : formColors.filterChipInactiveBg,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -169,7 +184,9 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
               style: TextStyle(
                 fontSize: chipFontSize,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.white : const Color(0xFF6B7280),
+                color: isSelected
+                    ? formColors.filterChipActiveText
+                    : formColors.filterChipInactiveText,
               ),
             ),
           ),

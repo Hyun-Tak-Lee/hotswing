@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/common/widgets/dialogs/confirmation_dialog.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class RightSideMenu extends StatelessWidget {
   const RightSideMenu({super.key, required this.isMobileSize});
@@ -15,6 +16,7 @@ class RightSideMenu extends StatelessWidget {
       listen: false,
     );
     final iconAndFontSize = isMobileSize ? 24.0 : 32.0;
+    final baseColors = context.baseColors;
 
     return Drawer(
       width: isMobileSize
@@ -26,11 +28,11 @@ class RightSideMenu extends StatelessWidget {
           SizedBox(
             height: isMobileSize ? 120 : 180,
             child: DrawerHeader(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xFFF3E5F5), // 라벤더 미스트 (연보라)
-                    Color(0xFFE1F5FE), // 연하늘
+                    baseColors.gradientStart,
+                    baseColors.gradientEnd,
                   ],
                   // left_side_menu의 방향과 반대로 설정
                   begin: Alignment.topRight,
@@ -40,7 +42,13 @@ class RightSideMenu extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text('옵션', style: TextStyle(fontSize: iconAndFontSize)),
+                  Text(
+                    '옵션',
+                    style: TextStyle(
+                      fontSize: iconAndFontSize,
+                      color: baseColors.textPrimary,
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/services/activation_service.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 /// 활성화 화면
 ///
@@ -68,8 +69,11 @@ class _ActivationScreenState extends State<ActivationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final colorScheme = context.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: baseColors.cardBg,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(32.0),
@@ -83,19 +87,26 @@ class _ActivationScreenState extends State<ActivationScreen> {
                 Icon(
                   Icons.lock_outline,
                   size: 80,
-                  color: Theme.of(context).primaryColor,
+                  color: colorScheme.primary,
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   '앱 활성화',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: baseColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   '활성화 비밀번호를 입력하세요',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 48),
 

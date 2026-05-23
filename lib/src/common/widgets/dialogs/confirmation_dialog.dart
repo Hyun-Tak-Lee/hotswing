@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class ConfirmationDialog extends StatelessWidget {
   final String? title;
@@ -21,6 +22,8 @@ class ConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final formColors = context.formColors;
     final textTheme = Theme.of(context).textTheme;
     final bool isMobile = ResponsiveUtils.isMobile(context);
     final double dialogWidth = isMobile
@@ -29,19 +32,21 @@ class ConfirmationDialog extends StatelessWidget {
 
     final titleStyle = ResponsiveUtils.getResponsiveStyle(
       context,
-      textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+      textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: baseColors.textPrimary),
     );
     final messageStyle = ResponsiveUtils.getResponsiveStyle(
       context,
-      textTheme.bodyLarge,
+      textTheme.bodyLarge?.copyWith(color: baseColors.textSecondary),
     );
     final buttonStyle = ResponsiveUtils.getResponsiveStyle(
       context,
-      textTheme.titleMedium,
+      textTheme.titleMedium?.copyWith(color: baseColors.textPrimary),
     );
-    final destructiveButtonStyle = buttonStyle?.copyWith(color: Colors.red);
+    final destructiveButtonStyle = buttonStyle?.copyWith(color: Colors.redAccent);
 
     return AlertDialog(
+      backgroundColor: baseColors.cardBg,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.0)),
       contentPadding: EdgeInsets.zero,
       actionsPadding: EdgeInsets.zero,
@@ -57,7 +62,7 @@ class ConfirmationDialog extends StatelessWidget {
         ),
         width: dialogWidth,
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: Colors.grey.shade400)),
+          border: Border(bottom: BorderSide(color: formColors.filterDivider)),
         ),
         child: Text(message, style: messageStyle, textAlign: TextAlign.center),
       ),
@@ -86,7 +91,7 @@ class ConfirmationDialog extends StatelessWidget {
                 height: kMinInteractiveDimension,
                 child: VerticalDivider(
                   thickness: 1,
-                  color: Colors.grey.shade400,
+                  color: formColors.filterDivider,
                   width: 1,
                 ),
               ),

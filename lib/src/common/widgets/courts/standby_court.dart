@@ -6,7 +6,7 @@ import 'package:hotswing/src/models/players/player.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
-import 'package:hotswing/src/common/constants/app_colors.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class StandbyCourtSectionsView extends StatelessWidget {
   final Function(
@@ -31,6 +31,8 @@ class StandbyCourtSectionsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
     final sectionData = playersProvider.standbyPlayers;
@@ -69,7 +71,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       isTablet: isTablet,
                       width: isTablet ? 50.0 : 40.0,
                       height: isTablet ? 45.0 : 30.0,
-                      colors: AppColors.remove,
+                      colors: [courtColors.btnRemoveStart, courtColors.btnRemoveEnd],
                       onTap: () {
                         playersProvider.movePlayersFromCourtToUnassigned(
                           sectionIndex: sectionIndex,
@@ -88,7 +90,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       isTablet: isTablet,
                       width: isTablet ? 120.0 : 80.0,
                       height: isTablet ? 45.0 : 30.0,
-                      colors: AppColors.autoMatch,
+                      colors: [courtColors.btnAutoMatchStart, courtColors.btnAutoMatchEnd],
                       onTap: () {
                         playersProvider.assignNextPlayersToStandbyCourt(
                           sectionIndex,
@@ -108,7 +110,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       isTablet: isTablet,
                       width: isTablet ? 50.0 : 40.0,
                       height: isTablet ? 45.0 : 30.0,
-                      colors: AppColors.removeCourt,
+                      colors: [courtColors.btnRemoveCourtStart, courtColors.btnRemoveCourtEnd],
                       onTap: () =>
                           playersProvider.removeStandByPlayers(sectionIndex),
                       child: Icon(
@@ -119,7 +121,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                     ),
                     PopupMenuButton<int>(
                       tooltip: '코트 이동/교환',
-                      color: Colors.white,
+                      color: baseColors.cardBg,
                       elevation: 6,
                       offset: const Offset(0, 40),
                       constraints: const BoxConstraints(
@@ -148,7 +150,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                               children: [
                                 Icon(
                                   Icons.swap_horiz_rounded,
-                                  color: Colors.blue.shade400,
+                                  color: baseColors.primaryAccent,
                                   size: isTablet ? 24 : 20,
                                 ),
                                 const SizedBox(width: 8),
@@ -156,7 +158,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                   '${index + 1}번 코트와 교환',
                                   style: TextStyle(
                                     fontSize: isTablet ? 16.0 : 14.0,
-                                    color: Colors.black87,
+                                    color: baseColors.textPrimary,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -170,7 +172,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                           isTablet: isTablet,
                           width: isTablet ? 50.0 : 40.0,
                           height: isTablet ? 45.0 : 30.0,
-                          colors: AppColors.swap,
+                          colors: [courtColors.btnSwapStart, courtColors.btnSwapEnd],
                           onTap: () {},
                           child: Icon(
                             Icons.swap_horiz,
@@ -187,13 +189,16 @@ class StandbyCourtSectionsView extends StatelessWidget {
                 margin: const EdgeInsets.all(5.0),
                 height: isTablet ? 150.0 : 100.0,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: AppColors.standbyZone,
+                    colors: [
+                      courtColors.standbyZoneBgStart,
+                      courtColors.standbyZoneBgEnd,
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(20.0),
-                  border: Border.all(color: Colors.white, width: 2.0),
+                  border: Border.all(color: courtColors.standbyZoneBorder, width: 2.0),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withAlpha(10),
@@ -211,7 +216,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                       child: Icon(
                         Icons.add,
                         size: isTablet ? 60.0 : 40.0,
-                        color: AppColors.standbyZoneIcon, // 어두운 앰버로 눈 편안하게
+                        color: courtColors.standbyZoneIcon,
                       ),
                     ),
                   ),

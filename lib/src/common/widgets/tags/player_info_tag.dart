@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class PlayerInfoTag extends StatelessWidget {
   final String text;
@@ -9,6 +10,7 @@ class PlayerInfoTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final playerColors = context.playerColors;
     final isTablet = ResponsiveUtils.isTablet(context);
     final textScale = ResponsiveUtils.getTextScale(context);
 
@@ -23,7 +25,7 @@ class PlayerInfoTag extends StatelessWidget {
         vertical: paddingVertical,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: playerColors.infoTagBg,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color, width: 1.5),
         boxShadow: [

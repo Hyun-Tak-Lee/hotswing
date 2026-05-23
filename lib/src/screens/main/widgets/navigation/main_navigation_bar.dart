@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class MainNavigationBar extends StatelessWidget {
   final int selectedIndex;
@@ -12,34 +13,36 @@ class MainNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+
     return NavigationBarTheme(
       data: NavigationBarThemeData(
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
-              color: Color(0xFF3E2723),
+            return TextStyle(
+              color: baseColors.navBarSelected,
               fontWeight: FontWeight.bold,
               fontSize: 14,
             );
           }
-          return const TextStyle(
-            color: Color(0xFF4E342E),
+          return TextStyle(
+            color: baseColors.navBarUnselected,
             fontSize: 12,
             fontWeight: FontWeight.w500,
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: Color(0xFF3E2723), size: 30);
+            return IconThemeData(color: baseColors.navBarSelected, size: 30);
           }
-          return const IconThemeData(color: Color(0xFF4E342E), size: 26);
+          return IconThemeData(color: baseColors.navBarUnselected, size: 26);
         }),
       ),
       child: NavigationBar(
         selectedIndex: selectedIndex,
         onDestinationSelected: onDestinationSelected,
-        backgroundColor: const Color(0xFFF3E5F5),
-        indicatorColor: const Color(0xFFD1C4E9),
+        backgroundColor: baseColors.navBarBg,
+        indicatorColor: baseColors.navBarIndicator,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.sports_tennis_outlined),
@@ -61,3 +64,4 @@ class MainNavigationBar extends StatelessWidget {
     );
   }
 }
+

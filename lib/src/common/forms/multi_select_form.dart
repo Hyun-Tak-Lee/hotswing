@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:realm/realm.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 class MultiSelectForm extends StatefulWidget {
   final String title;
@@ -73,12 +74,12 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
     widget.onSelectionChanged(_selectedOptions);
   }
 
-  Widget _buildSelectedOptionsTitle() {
+  Widget _buildSelectedOptionsTitle(BaseColors baseColors) {
     if (_selectedOptions.isEmpty) {
       return Text(
         widget.title,
         style: TextStyle(
-          color: Colors.grey.shade700,
+          color: baseColors.textSecondary,
           fontWeight: FontWeight.normal,
           fontSize: _labelFontSize,
         ),
@@ -106,16 +107,16 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
     return Wrap(spacing: 6.0, runSpacing: 6.0, children: selectedChips);
   }
 
-  void _toggleMenu() {
+  void _toggleMenu(BaseColors baseColors) {
     if (_isMenuOpen) {
       _closeMenu();
     } else {
-      _openMenu();
+      _openMenu(baseColors);
     }
   }
 
-  void _openMenu() {
-    _overlayEntry = _createOverlayEntry();
+  void _openMenu(BaseColors baseColors) {
+    _overlayEntry = _createOverlayEntry(baseColors);
     Overlay.of(context).insert(_overlayEntry!);
     setState(() {
       _isMenuOpen = true;
@@ -132,7 +133,7 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
     });
   }
 
-  OverlayEntry _createOverlayEntry() {
+  OverlayEntry _createOverlayEntry(BaseColors baseColors) {
     final renderBox = context.findRenderObject() as RenderBox;
     final size = renderBox.size;
 
@@ -151,6 +152,7 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
             offset: Offset(0, size.height),
             child: Material(
               elevation: 4.0,
+              color: baseColors.cardBg,
               child: SizedBox(
                 width: size.width,
                 child: ConstrainedBox(
@@ -169,19 +171,26 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
                       );
                       final isMaxSelected =
                           _selectedOptions.length >= _maxSelection;
+                      final isEnabled = isSelected ||
+                          !(isMaxSelected || isGrouped || isCurrentPlayer);
 
                       return CheckboxListTile(
                         title: Text(
                           option,
-                          style: TextStyle(fontSize: _labelFontSize),
+                          style: TextStyle(
+                            fontSize: _labelFontSize,
+                            color: isEnabled
+                                ? baseColors.textPrimary
+                                : baseColors.textSecondary.withValues(alpha: 0.5),
+                          ),
                         ),
                         value: isSelected,
+                        activeColor: baseColors.primaryAccent,
+                        checkColor: baseColors.sliderIndicatorText,
                         onChanged: (bool? selected) {
                           _onOptionChanged(optionId, selected);
                         },
-                        enabled:
-                            isSelected ||
-                            !(isMaxSelected || isGrouped || isCurrentPlayer),
+                        enabled: isEnabled,
                       );
                     },
                   ),
@@ -196,16 +205,19 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
     return Card(
       margin: EdgeInsets.zero,
       elevation: 1.0,
+      color: baseColors.cardBg,
       child: CompositedTransformTarget(
         link: _layerLink,
         child: ListTile(
-          onTap: _toggleMenu,
-          title: _buildSelectedOptionsTitle(),
+          onTap: () => _toggleMenu(baseColors),
+          title: _buildSelectedOptionsTitle(baseColors),
           trailing: Icon(
             _isMenuOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+            color: baseColors.textSecondary,
           ),
         ),
       ),

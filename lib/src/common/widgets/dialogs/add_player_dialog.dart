@@ -7,6 +7,7 @@ import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:realm/realm.dart';
+import 'package:hotswing/src/common/theme/app_colors.dart';
 
 /// 새로운 플레이어를 추가하거나 기존 플레이어의 정보를 수정할 때 사용하는 다이얼로그 위젯입니다.
 ///
@@ -137,6 +138,11 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final playerColors = context.playerColors;
+    final formColors = context.formColors;
+    final dialogColors = context.dialogColors;
+
     final bool isEditMode = widget.player != null;
     final bool isGuestMode = widget.isGuest || (widget.player?.role == 'guest');
 
@@ -159,8 +165,13 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
           textTheme.titleMedium,
         );
 
+        final labelStyle = ResponsiveUtils.getResponsiveStyle(
+          context,
+          Theme.of(context).textTheme.bodyLarge,
+        )?.copyWith(color: baseColors.textPrimary, fontWeight: FontWeight.w500);
+
         return AlertDialog(
-          backgroundColor: const Color(0xFFFAFAFA),
+          backgroundColor: baseColors.cardBg,
           surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -173,8 +184,14 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: _isManager
-                    ? const [Color(0xFFFFF9C4), Color(0xFFFFE082)] // 파스텔 노란색
-                    : const [Color(0xFFE3F2FD), Color(0xFFBBDEFB)], // 파스텔 파란색
+                    ? [
+                        dialogColors.dialogTitleManagerBgStart,
+                        dialogColors.dialogTitleManagerBgEnd,
+                      ]
+                    : [
+                        dialogColors.dialogTitleBgStart,
+                        dialogColors.dialogTitleBgEnd,
+                      ],
               ),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
@@ -211,6 +228,8 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                                   setState(() {
                                     _isManager = value;
                                   });
+                                  FocusManager.instance.primaryFocus?.unfocus();
+                                  _updateRate(_rate ?? 0); // Re-clamping on role switch
                                 },
                         ),
                       ],
@@ -228,16 +247,16 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    _buildNameAndManagerSection(isEditMode, isGuestMode),
+                    _buildNameAndManagerSection(baseColors, playerColors, formColors, labelStyle, isEditMode, isGuestMode),
                     SizedBox(height: fieldSpacing),
-                    _buildSkillLevelField(),
+                    _buildSkillLevelField(baseColors, playerColors, formColors, labelStyle),
                     SizedBox(height: fieldSpacing),
-                    _buildGenderField(),
+                    _buildGenderField(baseColors, playerColors, formColors, labelStyle),
                     SizedBox(height: fieldSpacing),
                     _buildGroupPlayerField(),
                     if (isEditMode) ...[
                       SizedBox(height: fieldSpacing),
-                      _buildStatsRow(),
+                      _buildStatsRow(baseColors, playerColors, formColors, labelStyle),
                     ],
                   ],
                 ),
@@ -251,7 +270,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
-                foregroundColor: Colors.grey[700],
+                foregroundColor: dialogColors.dialogButtonCancelText,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -262,11 +281,13 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: _isManager
-                    ? const Color(0xFFFFF59D)
-                    : const Color(0xFFBBDEFB),
+                    ? dialogColors.dialogTitleManagerBgEnd
+                    : dialogColors.dialogButtonConfirmBg,
                 foregroundColor: _isManager
-                    ? Colors.brown[800]
-                    : Colors.blue[900],
+                    ? (Theme.of(context).brightness == Brightness.dark
+                          ? playerColors.roleManager
+                          : Colors.brown[900])
+                    : dialogColors.dialogButtonConfirmText,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -288,7 +309,14 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   /// 이름 입력 필드와 운영진 토글 스위치 섹션을 빌드합니다.
   ///
   /// [isEditMode]인 경우 자동완성이 비활성화되며, [isGuestMode]인 경우 운영진 토글이 숨겨집니다.
-  Widget _buildNameAndManagerSection(bool isEditMode, bool isGuestMode) {
+  Widget _buildNameAndManagerSection(
+    BaseColors baseColors,
+    PlayerColors playerColors,
+    FormColors formColors,
+    TextStyle? labelStyle,
+    bool isEditMode,
+    bool isGuestMode,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -309,6 +337,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     alignment: Alignment.topLeft,
                     child: Material(
                       elevation: 4.0,
+                      color: baseColors.cardBg,
                       child: SizedBox(
                         width: constraints.maxWidth,
                         child: TapRegion(
@@ -324,7 +353,10 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                               final option = options.elementAt(index);
                               final skillLevel = option.grade;
                               return ListTile(
-                                title: Text('${option.name} ($skillLevel)'),
+                                title: Text(
+                                  '${option.name} ($skillLevel)',
+                                  style: TextStyle(color: baseColors.textPrimary),
+                                ),
                                 onTap: () => onSelected(option),
                               );
                             },
@@ -342,6 +374,9 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                           controller: controller,
                           focusNode: focusNode,
                           decoration: _getCommonInputDecoration(
+                            baseColors,
+                            playerColors,
+                            formColors,
                             '이름',
                             isDisabled: false,
                             customVerticalPadding:
@@ -353,7 +388,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                               icon: const Icon(Icons.check),
                             ),
                           ),
-                          style: _labelStyle,
+                          style: labelStyle,
                           maxLength: 10,
                           inputFormatters: [
                             LengthLimitingTextInputFormatter(10),
@@ -389,7 +424,12 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   }
 
   /// 급수 선택 드롭다운과 레이팅 입력 필드를 포함한 행을 빌드합니다.
-  Widget _buildSkillLevelField() {
+  Widget _buildSkillLevelField(
+    BaseColors baseColors,
+    PlayerColors playerColors,
+    FormColors formColors,
+    TextStyle? labelStyle,
+  ) {
     return Opacity(
       opacity: _isLoaded ? 0.5 : 1.0,
       child: Row(
@@ -399,6 +439,9 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
             flex: 2,
             child: DropdownButtonFormField<String>(
               decoration: _getCommonInputDecoration(
+                baseColors,
+                playerColors,
+                formColors,
                 '급수',
                 isDisabled: _isLoaded,
                 customVerticalPadding: ResponsiveUtils.isTablet(context)
@@ -412,7 +455,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
               items: skillLevelToRate.keys.map((String level) {
                 return DropdownMenuItem<String>(
                   value: level,
-                  child: Text(level, style: _labelStyle),
+                  child: Text(level, style: labelStyle),
                 );
               }).toList(),
               onChanged: _isLoaded
@@ -430,14 +473,19 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
             ),
           ),
           const SizedBox(width: 8),
-          Expanded(flex: 3, child: _buildRateField()),
+          Expanded(flex: 3, child: _buildRateField(baseColors, playerColors, formColors, labelStyle)),
         ],
       ),
     );
   }
 
   /// 레이팅 증가/감소 버튼과 직접 입력 가능한 레이팅 필드를 빌드합니다.
-  Widget _buildRateField() {
+  Widget _buildRateField(
+    BaseColors baseColors,
+    PlayerColors playerColors,
+    FormColors formColors,
+    TextStyle? labelStyle,
+  ) {
     final bool isTablet = ResponsiveUtils.isTablet(context);
     final double iconSize = isTablet ? 24.0 : 20.0;
     final EdgeInsets padding = isTablet
@@ -468,11 +516,14 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
           child: TextFormField(
             controller: _rateController,
             decoration: _getCommonInputDecoration(
+              baseColors,
+              playerColors,
+              formColors,
               'Rate',
               isDisabled: _isLoaded,
               customVerticalPadding: isTablet ? 6.0 : 2.0,
             ),
-            style: _labelStyle?.copyWith(fontSize: isTablet ? null : 14.0),
+            style: labelStyle?.copyWith(fontSize: isTablet ? null : 14.0),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             enabled: !_isLoaded,
@@ -527,7 +578,12 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   }
 
   /// 성별 선택 드롭다운 필드를 빌드합니다.
-  Widget _buildGenderField() {
+  Widget _buildGenderField(
+    BaseColors baseColors,
+    PlayerColors playerColors,
+    FormColors formColors,
+    TextStyle? labelStyle,
+  ) {
     return Opacity(
       opacity: _isLoaded ? 0.5 : 1.0,
       child: DropdownButtonFormField<PlayerGender>(
@@ -535,6 +591,9 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         isExpanded: true,
         isDense: false,
         decoration: _getCommonInputDecoration(
+          baseColors,
+          playerColors,
+          formColors,
           '성별',
           isDisabled: _isLoaded,
           customVerticalPadding: ResponsiveUtils.isTablet(context) ? 6.0 : 2.0,
@@ -543,7 +602,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         items: _genders.map((PlayerGender gender) {
           return DropdownMenuItem<PlayerGender>(
             value: gender,
-            child: Text(gender.label, style: _labelStyle),
+            child: Text(gender.label, style: labelStyle),
           );
         }).toList(),
         onChanged: _isLoaded
@@ -587,14 +646,19 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   }
 
   /// (수정 모드에만 표시되는) 플레이 횟수와 대기 횟수 입력 필드를 빌드합니다.
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow(
+    BaseColors baseColors,
+    PlayerColors playerColors,
+    FormColors formColors,
+    TextStyle? labelStyle,
+  ) {
     return Row(
       children: [
         Expanded(
           child: TextFormField(
             initialValue: _playCount?.toString(),
-            decoration: _getCommonInputDecoration('플레이 횟수', isDisabled: false),
-            style: _labelStyle,
+            decoration: _getCommonInputDecoration(baseColors, playerColors, formColors, '플레이 횟수', isDisabled: false),
+            style: labelStyle,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             validator: (value) {
@@ -608,8 +672,8 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         Expanded(
           child: TextFormField(
             initialValue: _waitCount?.toString(),
-            decoration: _getCommonInputDecoration('대기 횟수', isDisabled: false),
-            style: _labelStyle,
+            decoration: _getCommonInputDecoration(baseColors, playerColors, formColors, '대기 횟수', isDisabled: false),
+            style: labelStyle,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             validator: (value) {
@@ -623,12 +687,10 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     );
   }
 
-  TextStyle? get _labelStyle => ResponsiveUtils.getResponsiveStyle(
-    context,
-    Theme.of(context).textTheme.bodyLarge,
-  )?.copyWith(color: Colors.black87, fontWeight: FontWeight.w500);
-
   InputDecoration _getCommonInputDecoration(
+    BaseColors baseColors,
+    PlayerColors playerColors,
+    FormColors formColors,
     String labelText, {
     double? customVerticalPadding,
     Widget? suffixIcon,
@@ -637,22 +699,22 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     return InputDecoration(
       labelText: labelText,
       labelStyle: TextStyle(
-        color: isDisabled ? Colors.grey.shade400 : Colors.black54,
+        color: isDisabled ? baseColors.textSecondary.withValues(alpha: 0.5) : baseColors.textSecondary,
       ),
       floatingLabelStyle: TextStyle(
-        color: isDisabled ? Colors.grey.shade400 : Colors.black87,
+        color: isDisabled ? baseColors.textSecondary.withValues(alpha: 0.5) : baseColors.textPrimary,
         fontWeight: FontWeight.bold,
       ),
       filled: true,
       fillColor: isDisabled
-          ? Colors.grey.shade100
-          : Colors.white, // 배경과 대비되는 완전한 흰색
+          ? playerColors.chipBg
+          : playerColors.playerInputFill,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
           color: isDisabled
               ? Colors.transparent
-              : Colors.grey.shade500, // 더 진한 회색
+              : formColors.inputBorder,
           width: 1,
         ),
       ),
@@ -661,7 +723,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         borderSide: BorderSide(
           color: isDisabled
               ? Colors.transparent
-              : Colors.grey.shade500, // 더 진한 회색
+              : formColors.inputBorder,
           width: 1,
         ),
       ),
@@ -673,8 +735,8 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
           color: _isManager
-              ? const Color(0xFFFFB300)
-              : const Color(0xFF1976D2), // 더 또렷한 포커스 색상
+              ? playerColors.roleManager
+              : formColors.inputFocusBorder,
           width: 2,
         ),
       ),
