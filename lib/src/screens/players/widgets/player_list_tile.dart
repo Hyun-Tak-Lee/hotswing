@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/models/ui/group_info.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/tags/player_info_tag.dart';
 import 'package:hotswing/src/common/widgets/tags/player_skill_rate.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
+import 'package:provider/provider.dart';
+import 'package:hotswing/src/providers/players_provider.dart';
 
 class PlayerListTile extends StatelessWidget {
   final Player player;
@@ -50,6 +53,9 @@ class PlayerListTile extends StatelessWidget {
     final textScale = ResponsiveUtils.getTextScale(context);
     final baseFontSize = 14.0 * textScale;
 
+    final playersProvider = Provider.of<PlayersProvider>(context);
+    final groupInfo = playersProvider.getGroupInfo(player.id);
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
@@ -68,13 +74,28 @@ class PlayerListTile extends StatelessWidget {
         ],
       ),
       child: ListTile(
-        title: Text(
-          player.name,
-          style: TextStyle(
-            fontSize: baseFontSize + 2,
-            fontWeight: FontWeight.bold,
-            color: baseColors.textPrimary,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                player.name,
+                style: TextStyle(
+                  fontSize: baseFontSize + 2,
+                  fontWeight: FontWeight.bold,
+                  color: baseColors.textPrimary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (groupInfo != null)
+              _GroupBadge(
+                label: groupInfo.label,
+                color: groupInfo.color,
+                fontSize: baseFontSize - 3.0,
+              ),
+          ],
         ),
         subtitle: isTablet
             ? null
@@ -158,6 +179,42 @@ class PlayerListTile extends StatelessWidget {
                       ),
                   ],
                 ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GroupBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+  final double fontSize;
+
+  const _GroupBadge({
+    required this.label,
+    required this.color,
+    required this.fontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(left: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: color.withValues(alpha: 0.5),
+          width: 1.0,
+        ),
+      ),
+      child: Text(
+        '그룹 $label',
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.bold,
+          color: color,
         ),
       ),
     );
