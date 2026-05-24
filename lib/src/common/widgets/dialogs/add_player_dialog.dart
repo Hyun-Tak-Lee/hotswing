@@ -229,7 +229,9 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                                     _isManager = value;
                                   });
                                   FocusManager.instance.primaryFocus?.unfocus();
-                                  _updateRate(_rate ?? 0); // Re-clamping on role switch
+                                  _updateRate(
+                                    _rate ?? 0,
+                                  ); // Re-clamping on role switch
                                 },
                         ),
                       ],
@@ -247,16 +249,38 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    _buildNameAndManagerSection(baseColors, playerColors, formColors, labelStyle, isEditMode, isGuestMode),
+                    _buildNameAndManagerSection(
+                      baseColors,
+                      playerColors,
+                      formColors,
+                      labelStyle,
+                      isEditMode,
+                      isGuestMode,
+                    ),
                     SizedBox(height: fieldSpacing),
-                    _buildSkillLevelField(baseColors, playerColors, formColors, labelStyle),
+                    _buildSkillLevelField(
+                      baseColors,
+                      playerColors,
+                      formColors,
+                      labelStyle,
+                    ),
                     SizedBox(height: fieldSpacing),
-                    _buildGenderField(baseColors, playerColors, formColors, labelStyle),
+                    _buildGenderField(
+                      baseColors,
+                      playerColors,
+                      formColors,
+                      labelStyle,
+                    ),
                     SizedBox(height: fieldSpacing),
                     _buildGroupPlayerField(),
                     if (isEditMode) ...[
                       SizedBox(height: fieldSpacing),
-                      _buildStatsRow(baseColors, playerColors, formColors, labelStyle),
+                      _buildStatsRow(
+                        baseColors,
+                        playerColors,
+                        formColors,
+                        labelStyle,
+                      ),
                     ],
                   ],
                 ),
@@ -355,7 +379,9 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                               return ListTile(
                                 title: Text(
                                   '${option.name} ($skillLevel)',
-                                  style: TextStyle(color: baseColors.textPrimary),
+                                  style: TextStyle(
+                                    color: baseColors.textPrimary,
+                                  ),
                                 ),
                                 onTap: () => onSelected(option),
                               );
@@ -473,7 +499,15 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
             ),
           ),
           const SizedBox(width: 8),
-          Expanded(flex: 3, child: _buildRateField(baseColors, playerColors, formColors, labelStyle)),
+          Expanded(
+            flex: 3,
+            child: _buildRateField(
+              baseColors,
+              playerColors,
+              formColors,
+              labelStyle,
+            ),
+          ),
         ],
       ),
     );
@@ -620,18 +654,22 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
 
   /// 그룹 플레이어 다중 선택 필드를 빌드합니다.
   Widget _buildGroupPlayerField() {
+    final List<Player> sortedPlayers =
+        widget.playersProvider.players.values.toList()
+          ..sort((a, b) => a.name.compareTo(b.name));
+
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 60.0),
       child: MultiSelectForm(
         title: '그룹 플레이어',
-        options: widget.playersProvider.players.values
-            .map((p) => p.name)
-            .toList(),
-        optionsId: widget.playersProvider.players.values
-            .map((p) => p.id)
-            .toList(),
-        groupsOptionId: widget.playersProvider.players.values
-            .where((p) => p.groups.isNotEmpty && !(widget.player?.groups.contains(p.id) ?? false))
+        options: sortedPlayers.map((p) => p.name).toList(),
+        optionsId: sortedPlayers.map((p) => p.id).toList(),
+        groupsOptionId: sortedPlayers
+            .where(
+              (p) =>
+                  p.groups.isNotEmpty &&
+                  !(widget.player?.groups.contains(p.id) ?? false),
+            )
             .map((p) => p.id)
             .toList(),
         initialValue: _groups,
@@ -657,7 +695,13 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         Expanded(
           child: TextFormField(
             initialValue: _playCount?.toString(),
-            decoration: _getCommonInputDecoration(baseColors, playerColors, formColors, '플레이 횟수', isDisabled: false),
+            decoration: _getCommonInputDecoration(
+              baseColors,
+              playerColors,
+              formColors,
+              '플레이 횟수',
+              isDisabled: false,
+            ),
             style: labelStyle,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -672,7 +716,13 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         Expanded(
           child: TextFormField(
             initialValue: _waitCount?.toString(),
-            decoration: _getCommonInputDecoration(baseColors, playerColors, formColors, '대기 횟수', isDisabled: false),
+            decoration: _getCommonInputDecoration(
+              baseColors,
+              playerColors,
+              formColors,
+              '대기 횟수',
+              isDisabled: false,
+            ),
             style: labelStyle,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -699,10 +749,14 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     return InputDecoration(
       labelText: labelText,
       labelStyle: TextStyle(
-        color: isDisabled ? baseColors.textSecondary.withValues(alpha: 0.5) : baseColors.textSecondary,
+        color: isDisabled
+            ? baseColors.textSecondary.withValues(alpha: 0.5)
+            : baseColors.textSecondary,
       ),
       floatingLabelStyle: TextStyle(
-        color: isDisabled ? baseColors.textSecondary.withValues(alpha: 0.5) : baseColors.textPrimary,
+        color: isDisabled
+            ? baseColors.textSecondary.withValues(alpha: 0.5)
+            : baseColors.textPrimary,
         fontWeight: FontWeight.bold,
       ),
       filled: true,
@@ -712,18 +766,14 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-          color: isDisabled
-              ? Colors.transparent
-              : formColors.inputBorder,
+          color: isDisabled ? Colors.transparent : formColors.inputBorder,
           width: 1,
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-          color: isDisabled
-              ? Colors.transparent
-              : formColors.inputBorder,
+          color: isDisabled ? Colors.transparent : formColors.inputBorder,
           width: 1,
         ),
       ),

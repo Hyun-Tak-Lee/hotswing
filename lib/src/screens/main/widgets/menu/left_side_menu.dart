@@ -159,10 +159,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
             child: DrawerHeader(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    baseColors.gradientStart,
-                    baseColors.gradientEnd,
-                  ],
+                  colors: [baseColors.gradientStart, baseColors.gradientEnd],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -212,8 +209,9 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
               ),
             ),
           ),
-          ...players.map(
-            (player) => Container(
+          ...players.map((player) {
+            final groupInfo = playersProvider.getGroupInfo(player.id);
+            return Container(
               margin: const EdgeInsets.symmetric(
                 horizontal: 16.0,
                 vertical: 4.0,
@@ -221,8 +219,14 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: player.activate == false
-                      ? [playerColors.playerItemInactive, playerColors.playerItemInactive]
-                      : [playerColors.playerItemActiveStart, playerColors.playerItemActiveEnd],
+                      ? [
+                          playerColors.playerItemInactive,
+                          playerColors.playerItemInactive,
+                        ]
+                      : [
+                          playerColors.playerItemActiveStart,
+                          playerColors.playerItemActiveEnd,
+                        ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -275,24 +279,13 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                                 skillLevel: player.grade,
                                 rate: player.rate,
                               ),
+                              if (groupInfo != null)
+                                PlayerInfoTag(
+                                  text: '그룹 ${groupInfo.label}',
+                                  color: groupInfo.color,
+                                ),
                             ],
                           ),
-                          if (player.groups.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 6.0),
-                              child: Text(
-                                player.groups
-                                    .map(
-                                      (id) => playersProvider.players[id]?.name,
-                                    )
-                                    .where((name) => name != null)
-                                    .join(' , '),
-                                style: TextStyle(
-                                  fontSize: baseFontSize * 0.8,
-                                  color: baseColors.textSecondary,
-                                ),
-                              ),
-                            ),
                         ],
                       ),
                     ),
@@ -339,8 +332,8 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                   ],
                 ),
               ),
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );

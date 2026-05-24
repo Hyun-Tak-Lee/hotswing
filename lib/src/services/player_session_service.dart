@@ -59,6 +59,7 @@ class PlayerSessionService {
     required List<List<Player?>> assignedPlayers,
     required List<List<Player?>> standbyPlayers,
     required List<DateTime?> courtStartTimes,
+    required Map<String, String> customGroupNames,
   }) async {
     final List<String> playerIdLists = players.keys
         .map((key) => key.toString())
@@ -102,5 +103,22 @@ class PlayerSessionService {
     );
     await _sharedProvider.saveStringList("players", playerIdLists);
     await _sharedProvider.saveStringList("courtStartTimes", startTimeStrings);
+    await _sharedProvider.saveString(
+      "customGroupNames",
+      jsonEncode(customGroupNames),
+    );
+  }
+
+  Future<Map<String, String>> loadCustomGroupNames() async {
+    String? jsonStr = await _sharedProvider.getString("customGroupNames");
+    if (jsonStr == null || jsonStr.isEmpty) {
+      return {};
+    }
+    try {
+      Map<String, dynamic> decoded = jsonDecode(jsonStr);
+      return decoded.map((key, value) => MapEntry(key, value.toString()));
+    } catch (_) {
+      return {};
+    }
   }
 }

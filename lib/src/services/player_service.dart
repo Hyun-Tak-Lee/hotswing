@@ -36,13 +36,34 @@ class PlayerService {
   ) {
     final List<ObjectId> updateGroups = [playerId, ...groups];
 
+    // 삭제 대상 당사자 본인(playerId)의 그룹 정보를 데이터베이스에서 비워줍니다.
+    final Player? targetPlayer = player[playerId];
+    if (targetPlayer != null) {
+      _playerRepository.updatePlayer(
+        player: targetPlayer,
+        groups: RealmList<ObjectId>([]),
+      );
+    }
+
+    // 나머지 그룹원들의 그룹 목록에서 삭제된 플레이어(playerId)를 제외합니다.
     for (int i = 1; i < updateGroups.length; i++) {
       ObjectId currentPlayerId = updateGroups[i];
       final Player? currentPlayer = player[currentPlayerId];
       if (currentPlayer != null) {
-        _playerRepository.clearPlayerGroup(currentPlayer);
+        final List<ObjectId> updatedPlayerGroups = currentPlayer.groups
+            .where((id) => id != playerId)
+            .toList();
+
+        _playerRepository.updatePlayer(
+          player: currentPlayer,
+          groups: RealmList(updatedPlayerGroups),
+        );
       }
     }
+  }
+
+  void clearPlayerGroup(Player player) {
+    _playerRepository.clearPlayerGroup(player);
   }
 
   List<Player> findAllPlayers() {

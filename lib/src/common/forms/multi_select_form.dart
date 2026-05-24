@@ -85,8 +85,15 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
       );
     }
 
+    final sortedSelected = List<ObjectId>.from(_selectedOptions)
+      ..sort((a, b) {
+        final indexA = widget.optionsId.indexOf(a);
+        final indexB = widget.optionsId.indexOf(b);
+        return indexA.compareTo(indexB);
+      });
+
     List<Widget> selectedChips = [];
-    for (ObjectId selectedId in _selectedOptions) {
+    for (ObjectId selectedId in sortedSelected) {
       int index = widget.optionsId.indexOf(selectedId);
       if (index != -1) {
         selectedChips.add(
@@ -168,8 +175,8 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
                       final isGrouped = widget.groupsOptionId.contains(
                         optionId,
                       );
-                      final isEnabled = isSelected ||
-                          !(isGrouped || isCurrentPlayer);
+                      final isEnabled =
+                          isSelected || !(isGrouped || isCurrentPlayer);
 
                       return CheckboxListTile(
                         title: Text(
@@ -178,7 +185,9 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
                             fontSize: _labelFontSize,
                             color: isEnabled
                                 ? baseColors.textPrimary
-                                : baseColors.textSecondary.withValues(alpha: 0.5),
+                                : baseColors.textSecondary.withValues(
+                                    alpha: 0.5,
+                                  ),
                           ),
                         ),
                         value: isSelected,

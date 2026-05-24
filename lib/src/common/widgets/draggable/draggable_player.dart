@@ -70,6 +70,35 @@ class DraggablePlayerItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (groupInfo != null)
+            Container(
+              margin: const EdgeInsets.only(bottom: 6.0, left: 4.0, right: 4.0),
+              padding: const EdgeInsets.symmetric(
+                vertical: 2.0,
+                horizontal: 8.0,
+              ),
+              decoration: BoxDecoration(
+                color: groupInfo.color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(6.0),
+                border: Border.all(
+                  color: groupInfo.color.withValues(alpha: 0.3),
+                  width: 0.8,
+                ),
+              ),
+              child: Text(
+                groupInfo.label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: nameFontSize - 7.0,
+                  fontWeight: FontWeight.bold,
+                  color: groupInfo.color,
+                  height: 1.0,
+                  decoration: TextDecoration.none,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           Center(
             child: Container(
               padding: const EdgeInsets.symmetric(
@@ -115,12 +144,6 @@ class DraggablePlayerItem extends StatelessWidget {
                             color: courtColors.playerItemGenderText,
                           ),
                         ),
-                        if (groupInfo != null)
-                          _MiniGroupBadge(
-                            label: groupInfo.label,
-                            color: groupInfo.color,
-                            fontSize: nameFontSize - 8.0,
-                          ),
                       ],
                     ),
                   ),
@@ -314,6 +337,36 @@ class DraggablePlayerItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (groupInfo != null)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 6.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 2.0,
+                      horizontal: 8.0,
+                    ),
+                    decoration: BoxDecoration(
+                      color: groupInfo.color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6.0),
+                      border: Border.all(
+                        color: groupInfo.color.withValues(alpha: 0.3),
+                        width: 0.8,
+                      ),
+                    ),
+                    width: double.infinity,
+                    child: Text(
+                      groupInfo.label,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: nameFontSize - 7.0,
+                        fontWeight: FontWeight.bold,
+                        color: groupInfo.color,
+                        height: 1.0,
+                        decoration: TextDecoration.none,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -352,12 +405,6 @@ class DraggablePlayerItem extends StatelessWidget {
                               decoration: TextDecoration.none,
                             ),
                           ),
-                          if (groupInfo != null)
-                            _MiniGroupBadge(
-                              label: groupInfo.label,
-                              color: groupInfo.color,
-                              fontSize: nameFontSize - 8.0,
-                            ),
                         ],
                       ),
                     ),
@@ -564,10 +611,7 @@ class _MiniGroupBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: color.withValues(alpha: 0.5),
-          width: 0.8,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.5), width: 0.8),
       ),
       child: Text(
         label,

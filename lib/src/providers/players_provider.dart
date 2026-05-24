@@ -22,6 +22,7 @@ class PlayersProvider with ChangeNotifier {
   final List<Player> _unassignedPlayers = [];
   final List<DateTime?> _courtStartTimes = [];
   Map<ObjectId, GroupInfo>? _cachedGroupInfo;
+  final Map<String, String> _customGroupNames = {};
 
   @override
   void notifyListeners() {
@@ -38,6 +39,7 @@ class PlayersProvider with ChangeNotifier {
 
   void initialized() async {
     try {
+      await _loadCustomGroupNames();
       await _loadInitialAssignedPlayersCount();
       await _loadInitialPlayers();
 
@@ -109,7 +111,14 @@ class PlayersProvider with ChangeNotifier {
       assignedPlayers: _assignedPlayers,
       standbyPlayers: _standbyPlayers,
       courtStartTimes: _courtStartTimes,
+      customGroupNames: _customGroupNames,
     );
+  }
+
+  Future<void> _loadCustomGroupNames() async {
+    final loadedNames = await _sessionService.loadCustomGroupNames();
+    _customGroupNames.clear();
+    _customGroupNames.addAll(loadedNames);
   }
 
   Map<ObjectId, Player> get players => Map.unmodifiable(_players);
@@ -205,6 +214,16 @@ class PlayersProvider with ChangeNotifier {
 
     // 기존 그룹 플레이어들의 그룹 제거
     if (playerToUpdate.groups.isNotEmpty) {
+      // 새 그룹에 포함되지 않는 기존 멤버들은 그룹에서 분리하므로 그룹을 비워줍니다.
+      for (final oldMemberId in playerToUpdate.groups) {
+        if (!newGroups.contains(oldMemberId)) {
+          final Player? oldMember = _players[oldMemberId];
+          if (oldMember != null) {
+            _playerService.clearPlayerGroup(oldMember);
+          }
+        }
+      }
+
       _playerService.removeGroupPlayers(
         _players,
         playerToUpdate.groups,
@@ -684,13 +703,53 @@ class PlayersProvider with ChangeNotifier {
     ];
 
     for (int i = 0; i < groupsList.length; i++) {
-      final label =
-          String.fromCharCode(65 + (i % 26)) +
-          (i >= 26 ? '${(i ~/ 26) + 1}' : '');
+      final groupMembers = groupsList[i];
+      final List<ObjectId> sortedIds = groupMembers.toList()
+        ..sort((a, b) => a.toString().compareTo(b.toString()));
+      final String groupKey = sortedIds.map((id) => id.toString()).join(',');
+
+      final String label = _customGroupNames[groupKey] ??
+          (String.fromCharCode(65 + (i % 26)) +
+              (i >= 26 ? '${(i ~/ 26) + 1}' : ''));
       final color = groupPalette[i % groupPalette.length];
-      for (final id in groupsList[i]) {
+      for (final id in groupMembers) {
         _cachedGroupInfo![id] = GroupInfo(label: label, color: color);
       }
     }
+
+    final Set<String> activeGroupKeys = {};
+    for (final group in groupsList) {
+      final List<ObjectId> sortedIds = group.toList()
+        ..sort((a, b) => a.toString().compareTo(b.toString()));
+      activeGroupKeys.add(sortedIds.map((id) => id.toString()).join(','));
+    }
+
+    bool hasChanges = false;
+    _customGroupNames.removeWhere((key, value) {
+      final isObsolete = !activeGroupKeys.contains(key);
+      if (isObsolete) hasChanges = true;
+      return isObsolete;
+    });
+
+    if (hasChanges) {
+      _saveLoadedPlayers();
+    }
+  }
+
+  void updateGroupName(List<ObjectId> memberIds, String newName) {
+    if (memberIds.isEmpty) return;
+
+    final List<ObjectId> sortedIds = List.from(memberIds)
+      ..sort((a, b) => a.toString().compareTo(b.toString()));
+    final String groupKey = sortedIds.map((id) => id.toString()).join(',');
+
+    if (newName.trim().isEmpty) {
+      _customGroupNames.remove(groupKey);
+    } else {
+      _customGroupNames[groupKey] = newName.trim();
+    }
+
+    _saveLoadedPlayers();
+    notifyListeners();
   }
 }
