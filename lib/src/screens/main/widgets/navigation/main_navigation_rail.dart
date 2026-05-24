@@ -82,4 +82,3 @@ class MainNavigationRail extends StatelessWidget {
     );
   }
 }
-

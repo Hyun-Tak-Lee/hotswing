@@ -3,6 +3,7 @@ import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned_court.dart';
 import 'package:hotswing/src/common/widgets/courts/standby_court.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
+import 'package:hotswing/src/models/ui/player_drag_data.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
 import 'package:hotswing/src/models/players/player.dart';

@@ -1,28 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/models/ui/group_info.dart';
+import 'package:hotswing/src/models/ui/player_drag_data.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/common/widgets/dialogs/game_played_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
-
-// 드래그되는 플레이어의 데이터와 원래 소속 섹션 정보를 전달하기 위한 클래스
-class PlayerDragData {
-  final Player player;
-  final dynamic sourceSectionId;
-  final String sectionKind;
-  final int sectionIndex;
-  final int subIndex;
-
-  PlayerDragData({
-    required this.player,
-    required this.sourceSectionId,
-    required this.sectionKind,
-    required this.sectionIndex,
-    required this.subIndex,
-  });
-}
 
 // 개별 플레이어를 나타내는 드래그 가능한 위젯
 class DraggablePlayerItem extends StatelessWidget {
@@ -50,6 +35,7 @@ class DraggablePlayerItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final playersProvider = Provider.of<PlayersProvider>(context);
+    final groupInfo = playersProvider.getGroupInfo(player.id);
     final isTablet = ResponsiveUtils.isTablet(context);
     final baseColors = context.baseColors;
     final playerColors = context.playerColors;
@@ -105,8 +91,7 @@ class DraggablePlayerItem extends StatelessWidget {
                   Flexible(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Flexible(
                           child: Text(
@@ -121,7 +106,7 @@ class DraggablePlayerItem extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 10.0),
+                        const SizedBox(width: 6.0),
                         Text(
                           player.gender,
                           style: TextStyle(
@@ -130,6 +115,12 @@ class DraggablePlayerItem extends StatelessWidget {
                             color: courtColors.playerItemGenderText,
                           ),
                         ),
+                        if (groupInfo != null)
+                          _MiniGroupBadge(
+                            label: groupInfo.label,
+                            color: groupInfo.color,
+                            fontSize: nameFontSize - 8.0,
+                          ),
                       ],
                     ),
                   ),
@@ -337,8 +328,7 @@ class DraggablePlayerItem extends StatelessWidget {
                     Flexible(
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Flexible(
                             child: Text(
@@ -352,7 +342,7 @@ class DraggablePlayerItem extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 10.0),
+                          const SizedBox(width: 6.0),
                           Text(
                             player.gender,
                             style: TextStyle(
@@ -362,6 +352,12 @@ class DraggablePlayerItem extends StatelessWidget {
                               decoration: TextDecoration.none,
                             ),
                           ),
+                          if (groupInfo != null)
+                            _MiniGroupBadge(
+                              label: groupInfo.label,
+                              color: groupInfo.color,
+                              fontSize: nameFontSize - 8.0,
+                            ),
                         ],
                       ),
                     ),
@@ -545,6 +541,44 @@ class PlayerDropZone extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _MiniGroupBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+  final double fontSize;
+
+  const _MiniGroupBadge({
+    required this.label,
+    required this.color,
+    required this.fontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(left: 6.0),
+      padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 1.5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: color.withValues(alpha: 0.5),
+          width: 0.8,
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.bold,
+          color: color,
+          height: 1.0,
+          decoration: TextDecoration.none,
+        ),
+      ),
     );
   }
 }

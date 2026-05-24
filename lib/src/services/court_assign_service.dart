@@ -192,11 +192,6 @@ class CourtAssignService {
 
       double score = calculatePairScore(partner, candidate);
 
-      // 그룹 멤버로 일치하는 경우 즉시 반환
-      if (_isExactGroupMatch(partner, candidate)) {
-        return candidate;
-      }
-
       // 상대 팀 2명에 대한 매칭 페널티 및 성별 조합 보너스 합산 적용
       final opponents = [bestOpponent1!, bestOpponent2!];
       score += _calculatePlayedWithPenalty(candidate, opponents);
@@ -258,11 +253,6 @@ class CourtAssignService {
       if (!_isValidGroupCandidate(targetPlayer, player)) continue;
 
       double score = calculatePairScore(targetPlayer, player);
-
-      // 그룹 멤버로 일치하는 경우 즉시 반환
-      if (_isExactGroupMatch(targetPlayer, player)) {
-        return player;
-      }
 
       candidates.add({'player': player, 'score': score});
     }
@@ -437,7 +427,6 @@ class CourtAssignService {
               'pair': [playerA, playerB],
               'score': calculatePairScore(playerA, playerB),
             });
-            break; // 상대방을 찾으면 더 이상 순회하지 않음
           }
         }
         continue; // 그룹이 있는 플레이어는 아래의 일반 매칭 탐색을 건너뜀

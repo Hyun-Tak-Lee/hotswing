@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/models/ui/group_info.dart';
 import 'package:hotswing/src/repository/realms/options.dart';
 import 'package:hotswing/src/services/court_assign_service.dart';
 import 'package:hotswing/src/services/player_service.dart';
@@ -20,6 +21,13 @@ class PlayersProvider with ChangeNotifier {
   final List<List<Player?>> _standbyPlayers = [];
   final List<Player> _unassignedPlayers = [];
   final List<DateTime?> _courtStartTimes = [];
+  Map<ObjectId, GroupInfo>? _cachedGroupInfo;
+
+  @override
+  void notifyListeners() {
+    _cachedGroupInfo = null;
+    super.notifyListeners();
+  }
 
   PlayersProvider() {
     _options = OptionsRepository.instance.getOptions();
@@ -342,7 +350,9 @@ class PlayersProvider with ChangeNotifier {
 
   void _updateCourtStartTime(int courtIndex) {
     if (courtIndex < 0 || courtIndex >= _assignedPlayers.length) return;
-    final playerCount = _assignedPlayers[courtIndex].where((p) => p != null).length;
+    final playerCount = _assignedPlayers[courtIndex]
+        .where((p) => p != null)
+        .length;
     if (playerCount == 4) {
       if (_courtStartTimes[courtIndex] == null) {
         _courtStartTimes[courtIndex] = DateTime.now();
@@ -466,7 +476,8 @@ class PlayersProvider with ChangeNotifier {
     List<Player?> playersInCourt = List.from(targetCourtPlayers[sectionIndex]);
 
     int elapsedSeconds = 0;
-    if (targetCourtKind == "assigned" && sectionIndex < _courtStartTimes.length) {
+    if (targetCourtKind == "assigned" &&
+        sectionIndex < _courtStartTimes.length) {
       final startTime = _courtStartTimes[sectionIndex];
       if (played == 1 && startTime != null) {
         elapsedSeconds = DateTime.now().difference(startTime).inSeconds;
@@ -599,5 +610,87 @@ class PlayersProvider with ChangeNotifier {
     }
     _saveLoadedPlayers();
     notifyListeners();
+  }
+
+  GroupInfo? getGroupInfo(ObjectId playerId) {
+    if (_cachedGroupInfo == null) {
+      _calculateGroupInfo();
+    }
+    return _cachedGroupInfo![playerId];
+  }
+
+  void _calculateGroupInfo() {
+    _cachedGroupInfo = {};
+    final visited = <ObjectId>{};
+    final List<Set<ObjectId>> groupsList = [];
+
+    for (final player in _players.values) {
+      if (visited.contains(player.id)) continue;
+      if (player.groups.isEmpty) continue;
+
+      final currentGroup = <ObjectId>{};
+      final queue = <ObjectId>[player.id];
+      while (queue.isNotEmpty) {
+        final currentId = queue.removeLast();
+        if (currentGroup.contains(currentId)) continue;
+        currentGroup.add(currentId);
+        visited.add(currentId);
+
+        final p = _players[currentId];
+        if (p != null) {
+          for (final neighborId in p.groups) {
+            if (!currentGroup.contains(neighborId)) {
+              queue.add(neighborId);
+            }
+          }
+        }
+      }
+
+      if (currentGroup.length > 1) {
+        groupsList.add(currentGroup);
+      }
+    }
+
+    // Sort groups list deterministically by the name of the first player alphabetically
+    groupsList.sort((a, b) {
+      final nameA =
+          a
+              .map((id) => _players[id]?.name ?? '')
+              .where((name) => name.isNotEmpty)
+              .toList()
+            ..sort();
+      final nameB =
+          b
+              .map((id) => _players[id]?.name ?? '')
+              .where((name) => name.isNotEmpty)
+              .toList()
+            ..sort();
+      if (nameA.isEmpty && nameB.isEmpty) return 0;
+      if (nameA.isEmpty) return 1;
+      if (nameB.isEmpty) return -1;
+      return nameA.first.compareTo(nameB.first);
+    });
+
+    const List<Color> groupPalette = [
+      Color(0xFF3B82F6), // Blue
+      Color(0xFF10B981), // Green
+      Color(0xFFF59E0B), // Orange
+      Color(0xFF8B5CF6), // Purple
+      Color(0xFFEC4899), // Pink
+      Color(0xFF06B6D4), // Cyan
+      Color(0xFFF43F5E), // Rose
+      Color(0xFF14B8A6), // Teal
+      Color(0xFF6366F1), // Indigo
+    ];
+
+    for (int i = 0; i < groupsList.length; i++) {
+      final label =
+          String.fromCharCode(65 + (i % 26)) +
+          (i >= 26 ? '${(i ~/ 26) + 1}' : '');
+      final color = groupPalette[i % groupPalette.length];
+      for (final id in groupsList[i]) {
+        _cachedGroupInfo![id] = GroupInfo(label: label, color: color);
+      }
+    }
   }
 }

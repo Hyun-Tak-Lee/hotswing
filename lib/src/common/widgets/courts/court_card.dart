@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/models/ui/player_drag_data.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
 /// 단일 코트를 렌더링하는 공통 위젯.

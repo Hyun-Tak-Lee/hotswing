@@ -93,7 +93,7 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
               end: Alignment.bottomRight,
               colors: [
                 playerColors.playerHeaderGradientStart,
-                playerColors.playerHeaderGradientEnd
+                playerColors.playerHeaderGradientEnd,
               ],
             ),
           ),
@@ -106,7 +106,10 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
                   // 좌측 영역
                   if (viewModel.isSelectionMode)
                     IconButton(
-                      icon: Icon(Icons.close, color: playerColors.playerHeaderFg),
+                      icon: Icon(
+                        Icons.close,
+                        color: playerColors.playerHeaderFg,
+                      ),
                       onPressed: () => viewModel.setSelectionMode(false),
                     )
                   else
@@ -134,7 +137,9 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
                                 style: TextStyle(color: baseColors.textPrimary),
                                 decoration: InputDecoration(
                                   hintText: '회원 이름 검색',
-                                  hintStyle: TextStyle(color: baseColors.textSecondary),
+                                  hintStyle: TextStyle(
+                                    color: baseColors.textSecondary,
+                                  ),
                                   prefixIcon: Icon(
                                     Icons.search,
                                     color: playerColors.playerHeaderFgVariant,
@@ -166,13 +171,19 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.delete, color: playerColors.playerHeaderFg),
+                      icon: Icon(
+                        Icons.delete,
+                        color: playerColors.playerHeaderFg,
+                      ),
                       onPressed: () =>
                           _showMultiDeleteDialog(context, viewModel),
                     ),
                   ] else ...[
                     IconButton(
-                      icon: Icon(Icons.checklist, color: playerColors.playerHeaderFg),
+                      icon: Icon(
+                        Icons.checklist,
+                        color: playerColors.playerHeaderFg,
+                      ),
                       onPressed: () => viewModel.setSelectionMode(true),
                     ),
                   ],

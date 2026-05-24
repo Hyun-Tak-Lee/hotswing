@@ -631,7 +631,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
             .map((p) => p.id)
             .toList(),
         groupsOptionId: widget.playersProvider.players.values
-            .where((p) => p.groups.isNotEmpty)
+            .where((p) => p.groups.isNotEmpty && !(widget.player?.groups.contains(p.id) ?? false))
             .map((p) => p.id)
             .toList(),
         initialValue: _groups,

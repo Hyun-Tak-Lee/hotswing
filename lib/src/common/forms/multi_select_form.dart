@@ -28,7 +28,6 @@ class MultiSelectForm extends StatefulWidget {
 
 class _MultiSelectFormState extends State<MultiSelectForm> {
   late List<ObjectId> _selectedOptions;
-  final int _maxSelection = 1;
 
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
@@ -169,10 +168,8 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
                       final isGrouped = widget.groupsOptionId.contains(
                         optionId,
                       );
-                      final isMaxSelected =
-                          _selectedOptions.length >= _maxSelection;
                       final isEnabled = isSelected ||
-                          !(isMaxSelected || isGrouped || isCurrentPlayer);
+                          !(isGrouped || isCurrentPlayer);
 
                       return CheckboxListTile(
                         title: Text(
