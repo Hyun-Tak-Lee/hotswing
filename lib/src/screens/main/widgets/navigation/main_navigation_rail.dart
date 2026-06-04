@@ -58,6 +58,16 @@ class MainNavigationRail extends StatelessWidget {
             ),
           ),
           NavigationRailDestination(
+            icon: Icon(Icons.groups_outlined),
+            selectedIcon: Icon(Icons.groups),
+            label: Text(
+              '교류전',
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              maxLines: 1,
+            ),
+          ),
+          NavigationRailDestination(
             icon: Icon(Icons.people_outlined),
             selectedIcon: Icon(Icons.people),
             label: Text(

@@ -50,6 +50,11 @@ class MainNavigationBar extends StatelessWidget {
             label: '게임',
           ),
           NavigationDestination(
+            icon: Icon(Icons.groups_outlined),
+            selectedIcon: Icon(Icons.groups),
+            label: '교류전',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.people_outlined),
             selectedIcon: Icon(Icons.people),
             label: '회원 목록',

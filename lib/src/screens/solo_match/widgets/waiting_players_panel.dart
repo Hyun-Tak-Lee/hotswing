@@ -179,15 +179,15 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                             ? Colors.black.withAlpha(50)
                             : Colors.black.withAlpha(25),
                         borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      alignment: Alignment.center,
-                      child: Icon(
-                        Icons.delete,
-                        color: Colors.white,
-                        size: isTablet ? 50.0 : 30.0,
-                      ),
-                    );
-                  },
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                    size: isTablet ? 50.0 : 30.0,
+                  ),
+                );
+              },
             ),
           ),
       ],

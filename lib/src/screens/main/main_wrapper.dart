@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
-import 'package:hotswing/src/screens/home/home_screen.dart';
+import 'package:hotswing/src/screens/solo_match/solo_match_screen.dart';
+import 'package:hotswing/src/screens/group_match/group_match_screen.dart';
 import 'package:hotswing/src/screens/players/players_screen.dart';
 import 'package:hotswing/src/common/widgets/dialogs/manager_auth_overlay.dart';
 import 'package:hotswing/src/screens/settings/settings_screen.dart';
@@ -27,7 +28,8 @@ class _MainWrapperState extends State<MainWrapper> {
     return IndexedStack(
       index: _selectedIndex,
       children: [
-        const HomeScreen(),
+        const SoloMatchScreen(),
+        const GroupMatchScreen(),
         PlayersScreen(key: _playersScreenKey),
         const SettingsScreen(),
       ],
@@ -35,8 +37,8 @@ class _MainWrapperState extends State<MainWrapper> {
   }
 
   void _onDestinationSelected(int index) async {
-    if (index == 1) {
-      // 플레이어 화면(index=1) 진입 시 인증 오버레이 띄우기
+    if (index == 2) {
+      // 플레이어 화면(index=2) 진입 시 인증 오버레이 띄우기
       if (!mounted) return;
       final bool? isAuthenticated = await showDialog<bool>(
         context: context,
