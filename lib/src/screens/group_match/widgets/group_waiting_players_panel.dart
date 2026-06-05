@@ -72,6 +72,7 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
     final isTablet = ResponsiveUtils.isTablet(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
     final allUnassignedPlayers = List<Player>.from(playersProvider.unassignedPlayers);
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
     // 전체 리스트 정렬
     allUnassignedPlayers.sort((a, b) {
@@ -121,135 +122,276 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
           margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
           child: Center(
             child: FractionallySizedBox(
-              child: Column(
-                children: [
-                  _buildHeader(context, isTablet, allUnassignedPlayers.length, baseColors, courtColors),
-                  SizedBox(height: isTablet ? 8.0 : 4.0),
-                  Expanded(
-                    child: DefaultTabController(
-                      key: ValueKey(tabItems.length), // 탭 개수가 유동적으로 변할 때 예외 방지용 키
-                      length: tabItems.length,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              courtColors.waitingPanelBgStart,
-                              courtColors.waitingPanelBgEnd,
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha(8),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: Column(
-                          children: [
-                            TabBar(
-                              isScrollable: true,
-                              tabAlignment: TabAlignment.start,
-                              labelColor: baseColors.primaryAccent,
-                              unselectedLabelColor: baseColors.textSecondary,
-                              indicatorColor: baseColors.primaryAccent,
-                              indicatorSize: TabBarIndicatorSize.label,
-                              dividerColor: Colors.transparent,
-                              padding: const EdgeInsets.symmetric(vertical: 4.0),
-                              tabs: List.generate(tabItems.length, (index) {
-                                final tabItem = tabItems[index];
-                                final filteredCount = _filterPlayersByTab(tabItem, allUnassignedPlayers, playersProvider).length;
-                                return Tab(
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(tabItem.label),
-                                      const SizedBox(width: 4),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: baseColors.primaryAccent.withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: Text(
-                                          '$filteredCount',
-                                          style: TextStyle(
-                                            fontSize: 10.0,
-                                            fontWeight: FontWeight.bold,
-                                            color: baseColors.primaryAccent,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+              child: isLandscape
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: DefaultTabController(
+                            key: ValueKey(tabItems.length),
+                            length: tabItems.length,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    courtColors.waitingPanelBgStart,
+                                    courtColors.waitingPanelBgEnd,
+                                  ],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withAlpha(8),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
                                   ),
-                                );
-                              }),
-                            ),
-                            Expanded(
-                              child: TabBarView(
-                                children: List.generate(tabItems.length, (index) {
-                                  final tabItem = tabItems[index];
-                                  final tabPlayers = _filterPlayersByTab(tabItem, allUnassignedPlayers, playersProvider);
-                                  
-                                  if (tabPlayers.isEmpty) {
-                                    return Center(
-                                      child: Text(
-                                        '대기 중인 회원이 없습니다.',
-                                        style: TextStyle(
-                                          color: baseColors.textSecondary,
-                                          fontSize: isTablet ? 16.0 : 14.0,
+                                ],
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              child: Column(
+                                children: [
+                                  TabBar(
+                                    isScrollable: true,
+                                    tabAlignment: TabAlignment.start,
+                                    labelColor: baseColors.primaryAccent,
+                                    unselectedLabelColor: baseColors.textSecondary,
+                                    indicatorColor: baseColors.primaryAccent,
+                                    indicatorSize: TabBarIndicatorSize.label,
+                                    dividerColor: Colors.transparent,
+                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                    tabs: List.generate(tabItems.length, (index) {
+                                      final tabItem = tabItems[index];
+                                      final filteredCount = _filterPlayersByTab(tabItem, allUnassignedPlayers, playersProvider).length;
+                                      return Tab(
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(tabItem.label),
+                                            const SizedBox(width: 4),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: baseColors.primaryAccent.withValues(alpha: 0.15),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: Text(
+                                                '$filteredCount',
+                                                style: TextStyle(
+                                                  fontSize: 10.0,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: baseColors.primaryAccent,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                    );
-                                  }
-
-                                  return SingleChildScrollView(
-                                    scrollDirection: Axis.vertical,
-                                    child: Column(
-                                      children: tabPlayers.asMap().entries.map<Widget>((entry) {
-                                        int playerIndex = entry.key;
-                                        Player player = entry.value;
-                                        final String playerSectionId = 'unassigned_group_${tabItem.label}_$playerIndex';
+                                      );
+                                    }),
+                                  ),
+                                  Expanded(
+                                    child: TabBarView(
+                                      children: List.generate(tabItems.length, (index) {
+                                        final tabItem = tabItems[index];
+                                        final tabPlayers = _filterPlayersByTab(tabItem, allUnassignedPlayers, playersProvider);
                                         
-                                        return PlayerDropZone(
-                                          player: player,
-                                          sectionId: playerSectionId,
-                                          sectionKind: PlayerSectionKind.unassigned.value,
-                                          sectionIndex: -1,
-                                          subIndex: playerIndex,
-                                          onPlayerDropped: (
-                                            data,
-                                            droppedOnPlayer,
-                                            targetId,
-                                            sectionKind,
-                                            targetSectionIdx,
-                                            targetSubIdx,
-                                          ) => widget.onPlayerDrop(
-                                            context,
-                                            data,
-                                            droppedOnPlayer,
-                                            targetId,
-                                            sectionKind,
-                                            targetSectionIdx,
-                                            targetSubIdx,
+                                        if (tabPlayers.isEmpty) {
+                                          return Center(
+                                            child: Text(
+                                              '대기 중인 회원이 없습니다.',
+                                              style: TextStyle(
+                                                color: baseColors.textSecondary,
+                                                fontSize: isTablet ? 16.0 : 14.0,
+                                              ),
+                                            ),
+                                          );
+                                        }
+
+                                        return SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                            children: tabPlayers.asMap().entries.map<Widget>((entry) {
+                                              int playerIndex = entry.key;
+                                              Player player = entry.value;
+                                              final String playerSectionId = 'unassigned_group_${tabItem.label}_$playerIndex';
+                                              
+                                              return SizedBox(
+                                                width: isTablet ? 200.0 : 160.0,
+                                                child: PlayerDropZone(
+                                                  player: player,
+                                                  sectionId: playerSectionId,
+                                                  sectionKind: PlayerSectionKind.unassigned.value,
+                                                  sectionIndex: -1,
+                                                  subIndex: playerIndex,
+                                                  onPlayerDropped: (
+                                                    data,
+                                                    droppedOnPlayer,
+                                                    targetId,
+                                                    sectionKind,
+                                                    targetSectionIdx,
+                                                    targetSubIdx,
+                                                  ) => widget.onPlayerDrop(
+                                                    context,
+                                                    data,
+                                                    droppedOnPlayer,
+                                                    targetId,
+                                                    sectionKind,
+                                                    targetSectionIdx,
+                                                    targetSubIdx,
+                                                  ),
+                                                ),
+                                              );
+                                            }).toList(),
                                           ),
                                         );
-                                      }).toList(),
+                                      }),
                                     ),
-                                  );
-                                }),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8.0),
+                        _buildLandscapeHeader(
+                          context,
+                          isTablet,
+                          allUnassignedPlayers.length,
+                          baseColors,
+                          courtColors,
+                        ),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        _buildHeader(context, isTablet, allUnassignedPlayers.length, baseColors, courtColors),
+                        SizedBox(height: isTablet ? 8.0 : 4.0),
+                        Expanded(
+                          child: DefaultTabController(
+                            key: ValueKey(tabItems.length),
+                            length: tabItems.length,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    courtColors.waitingPanelBgStart,
+                                    courtColors.waitingPanelBgEnd,
+                                  ],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withAlpha(8),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              child: Column(
+                                children: [
+                                  TabBar(
+                                    isScrollable: true,
+                                    tabAlignment: TabAlignment.start,
+                                    labelColor: baseColors.primaryAccent,
+                                    unselectedLabelColor: baseColors.textSecondary,
+                                    indicatorColor: baseColors.primaryAccent,
+                                    indicatorSize: TabBarIndicatorSize.label,
+                                    dividerColor: Colors.transparent,
+                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                    tabs: List.generate(tabItems.length, (index) {
+                                      final tabItem = tabItems[index];
+                                      final filteredCount = _filterPlayersByTab(tabItem, allUnassignedPlayers, playersProvider).length;
+                                      return Tab(
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(tabItem.label),
+                                            const SizedBox(width: 4),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: baseColors.primaryAccent.withValues(alpha: 0.15),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: Text(
+                                                '$filteredCount',
+                                                style: TextStyle(
+                                                  fontSize: 10.0,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: baseColors.primaryAccent,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                  Expanded(
+                                    child: TabBarView(
+                                      children: List.generate(tabItems.length, (index) {
+                                        final tabItem = tabItems[index];
+                                        final tabPlayers = _filterPlayersByTab(tabItem, allUnassignedPlayers, playersProvider);
+                                        
+                                        if (tabPlayers.isEmpty) {
+                                          return Center(
+                                            child: Text(
+                                              '대기 중인 회원이 없습니다.',
+                                              style: TextStyle(
+                                                color: baseColors.textSecondary,
+                                                fontSize: isTablet ? 16.0 : 14.0,
+                                              ),
+                                            ),
+                                          );
+                                        }
+
+                                        return SingleChildScrollView(
+                                          scrollDirection: Axis.vertical,
+                                          child: Column(
+                                            children: tabPlayers.asMap().entries.map<Widget>((entry) {
+                                              int playerIndex = entry.key;
+                                              Player player = entry.value;
+                                              final String playerSectionId = 'unassigned_group_${tabItem.label}_$playerIndex';
+                                              
+                                              return PlayerDropZone(
+                                                player: player,
+                                                sectionId: playerSectionId,
+                                                sectionKind: PlayerSectionKind.unassigned.value,
+                                                sectionIndex: -1,
+                                                subIndex: playerIndex,
+                                                onPlayerDropped: (
+                                                  data,
+                                                  droppedOnPlayer,
+                                                  targetId,
+                                                  sectionKind,
+                                                  targetSectionIdx,
+                                                  targetSubIdx,
+                                                ) => widget.onPlayerDrop(
+                                                  context,
+                                                  data,
+                                                  droppedOnPlayer,
+                                                  targetId,
+                                                  sectionKind,
+                                                  targetSectionIdx,
+                                                  targetSubIdx,
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                        );
+                                      }),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
           ),
         ),
@@ -454,6 +596,162 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                     padding: const EdgeInsets.all(4.0),
                     child: Icon(Icons.sort, size: 24.0, color: baseColors.textSecondary),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLandscapeHeader(
+    BuildContext context,
+    bool isTablet,
+    int count,
+    BaseColors baseColors,
+    CourtColors courtColors,
+  ) {
+    return Container(
+      width: isTablet ? 110.0 : 80.0,
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        color: courtColors.waitingPanelHeaderBg,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(10),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: "대기\n",
+                  style: TextStyle(
+                    fontSize: isTablet ? 16.0 : 13.0,
+                    fontWeight: FontWeight.bold,
+                    color: courtColors.waitingPanelHeaderTitle,
+                    height: 1.2,
+                  ),
+                ),
+                TextSpan(
+                  text: '$count',
+                  style: TextStyle(
+                    fontSize: isTablet ? 22.0 : 18.0,
+                    fontWeight: FontWeight.w900,
+                    color: baseColors.primaryAccent,
+                  ),
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16.0),
+          PopupMenuButton<SortCriterion>(
+            tooltip: '정렬 기준',
+            initialValue: _sortCriterion,
+            color: courtColors.waitingPanelHeaderBg,
+            elevation: 6,
+            offset: const Offset(0, 40),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            onSelected: (SortCriterion newValue) {
+              setState(() {
+                _sortCriterion = newValue;
+                _sortAscending = true;
+              });
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                PopupMenuItem<SortCriterion>(
+                  value: SortCriterion.played,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.sort_rounded,
+                        color: baseColors.primaryAccent,
+                        size: isTablet ? 24 : 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '경기 적은 순',
+                        style: TextStyle(
+                          fontSize: isTablet ? 16.0 : 14.0,
+                          color: baseColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<SortCriterion>(
+                  value: SortCriterion.name,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.sort_by_alpha_rounded,
+                        color: baseColors.primaryAccent,
+                        size: isTablet ? 24 : 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '이름 가나다 순',
+                        style: TextStyle(
+                          fontSize: isTablet ? 16.0 : 14.0,
+                          color: baseColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ];
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 4.0,
+                vertical: 8.0,
+              ),
+              decoration: BoxDecoration(
+                color: courtColors.waitingPanelSortBtnBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: courtColors.waitingPanelSortBtnBorder.withAlpha(100)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.sort_rounded,
+                    size: isTablet ? 20.0 : 16.0,
+                    color: baseColors.textSecondary,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _sortCriterion == SortCriterion.played ? '경기순' : '이름순',
+                    style: TextStyle(
+                      fontSize: isTablet ? 12.0 : 10.0,
+                      color: baseColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

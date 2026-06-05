@@ -126,6 +126,68 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
     final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
     final isMobileSize = !isTablet;
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final courtSectionWidget = isLandscape
+        ? Row(
+            children: [
+              Expanded(
+                child: switch (selectedView) {
+                  CourtViewSection.assignedView => CourtSectionsView(
+                    onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
+                    onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
+                    onPlayerDrop: _handlePlayerDrop,
+                  ),
+                  CourtViewSection.standbyView => StandbyCourtSectionsView(
+                    onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
+                    onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
+                    onPlayerDrop: _handlePlayerDrop,
+                  ),
+                },
+              ),
+              CourtViewSelector(
+                selectedView: selectedView,
+                onSelectionChanged: (value) {
+                  setState(() {
+                    selectedView = value;
+                  });
+                },
+                isLandscape: isLandscape,
+              ),
+            ],
+          )
+        : Column(
+            children: [
+              CourtViewSelector(
+                selectedView: selectedView,
+                onSelectionChanged: (value) {
+                  setState(() {
+                    selectedView = value;
+                  });
+                },
+                isLandscape: isLandscape,
+              ),
+              Expanded(
+                child: switch (selectedView) {
+                  CourtViewSection.assignedView => CourtSectionsView(
+                    onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
+                    onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
+                    onPlayerDrop: _handlePlayerDrop,
+                  ),
+                  CourtViewSection.standbyView => StandbyCourtSectionsView(
+                    onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
+                    onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
+                    onPlayerDrop: _handlePlayerDrop,
+                  ),
+                },
+              ),
+            ],
+          );
+
+    final waitingPlayersPanelWidget = WaitingPlayersPanel(
+      showDeleteOverlay: _showCourtHighlight,
+      onPlayerDrop: _handlePlayerDrop,
+    );
 
     return Container(
       padding: EdgeInsets.only(
@@ -133,49 +195,37 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
         left: 0,
         right: 0,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            flex: 2,
-            child: Column(
-              children: [
-                CourtViewSelector(
-                  selectedView: selectedView,
-                  onSelectionChanged: (value) {
-                    setState(() {
-                      selectedView = value;
-                    });
-                  },
-                ),
+      child: isLandscape
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
                 Expanded(
-                  child: switch (selectedView) {
-                    CourtViewSection.assignedView => CourtSectionsView(
-                      onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
-                      onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
-                      onPlayerDrop: _handlePlayerDrop,
-                    ),
-                    CourtViewSection.standbyView => StandbyCourtSectionsView(
-                      onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
-                      onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
-                      onPlayerDrop: _handlePlayerDrop,
-                    ),
-                  },
+                  flex: 2,
+                  child: courtSectionWidget,
+                ),
+                Divider(height: 1.0, color: courtColors.homeDivider),
+                Expanded(
+                  flex: 1,
+                  child: waitingPlayersPanelWidget,
+                ),
+              ],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Expanded(
+                  flex: 2,
+                  child: courtSectionWidget,
+                ),
+                VerticalDivider(width: 1.0, color: courtColors.homeDivider),
+                Expanded(
+                  flex: 1,
+                  child: waitingPlayersPanelWidget,
                 ),
               ],
             ),
-          ),
-          VerticalDivider(width: 1.0, color: courtColors.homeDivider),
-          Expanded(
-            flex: 1,
-            child: WaitingPlayersPanel(
-              showDeleteOverlay: _showCourtHighlight,
-              onPlayerDrop: _handlePlayerDrop,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
-import 'package:hotswing/src/models/ui/group_info.dart';
 import 'package:hotswing/src/models/ui/player_drag_data.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/common/widgets/dialogs/game_played_dialog.dart';
@@ -478,9 +477,10 @@ class PlayerDropZone extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final courtColors = context.courtColors;
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     final isTablet = ResponsiveUtils.isTablet(context);
     // 태블릿 화면에서 코트를 더 많이 볼 수 있도록 세로 길이 축소 (기존 240 -> 160)
-    final double currentHeight = isTablet ? 160.0 : 140.0;
+    final double? currentHeight = isLandscape ? null : (isTablet ? 160.0 : 140.0);
 
     return DragTarget<PlayerDragData>(
       onWillAcceptWithDetails: (details) {

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/models/players/player.dart';

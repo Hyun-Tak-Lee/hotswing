@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
-import 'package:hotswing/src/models/ui/group_info.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/tags/player_info_tag.dart';
 import 'package:hotswing/src/common/widgets/tags/player_skill_rate.dart';

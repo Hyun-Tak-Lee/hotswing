@@ -44,6 +44,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
     final isTablet = ResponsiveUtils.isTablet(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
     final playerList = List<Player>.from(playersProvider.unassignedPlayers);
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
     // 정렬 로직 적용
     playerList.sort((a, b) {
@@ -78,71 +79,154 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
           margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
           child: Center(
             child: FractionallySizedBox(
-              child: Column(
-                children: [
-                  _buildHeader(context, isTablet, playerList.length, baseColors, courtColors),
-                  SizedBox(height: isTablet ? 8.0 : 4.0),
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            courtColors.waitingPanelBgStart,
-                            courtColors.waitingPanelBgEnd,
-                          ],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(8),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+              child: isLandscape
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  courtColors.waitingPanelBgStart,
+                                  courtColors.waitingPanelBgEnd,
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(8),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: playerList.asMap().entries.map<Widget>((
+                                  entry,
+                                ) {
+                                  int playerIndex = entry.key;
+                                  Player player = entry.value;
+                                  final String playerSectionId =
+                                      'unassigned_$playerIndex';
+                                  return SizedBox(
+                                    width: isTablet ? 200.0 : 160.0,
+                                    child: PlayerDropZone(
+                                      player: player,
+                                      sectionId: playerSectionId,
+                                      sectionKind: PlayerSectionKind.unassigned.value,
+                                      sectionIndex: -1,
+                                      subIndex: playerIndex,
+                                      onPlayerDropped:
+                                          (
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            sectionKind,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ) => widget.onPlayerDrop(
+                                            context,
+                                            data,
+                                            droppedOnPlayer,
+                                            targetId,
+                                            sectionKind,
+                                            targetSectionIdx,
+                                            targetSubIdx,
+                                          ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
                           ),
-                        ],
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: Column(
-                          children: playerList.asMap().entries.map<Widget>((
-                            entry,
-                          ) {
-                            int playerIndex = entry.key;
-                            Player player = entry.value;
-                            final String playerSectionId =
-                                'unassigned_$playerIndex';
-                            return PlayerDropZone(
-                              player: player,
-                              sectionId: playerSectionId,
-                              sectionKind: PlayerSectionKind.unassigned.value,
-                              sectionIndex: -1,
-                              subIndex: playerIndex,
-                              onPlayerDropped:
-                                  (
-                                    data,
-                                    droppedOnPlayer,
-                                    targetId,
-                                    sectionKind,
-                                    targetSectionIdx,
-                                    targetSubIdx,
-                                  ) => widget.onPlayerDrop(
-                                    context,
-                                    data,
-                                    droppedOnPlayer,
-                                    targetId,
-                                    sectionKind,
-                                    targetSectionIdx,
-                                    targetSubIdx,
-                                  ),
-                            );
-                          }).toList(),
                         ),
-                      ),
+                        const SizedBox(width: 8.0),
+                        _buildLandscapeHeader(
+                          context,
+                          isTablet,
+                          playerList.length,
+                          baseColors,
+                          courtColors,
+                        ),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        _buildHeader(
+                          context,
+                          isTablet,
+                          playerList.length,
+                          baseColors,
+                          courtColors,
+                        ),
+                        SizedBox(height: isTablet ? 8.0 : 4.0),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  courtColors.waitingPanelBgStart,
+                                  courtColors.waitingPanelBgEnd,
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(8),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.vertical,
+                              child: Column(
+                                children: playerList.asMap().entries.map<Widget>((
+                                  entry,
+                                ) {
+                                  int playerIndex = entry.key;
+                                  Player player = entry.value;
+                                  final String playerSectionId =
+                                      'unassigned_$playerIndex';
+                                  return PlayerDropZone(
+                                    player: player,
+                                    sectionId: playerSectionId,
+                                    sectionKind: PlayerSectionKind.unassigned.value,
+                                    sectionIndex: -1,
+                                    subIndex: playerIndex,
+                                    onPlayerDropped:
+                                        (
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          sectionKind,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ) => widget.onPlayerDrop(
+                                          context,
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          sectionKind,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
           ),
         ),
@@ -349,6 +433,162 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                     padding: const EdgeInsets.all(4.0),
                     child: Icon(Icons.sort, size: 24.0, color: baseColors.textSecondary),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLandscapeHeader(
+    BuildContext context,
+    bool isTablet,
+    int count,
+    BaseColors baseColors,
+    CourtColors courtColors,
+  ) {
+    return Container(
+      width: isTablet ? 110.0 : 80.0,
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        color: courtColors.waitingPanelHeaderBg,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(10),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: "대기\n",
+                  style: TextStyle(
+                    fontSize: isTablet ? 16.0 : 13.0,
+                    fontWeight: FontWeight.bold,
+                    color: courtColors.waitingPanelHeaderTitle,
+                    height: 1.2,
+                  ),
+                ),
+                TextSpan(
+                  text: '$count',
+                  style: TextStyle(
+                    fontSize: isTablet ? 22.0 : 18.0,
+                    fontWeight: FontWeight.w900,
+                    color: baseColors.primaryAccent,
+                  ),
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16.0),
+          PopupMenuButton<SortCriterion>(
+            tooltip: '정렬 기준',
+            initialValue: _sortCriterion,
+            color: courtColors.waitingPanelHeaderBg,
+            elevation: 6,
+            offset: const Offset(0, 40),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            onSelected: (SortCriterion newValue) {
+              setState(() {
+                _sortCriterion = newValue;
+                _sortAscending = true;
+              });
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                PopupMenuItem<SortCriterion>(
+                  value: SortCriterion.played,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.sort_rounded,
+                        color: baseColors.primaryAccent,
+                        size: isTablet ? 24 : 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '경기 적은 순',
+                        style: TextStyle(
+                          fontSize: isTablet ? 16.0 : 14.0,
+                          color: baseColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<SortCriterion>(
+                  value: SortCriterion.name,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.sort_by_alpha_rounded,
+                        color: baseColors.primaryAccent,
+                        size: isTablet ? 24 : 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '이름 가나다 순',
+                        style: TextStyle(
+                          fontSize: isTablet ? 16.0 : 14.0,
+                          color: baseColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ];
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 4.0,
+                vertical: 8.0,
+              ),
+              decoration: BoxDecoration(
+                color: courtColors.waitingPanelSortBtnBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: courtColors.waitingPanelSortBtnBorder.withAlpha(100)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.sort_rounded,
+                    size: isTablet ? 20.0 : 16.0,
+                    color: baseColors.textSecondary,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _sortCriterion == SortCriterion.played ? '경기순' : '이름순',
+                    style: TextStyle(
+                      fontSize: isTablet ? 12.0 : 10.0,
+                      color: baseColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
