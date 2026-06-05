@@ -75,22 +75,31 @@ class CourtCard extends StatelessWidget {
         mainAxisSize: isLandscape ? MainAxisSize.max : MainAxisSize.min,
         children: [
           // 헤더: 코트 이름 + 액션 버튼들
-          Wrap(
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: isTablet ? 8.0 : 4.0,
-            runSpacing: 4.0,
-            children: [
-              Text(
-                '${sectionIndex + 1} 코트',
-                style: TextStyle(
-                  fontSize: isTablet ? 32.0 : 20.0,
-                  fontWeight: FontWeight.bold,
-                  color: courtColors.courtCardText,
-                ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${sectionIndex + 1} 코트',
+                    style: TextStyle(
+                      fontSize: isTablet ? 32.0 : 20.0,
+                      fontWeight: FontWeight.bold,
+                      color: courtColors.courtCardText,
+                    ),
+                  ),
+                  SizedBox(width: isTablet ? 8.0 : 4.0),
+                  for (int i = 0; i < headerActions.length; i++) ...[
+                    headerActions[i],
+                    if (i < headerActions.length - 1)
+                      SizedBox(width: isTablet ? 8.0 : 4.0),
+                  ],
+                ],
               ),
-              ...headerActions,
-            ],
+            ),
           ),
           const SizedBox(height: 4.0),
           // 코트 내부: 4개의 PlayerDropZone
