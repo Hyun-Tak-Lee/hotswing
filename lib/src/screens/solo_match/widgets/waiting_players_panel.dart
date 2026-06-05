@@ -81,7 +81,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
             child: FractionallySizedBox(
               child: isLandscape
                   ? Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Expanded(
                           child: Container(
@@ -461,132 +461,143 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: "대기\n",
-                  style: TextStyle(
-                    fontSize: isTablet ? 16.0 : 13.0,
-                    fontWeight: FontWeight.bold,
-                    color: courtColors.waitingPanelHeaderTitle,
-                    height: 1.2,
-                  ),
-                ),
-                TextSpan(
-                  text: '$count',
-                  style: TextStyle(
-                    fontSize: isTablet ? 22.0 : 18.0,
-                    fontWeight: FontWeight.w900,
-                    color: baseColors.primaryAccent,
-                  ),
-                ),
-              ],
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16.0),
-          PopupMenuButton<SortCriterion>(
-            tooltip: '정렬 기준',
-            initialValue: _sortCriterion,
-            color: courtColors.waitingPanelHeaderBg,
-            elevation: 6,
-            offset: const Offset(0, 40),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            onSelected: (SortCriterion newValue) {
-              setState(() {
-                _sortCriterion = newValue;
-                _sortAscending = true;
-              });
-            },
-            itemBuilder: (BuildContext context) {
-              return [
-                PopupMenuItem<SortCriterion>(
-                  value: SortCriterion.played,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.sort_rounded,
-                        color: baseColors.primaryAccent,
-                        size: isTablet ? 24 : 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '경기 적은 순',
-                        style: TextStyle(
-                          fontSize: isTablet ? 16.0 : 14.0,
-                          color: baseColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<SortCriterion>(
-                  value: SortCriterion.name,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.sort_by_alpha_rounded,
-                        color: baseColors.primaryAccent,
-                        size: isTablet ? 24 : 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '이름 가나다 순',
-                        style: TextStyle(
-                          fontSize: isTablet ? 16.0 : 14.0,
-                          color: baseColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ];
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 4.0,
-                vertical: 8.0,
-              ),
-              decoration: BoxDecoration(
-                color: courtColors.waitingPanelSortBtnBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: courtColors.waitingPanelSortBtnBorder.withAlpha(100)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: Text.rich(
+              TextSpan(
                 children: [
-                  Icon(
-                    Icons.sort_rounded,
-                    size: isTablet ? 20.0 : 16.0,
-                    color: baseColors.textSecondary,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _sortCriterion == SortCriterion.played ? '경기순' : '이름순',
+                  TextSpan(
+                    text: "대기\n",
                     style: TextStyle(
-                      fontSize: isTablet ? 12.0 : 10.0,
-                      color: baseColors.textPrimary,
-                      fontWeight: FontWeight.w600,
+                      fontSize: isTablet ? 16.0 : 13.0,
+                      fontWeight: FontWeight.bold,
+                      color: courtColors.waitingPanelHeaderTitle,
+                      height: 1.2,
+                    ),
+                  ),
+                  TextSpan(
+                    text: '$count',
+                    style: TextStyle(
+                      fontSize: isTablet ? 22.0 : 18.0,
+                      fontWeight: FontWeight.w900,
+                      color: baseColors.primaryAccent,
                     ),
                   ),
                 ],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4.0),
+            child: PopupMenuButton<SortCriterion>(
+              tooltip: '정렬 기준',
+              initialValue: _sortCriterion,
+              color: courtColors.waitingPanelHeaderBg,
+              elevation: 6,
+              offset: const Offset(0, 40),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              onSelected: (SortCriterion newValue) {
+                setState(() {
+                  _sortCriterion = newValue;
+                  _sortAscending = true;
+                });
+              },
+              itemBuilder: (BuildContext context) {
+                return [
+                  PopupMenuItem<SortCriterion>(
+                    value: SortCriterion.played,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.sort_rounded,
+                          color: baseColors.primaryAccent,
+                          size: isTablet ? 24 : 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          '경기 적은 순',
+                          style: TextStyle(
+                            fontSize: isTablet ? 16.0 : 14.0,
+                            color: baseColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<SortCriterion>(
+                    value: SortCriterion.name,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.sort_by_alpha_rounded,
+                          color: baseColors.primaryAccent,
+                          size: isTablet ? 24 : 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          '이름 가나다 순',
+                          style: TextStyle(
+                            fontSize: isTablet ? 16.0 : 14.0,
+                            color: baseColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12.0,
+                ),
+                decoration: BoxDecoration(
+                  color: courtColors.waitingPanelSortBtnBg,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(5),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.sort_rounded,
+                      size: isTablet ? 22.0 : 18.0,
+                      color: baseColors.textSecondary,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _sortCriterion == SortCriterion.played ? '경기순' : '이름순',
+                      style: TextStyle(
+                        fontSize: isTablet ? 12.0 : 10.0,
+                        color: baseColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
