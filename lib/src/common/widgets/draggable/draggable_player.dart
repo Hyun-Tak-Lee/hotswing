@@ -638,10 +638,16 @@ class PlayerDropZone extends StatelessWidget {
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
     final isTablet = ResponsiveUtils.isTablet(context);
-    // 태블릿 화면에서 코트를 더 많이 볼 수 있도록 세로 길이 축소 (기존 240 -> 160)
-    final double? currentHeight = isLandscape
+    // 태블릿 화면에서 코트를 더 많이 볼 수 있도록 세로 길이 축소
+    // 가로 모드일 때는 비율에 맞춰 크기가 계산되도록 높이를 null로 설정
+    // 배정/대기 코트 카드 내부인 경우(assigned, standby)는 세로모드에서도 비례 크기를 갖도록 null로 설정
+    final bool isWithinCourtCard =
+        sectionKind == 'assigned' || sectionKind == 'standby';
+    final double? currentHeight = isWithinCourtCard
         ? null
-        : (isTablet ? 160.0 : 140.0);
+        : (isLandscape
+            ? null
+            : (isTablet ? 160.0 : 140.0));
 
     return DragTarget<PlayerDragData>(
       onWillAcceptWithDetails: (details) {
@@ -674,51 +680,56 @@ class PlayerDropZone extends StatelessWidget {
             ? courtColors.dropZoneBorder
             : Colors.transparent;
 
-        return Container(
-          height: currentHeight,
-          margin: EdgeInsets.all(isTablet ? 2.0 : 4.0),
-          decoration: BoxDecoration(
-            color: isHovering ? hoveringBgColor : determinedDefaultBgColor,
-            borderRadius: BorderRadius.circular(16.0),
-            border: Border.all(color: borderColor, width: 1.5),
-            boxShadow: player != null && player!.activate
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(12),
-                      blurRadius: 12.0,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [],
-          ),
-          child: Center(
-            child: player == null
-                ? Text(
-                    isDropEnabled ? '' : 'X',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24.0,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant.withAlpha(100),
-                    ),
-                  )
-                : Opacity(
-                    opacity: player!.activate ? 1.0 : 0.4,
-                    child: DraggablePlayerItem(
-                      player: player!,
-                      sourceSectionId: sectionId,
-                      sectionKind: sectionKind,
-                      sectionIndex: sectionIndex,
-                      subIndex: subIndex,
-                      onDragStarted: onDragStartedFromZone,
-                      onDragEnded: onDragEndedFromZone,
-                      showRemoveButton:
-                          sectionKind == 'assigned' || sectionKind == 'standby',
-                      onPlayerRemoved: onPlayerRemoved,
-                    ),
-                  ),
-          ),
+        return LayoutBuilder(
+          builder: (context, zoneConstraints) {
+            return Container(
+              height: currentHeight,
+              margin: EdgeInsets.all(isTablet ? 2.0 : 4.0),
+              decoration: BoxDecoration(
+                color: isHovering ? hoveringBgColor : determinedDefaultBgColor,
+                borderRadius: BorderRadius.circular(16.0),
+                border: Border.all(color: borderColor, width: 1.5),
+                boxShadow: player != null && player!.activate
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(12),
+                          blurRadius: 12.0,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : [],
+              ),
+              child: Center(
+                child: player == null
+                    ? Text(
+                        isDropEnabled ? '' : 'X',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 24.0,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant.withAlpha(100),
+                        ),
+                      )
+                    : Opacity(
+                        opacity: player!.activate ? 1.0 : 0.4,
+                        child: DraggablePlayerItem(
+                          player: player!,
+                          sourceSectionId: sectionId,
+                          sectionKind: sectionKind,
+                          sectionIndex: sectionIndex,
+                          subIndex: subIndex,
+                          onDragStarted: onDragStartedFromZone,
+                          onDragEnded: onDragEndedFromZone,
+                          showRemoveButton:
+                              sectionKind == 'assigned' ||
+                              sectionKind == 'standby',
+                          onPlayerRemoved: onPlayerRemoved,
+                        ),
+                      ),
+              ),
+            );
+          },
         );
       },
     );

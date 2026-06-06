@@ -44,7 +44,21 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
     final isTablet = ResponsiveUtils.isTablet(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
     final playerList = List<Player>.from(playersProvider.unassignedPlayers);
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
+
+    // 가로 모드일 때 화면 전체 너비에 비례하는 카드 가로폭 지정 (SizedBox용)
+    final double cardWidth = isTablet
+        ? (screenWidth * 0.16)
+        : (screenWidth * 0.28);
+
+    // 가로 모드일 때 화면 전체 세로 높이에 비례하는 패널 최대 높이 지정
+    final double maxPanelHeight = isTablet
+        ? (screenHeight * 0.25)
+        : (screenHeight * 0.22);
 
     // 정렬 로직 적용
     playerList.sort((a, b) {
@@ -74,9 +88,13 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
     });
 
     return Stack(
+      alignment: Alignment.center,
       children: [
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+          constraints: isLandscape
+              ? BoxConstraints(maxHeight: maxPanelHeight)
+              : null,
           child: Center(
             child: FractionallySizedBox(
               child: isLandscape
@@ -106,42 +124,46 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                             child: SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: playerList.asMap().entries.map<Widget>((
-                                  entry,
-                                ) {
-                                  int playerIndex = entry.key;
-                                  Player player = entry.value;
-                                  final String playerSectionId =
-                                      'unassigned_$playerIndex';
-                                  return SizedBox(
-                                    width: isTablet ? 200.0 : 160.0,
-                                    child: PlayerDropZone(
-                                      player: player,
-                                      sectionId: playerSectionId,
-                                      sectionKind: PlayerSectionKind.unassigned.value,
-                                      sectionIndex: -1,
-                                      subIndex: playerIndex,
-                                      onPlayerDropped:
-                                          (
-                                            data,
-                                            droppedOnPlayer,
-                                            targetId,
-                                            sectionKind,
-                                            targetSectionIdx,
-                                            targetSubIdx,
-                                          ) => widget.onPlayerDrop(
-                                            context,
-                                            data,
-                                            droppedOnPlayer,
-                                            targetId,
-                                            sectionKind,
-                                            targetSectionIdx,
-                                            targetSubIdx,
-                                          ),
-                                    ),
-                                  );
-                                }).toList(),
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: playerList
+                                    .asMap()
+                                    .entries
+                                    .map<Widget>((entry) {
+                                      int playerIndex = entry.key;
+                                      Player player = entry.value;
+                                      final String playerSectionId =
+                                          'unassigned_$playerIndex';
+                                      return SizedBox(
+                                        width: cardWidth,
+                                        child: PlayerDropZone(
+                                          player: player,
+                                          sectionId: playerSectionId,
+                                          sectionKind: PlayerSectionKind
+                                              .unassigned
+                                              .value,
+                                          sectionIndex: -1,
+                                          subIndex: playerIndex,
+                                          onPlayerDropped:
+                                              (
+                                                data,
+                                                droppedOnPlayer,
+                                                targetId,
+                                                sectionKind,
+                                                targetSectionIdx,
+                                                targetSubIdx,
+                                              ) => widget.onPlayerDrop(
+                                                context,
+                                                data,
+                                                droppedOnPlayer,
+                                                targetId,
+                                                sectionKind,
+                                                targetSectionIdx,
+                                                targetSubIdx,
+                                              ),
+                                        ),
+                                      );
+                                    })
+                                    .toList(),
                               ),
                             ),
                           ),
@@ -189,38 +211,41 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                             child: SingleChildScrollView(
                               scrollDirection: Axis.vertical,
                               child: Column(
-                                children: playerList.asMap().entries.map<Widget>((
-                                  entry,
-                                ) {
-                                  int playerIndex = entry.key;
-                                  Player player = entry.value;
-                                  final String playerSectionId =
-                                      'unassigned_$playerIndex';
-                                  return PlayerDropZone(
-                                    player: player,
-                                    sectionId: playerSectionId,
-                                    sectionKind: PlayerSectionKind.unassigned.value,
-                                    sectionIndex: -1,
-                                    subIndex: playerIndex,
-                                    onPlayerDropped:
-                                        (
-                                          data,
-                                          droppedOnPlayer,
-                                          targetId,
-                                          sectionKind,
-                                          targetSectionIdx,
-                                          targetSubIdx,
-                                        ) => widget.onPlayerDrop(
-                                          context,
-                                          data,
-                                          droppedOnPlayer,
-                                          targetId,
-                                          sectionKind,
-                                          targetSectionIdx,
-                                          targetSubIdx,
-                                        ),
-                                  );
-                                }).toList(),
+                                children: playerList
+                                    .asMap()
+                                    .entries
+                                    .map<Widget>((entry) {
+                                      int playerIndex = entry.key;
+                                      Player player = entry.value;
+                                      final String playerSectionId =
+                                          'unassigned_$playerIndex';
+                                      return PlayerDropZone(
+                                        player: player,
+                                        sectionId: playerSectionId,
+                                        sectionKind:
+                                            PlayerSectionKind.unassigned.value,
+                                        sectionIndex: -1,
+                                        subIndex: playerIndex,
+                                        onPlayerDropped:
+                                            (
+                                              data,
+                                              droppedOnPlayer,
+                                              targetId,
+                                              sectionKind,
+                                              targetSectionIdx,
+                                              targetSubIdx,
+                                            ) => widget.onPlayerDrop(
+                                              context,
+                                              data,
+                                              droppedOnPlayer,
+                                              targetId,
+                                              sectionKind,
+                                              targetSectionIdx,
+                                              targetSubIdx,
+                                            ),
+                                      );
+                                    })
+                                    .toList(),
                               ),
                             ),
                           ),
@@ -263,15 +288,15 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                             ? Colors.black.withAlpha(50)
                             : Colors.black.withAlpha(25),
                         borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.delete,
-                    color: Colors.white,
-                    size: isTablet ? 50.0 : 30.0,
-                  ),
-                );
-              },
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                        size: isTablet ? 50.0 : 30.0,
+                      ),
+                    );
+                  },
             ),
           ),
       ],
@@ -285,7 +310,6 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
     BaseColors baseColors,
     CourtColors courtColors,
   ) {
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       decoration: BoxDecoration(
@@ -405,7 +429,9 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                     decoration: BoxDecoration(
                       color: courtColors.waitingPanelSortBtnBg,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: courtColors.waitingPanelSortBtnBorder),
+                      border: Border.all(
+                        color: courtColors.waitingPanelSortBtnBorder,
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -431,7 +457,11 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                   )
                 : Padding(
                     padding: const EdgeInsets.all(4.0),
-                    child: Icon(Icons.sort, size: 24.0, color: baseColors.textSecondary),
+                    child: Icon(
+                      Icons.sort,
+                      size: 24.0,
+                      color: baseColors.textSecondary,
+                    ),
                   ),
           ),
         ],
@@ -564,9 +594,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
               },
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12.0,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 decoration: BoxDecoration(
                   color: courtColors.waitingPanelSortBtnBg,
                   borderRadius: BorderRadius.circular(16),

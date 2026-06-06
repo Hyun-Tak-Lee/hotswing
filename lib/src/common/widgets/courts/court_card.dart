@@ -42,7 +42,31 @@ class CourtCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final playerGrid = Column(
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(child: _buildDropZone(context, 0)),
+              Expanded(child: _buildDropZone(context, 1)),
+            ],
+          ),
+        ),
+        SizedBox(height: isTablet ? 4.0 : 4.0),
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(child: _buildDropZone(context, 2)),
+              Expanded(child: _buildDropZone(context, 3)),
+            ],
+          ),
+        ),
+      ],
+    );
 
     return Container(
       margin: EdgeInsets.symmetric(
@@ -57,10 +81,7 @@ class CourtCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            courtColors.courtCardBgStart,
-            courtColors.courtCardBgEnd,
-          ],
+          colors: [courtColors.courtCardBgStart, courtColors.courtCardBgEnd],
         ),
         boxShadow: [
           BoxShadow(
@@ -72,7 +93,7 @@ class CourtCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.0),
       ),
       child: Column(
-        mainAxisSize: isLandscape ? MainAxisSize.max : MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         children: [
           // 헤더: 코트 이름 + 액션 버튼들
           FittedBox(
@@ -103,49 +124,7 @@ class CourtCard extends StatelessWidget {
           ),
           const SizedBox(height: 4.0),
           // 코트 내부: 4개의 PlayerDropZone
-          isLandscape
-              ? Expanded(
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(child: _buildDropZone(context, 0)),
-                            Expanded(child: _buildDropZone(context, 1)),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: isTablet ? 4.0 : 4.0),
-                      Expanded(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(child: _buildDropZone(context, 2)),
-                            Expanded(child: _buildDropZone(context, 3)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(child: _buildDropZone(context, 0)),
-                        Expanded(child: _buildDropZone(context, 1)),
-                      ],
-                    ),
-                    SizedBox(height: isTablet ? 4.0 : 4.0),
-                    Row(
-                      children: [
-                        Expanded(child: _buildDropZone(context, 2)),
-                        Expanded(child: _buildDropZone(context, 3)),
-                      ],
-                    ),
-                  ],
-                ),
+          Expanded(child: playerGrid),
         ],
       ),
     );

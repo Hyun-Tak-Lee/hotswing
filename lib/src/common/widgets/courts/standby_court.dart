@@ -36,386 +36,465 @@ class StandbyCourtSectionsView extends StatelessWidget {
     final isTablet = ResponsiveUtils.isTablet(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
     final sectionData = playersProvider.standbyPlayers;
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
-    return Align(
-      alignment: Alignment.topCenter,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 10.0),
-        child: SingleChildScrollView(
-          scrollDirection: isLandscape ? Axis.horizontal : Axis.vertical,
-          child: isLandscape
-              ? Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ...sectionData.asMap().entries.map((entry) {
-                      int sectionIndex = entry.key;
-                      List<Player?> item = entry.value;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double maxHeight = constraints.maxHeight;
+        final double courtWidth = isLandscape
+            ? (isTablet
+                  ? ((maxHeight - 66.0) * 1.15 + 20.0).clamp(380.0, 520.0)
+                  : ((maxHeight - 54.0) * 1.05 + 20.0).clamp(260.0, 360.0))
+            : (constraints.maxWidth - 20.0);
 
-                      return SizedBox(
-                        width: isTablet ? 400.0 : 280.0,
-                        child: CourtCard(
-                          sectionIndex: sectionIndex,
-                          players: item,
-                          sectionKind: 'standby',
-                          onPlayerDrop: onPlayerDrop,
-                          onCourtPlayerDragStarted: onCourtPlayerDragStarted,
-                          onCourtPlayerDragEnded: onCourtPlayerDragEnded,
-                          onPlayerRemoved: (courtIndex, playerIndex) {
-                            final removed = playersProvider.removeStandbyPlayer(
-                              courtIndex,
-                              playerIndex,
-                            );
-                            if (removed != null) {
-                              playersProvider.addUnassignedPlayer(removed);
-                            }
-                          },
-                          headerActions: [
-                            // 새로고침 버튼
-                            _buildGradientButton(
-                              isTablet: isTablet,
-                              width: isTablet ? 50.0 : 40.0,
-                              height: isTablet ? 45.0 : 30.0,
-                              colors: [courtColors.btnRemoveStart, courtColors.btnRemoveEnd],
-                              onTap: () {
-                                playersProvider.movePlayersFromCourtToUnassigned(
-                                  sectionIndex: sectionIndex,
-                                  targetCourtKind: PlayerSectionKind.standby.value,
-                                  played: 0,
-                                );
+        final double courtHeight = isLandscape
+            ? maxHeight
+            : (isTablet
+                  ? (courtWidth * 0.95).clamp(320.0, 500.0)
+                  : (courtWidth * 0.95).clamp(260.0, 380.0));
+
+        final alignment = isLandscape
+            ? Alignment.centerRight
+            : Alignment.topCenter;
+
+        return Align(
+          alignment: alignment,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: SingleChildScrollView(
+              scrollDirection: isLandscape ? Axis.horizontal : Axis.vertical,
+              child: isLandscape
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ...sectionData.asMap().entries.map((entry) {
+                          int sectionIndex = entry.key;
+                          List<Player?> item = entry.value;
+
+                          return SizedBox(
+                            width: courtWidth,
+                            height: isLandscape ? maxHeight : null,
+                            child: CourtCard(
+                              sectionIndex: sectionIndex,
+                              players: item,
+                              sectionKind: 'standby',
+                              onPlayerDrop: onPlayerDrop,
+                              onCourtPlayerDragStarted:
+                                  onCourtPlayerDragStarted,
+                              onCourtPlayerDragEnded: onCourtPlayerDragEnded,
+                              onPlayerRemoved: (courtIndex, playerIndex) {
+                                final removed = playersProvider
+                                    .removeStandbyPlayer(
+                                      courtIndex,
+                                      playerIndex,
+                                    );
+                                if (removed != null) {
+                                  playersProvider.addUnassignedPlayer(removed);
+                                }
                               },
-                              child: Icon(
-                                Icons.group_remove,
-                                size: isTablet ? 24.0 : 18.0,
-                                color: Colors.white,
-                              ),
-                            ),
-                            // 자동 매칭 버튼
-                            _buildGradientButton(
-                              isTablet: isTablet,
-                              width: isTablet ? 120.0 : 80.0,
-                              height: isTablet ? 45.0 : 30.0,
-                              colors: [courtColors.btnAutoMatchStart, courtColors.btnAutoMatchEnd],
-                              onTap: () {
-                                playersProvider.assignNextPlayersToStandbyCourt(
-                                  sectionIndex,
-                                );
-                              },
-                              child: Text(
-                                '자동 매칭',
-                                style: TextStyle(
-                                  fontSize: isTablet ? 20.0 : 12.0,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            // 코트 삭제 버튼
-                            _buildGradientButton(
-                              isTablet: isTablet,
-                              width: isTablet ? 50.0 : 40.0,
-                              height: isTablet ? 45.0 : 30.0,
-                              colors: [courtColors.btnRemoveCourtStart, courtColors.btnRemoveCourtEnd],
-                              onTap: () =>
-                                  playersProvider.removeStandByPlayers(sectionIndex),
-                              child: Icon(
-                                Icons.remove,
-                                size: isTablet ? 24.0 : 18.0,
-                                color: Colors.white,
-                              ),
-                            ),
-                            PopupMenuButton<int>(
-                              tooltip: '코트 이동/교환',
-                              color: baseColors.cardBg,
-                              elevation: 6,
-                              offset: const Offset(0, 40),
-                              constraints: const BoxConstraints(
-                                minWidth: 80,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              onSelected: (int targetIndex) {
-                                playersProvider.swapStandbyCourts(
-                                  sectionIndex,
-                                  targetIndex,
-                                );
-                              },
-                              itemBuilder: (BuildContext context) {
-                                return List.generate(sectionData.length, (index) {
-                                  if (index == sectionIndex) return null;
-                                  return PopupMenuItem<int>(
-                                    value: index,
-                                    height: 40,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.swap_horiz_rounded,
-                                          color: baseColors.primaryAccent,
-                                          size: isTablet ? 24 : 20,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          '${index + 1}번 코트와 교환',
-                                          style: TextStyle(
-                                            fontSize: isTablet ? 16.0 : 14.0,
-                                            color: baseColors.textPrimary,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).whereType<PopupMenuEntry<int>>().toList();
-                              },
-                              child: IgnorePointer(
-                                child: _buildGradientButton(
+                              headerActions: [
+                                // 새로고침 버튼
+                                _buildGradientButton(
                                   isTablet: isTablet,
                                   width: isTablet ? 50.0 : 40.0,
                                   height: isTablet ? 45.0 : 30.0,
-                                  colors: [courtColors.btnSwapStart, courtColors.btnSwapEnd],
-                                  onTap: () {},
+                                  colors: [
+                                    courtColors.btnRemoveStart,
+                                    courtColors.btnRemoveEnd,
+                                  ],
+                                  onTap: () {
+                                    playersProvider
+                                        .movePlayersFromCourtToUnassigned(
+                                          sectionIndex: sectionIndex,
+                                          targetCourtKind:
+                                              PlayerSectionKind.standby.value,
+                                          played: 0,
+                                        );
+                                  },
                                   child: Icon(
-                                    Icons.swap_horiz,
+                                    Icons.group_remove,
                                     size: isTablet ? 24.0 : 18.0,
                                     color: Colors.white,
                                   ),
                                 ),
-                              ),
+                                // 자동 매칭 버튼
+                                _buildGradientButton(
+                                  isTablet: isTablet,
+                                  width: isTablet ? 120.0 : 80.0,
+                                  height: isTablet ? 45.0 : 30.0,
+                                  colors: [
+                                    courtColors.btnAutoMatchStart,
+                                    courtColors.btnAutoMatchEnd,
+                                  ],
+                                  onTap: () {
+                                    playersProvider
+                                        .assignNextPlayersToStandbyCourt(
+                                          sectionIndex,
+                                        );
+                                  },
+                                  child: Text(
+                                    '자동 매칭',
+                                    style: TextStyle(
+                                      fontSize: isTablet ? 20.0 : 12.0,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                // 코트 삭제 버튼
+                                _buildGradientButton(
+                                  isTablet: isTablet,
+                                  width: isTablet ? 50.0 : 40.0,
+                                  height: isTablet ? 45.0 : 30.0,
+                                  colors: [
+                                    courtColors.btnRemoveCourtStart,
+                                    courtColors.btnRemoveCourtEnd,
+                                  ],
+                                  onTap: () => playersProvider
+                                      .removeStandByPlayers(sectionIndex),
+                                  child: Icon(
+                                    Icons.remove,
+                                    size: isTablet ? 24.0 : 18.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                PopupMenuButton<int>(
+                                  tooltip: '코트 이동/교환',
+                                  color: baseColors.cardBg,
+                                  elevation: 6,
+                                  offset: const Offset(0, 40),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 80,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  onSelected: (int targetIndex) {
+                                    playersProvider.swapStandbyCourts(
+                                      sectionIndex,
+                                      targetIndex,
+                                    );
+                                  },
+                                  itemBuilder: (BuildContext context) {
+                                    return List.generate(
+                                      sectionData.length,
+                                      (index) {
+                                        if (index == sectionIndex) return null;
+                                        return PopupMenuItem<int>(
+                                          value: index,
+                                          height: 40,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.swap_horiz_rounded,
+                                                color: baseColors.primaryAccent,
+                                                size: isTablet ? 24 : 20,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                '${index + 1}번 코트와 교환',
+                                                style: TextStyle(
+                                                  fontSize: isTablet
+                                                      ? 16.0
+                                                      : 14.0,
+                                                  color: baseColors.textPrimary,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ).whereType<PopupMenuEntry<int>>().toList();
+                                  },
+                                  child: IgnorePointer(
+                                    child: _buildGradientButton(
+                                      isTablet: isTablet,
+                                      width: isTablet ? 50.0 : 40.0,
+                                      height: isTablet ? 45.0 : 30.0,
+                                      colors: [
+                                        courtColors.btnSwapStart,
+                                        courtColors.btnSwapEnd,
+                                      ],
+                                      onTap: () {},
+                                      child: Icon(
+                                        Icons.swap_horiz,
+                                        size: isTablet ? 24.0 : 18.0,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      );
-                    }),
-                    Container(
-                      margin: const EdgeInsets.all(5.0),
-                      width: isTablet ? 200.0 : 120.0,
-                      height: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            courtColors.standbyZoneBgStart,
-                            courtColors.standbyZoneBgEnd,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(20.0),
-                        border: Border.all(color: courtColors.standbyZoneBorder, width: 2.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(10),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(20.0),
-                          onTap: playersProvider.addStandByPlayers,
-                          child: Center(
-                            child: Icon(
-                              Icons.add,
-                              size: isTablet ? 60.0 : 40.0,
-                              color: courtColors.standbyZoneIcon,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: isTablet ? 200.0 : 100.0),
-                  ],
-                )
-              : Column(
-                  children: [
-                    ...sectionData.asMap().entries.map((entry) {
-                      int sectionIndex = entry.key;
-                      List<Player?> item = entry.value;
-
-                      return CourtCard(
-                        sectionIndex: sectionIndex,
-                        players: item,
-                        sectionKind: 'standby',
-                        onPlayerDrop: onPlayerDrop,
-                        onCourtPlayerDragStarted: onCourtPlayerDragStarted,
-                        onCourtPlayerDragEnded: onCourtPlayerDragEnded,
-                        onPlayerRemoved: (courtIndex, playerIndex) {
-                          final removed = playersProvider.removeStandbyPlayer(
-                            courtIndex,
-                            playerIndex,
                           );
-                          if (removed != null) {
-                            playersProvider.addUnassignedPlayer(removed);
-                          }
-                        },
-                        headerActions: [
-                          // 새로고침 버튼
-                          _buildGradientButton(
-                            isTablet: isTablet,
-                            width: isTablet ? 50.0 : 40.0,
-                            height: isTablet ? 45.0 : 30.0,
-                            colors: [courtColors.btnRemoveStart, courtColors.btnRemoveEnd],
-                            onTap: () {
-                              playersProvider.movePlayersFromCourtToUnassigned(
-                                sectionIndex: sectionIndex,
-                                targetCourtKind: PlayerSectionKind.standby.value,
-                                played: 0,
-                              );
-                            },
-                            child: Icon(
-                              Icons.group_remove,
-                              size: isTablet ? 24.0 : 18.0,
-                              color: Colors.white,
+                        }),
+                        Container(
+                          margin: const EdgeInsets.all(5.0),
+                          width: isTablet ? 200.0 : 120.0,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                courtColors.standbyZoneBgStart,
+                                courtColors.standbyZoneBgEnd,
+                              ],
                             ),
-                          ),
-                          // 자동 매칭 버튼
-                          _buildGradientButton(
-                            isTablet: isTablet,
-                            width: isTablet ? 120.0 : 80.0,
-                            height: isTablet ? 45.0 : 30.0,
-                            colors: [courtColors.btnAutoMatchStart, courtColors.btnAutoMatchEnd],
-                            onTap: () {
-                              playersProvider.assignNextPlayersToStandbyCourt(
-                                sectionIndex,
-                              );
-                            },
-                            child: Text(
-                              '자동 매칭',
-                              style: TextStyle(
-                                fontSize: isTablet ? 20.0 : 12.0,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                            borderRadius: BorderRadius.circular(20.0),
+                            border: Border.all(
+                              color: courtColors.standbyZoneBorder,
+                              width: 2.0,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(10),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
-                            ),
+                            ],
                           ),
-                          // 코트 삭제 버튼
-                          _buildGradientButton(
-                            isTablet: isTablet,
-                            width: isTablet ? 50.0 : 40.0,
-                            height: isTablet ? 45.0 : 30.0,
-                            colors: [courtColors.btnRemoveCourtStart, courtColors.btnRemoveCourtEnd],
-                            onTap: () =>
-                                playersProvider.removeStandByPlayers(sectionIndex),
-                            child: Icon(
-                              Icons.remove,
-                              size: isTablet ? 24.0 : 18.0,
-                              color: Colors.white,
-                            ),
-                          ),
-                          PopupMenuButton<int>(
-                            tooltip: '코트 이동/교환',
-                            color: baseColors.cardBg,
-                            elevation: 6,
-                            offset: const Offset(0, 40),
-                            constraints: const BoxConstraints(
-                              minWidth: 80,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            onSelected: (int targetIndex) {
-                              playersProvider.swapStandbyCourts(
-                                sectionIndex,
-                                targetIndex,
-                              );
-                            },
-                            itemBuilder: (BuildContext context) {
-                              return List.generate(sectionData.length, (index) {
-                                if (index == sectionIndex) return null;
-                                return PopupMenuItem<int>(
-                                  value: index,
-                                  height: 40,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.swap_horiz_rounded,
-                                        color: baseColors.primaryAccent,
-                                        size: isTablet ? 24 : 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        '${index + 1}번 코트와 교환',
-                                        style: TextStyle(
-                                          fontSize: isTablet ? 16.0 : 14.0,
-                                          color: baseColors.textPrimary,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }).whereType<PopupMenuEntry<int>>().toList();
-                            },
-                            child: IgnorePointer(
-                              child: _buildGradientButton(
-                                isTablet: isTablet,
-                                width: isTablet ? 50.0 : 40.0,
-                                height: isTablet ? 45.0 : 30.0,
-                                colors: [courtColors.btnSwapStart, courtColors.btnSwapEnd],
-                                onTap: () {},
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(20.0),
+                              onTap: playersProvider.addStandByPlayers,
+                              child: Center(
                                 child: Icon(
-                                  Icons.swap_horiz,
-                                  size: isTablet ? 24.0 : 18.0,
-                                  color: Colors.white,
+                                  Icons.add,
+                                  size: isTablet ? 60.0 : 40.0,
+                                  color: courtColors.standbyZoneIcon,
                                 ),
                               ),
                             ),
                           ),
-                        ],
-                      );
-                    }),
-                    Container(
-                      margin: const EdgeInsets.all(5.0),
-                      height: isTablet ? 150.0 : 100.0,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            courtColors.standbyZoneBgStart,
-                            courtColors.standbyZoneBgEnd,
-                          ],
                         ),
-                        borderRadius: BorderRadius.circular(20.0),
-                        border: Border.all(color: courtColors.standbyZoneBorder, width: 2.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(10),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                        if (sectionData.isNotEmpty)
+                          SizedBox(width: isTablet ? 200.0 : 100.0),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        ...sectionData.asMap().entries.map((entry) {
+                          int sectionIndex = entry.key;
+                          List<Player?> item = entry.value;
+
+                          return SizedBox(
+                            width: courtWidth,
+                            height: courtHeight,
+                            child: CourtCard(
+                              sectionIndex: sectionIndex,
+                              players: item,
+                              sectionKind: 'standby',
+                              onPlayerDrop: onPlayerDrop,
+                              onCourtPlayerDragStarted:
+                                  onCourtPlayerDragStarted,
+                              onCourtPlayerDragEnded: onCourtPlayerDragEnded,
+                              onPlayerRemoved: (courtIndex, playerIndex) {
+                                final removed = playersProvider
+                                    .removeStandbyPlayer(
+                                      courtIndex,
+                                      playerIndex,
+                                    );
+                                if (removed != null) {
+                                  playersProvider.addUnassignedPlayer(removed);
+                                }
+                              },
+                              headerActions: [
+                                // 새로고침 버튼
+                                _buildGradientButton(
+                                  isTablet: isTablet,
+                                  width: isTablet ? 50.0 : 40.0,
+                                  height: isTablet ? 45.0 : 30.0,
+                                  colors: [
+                                    courtColors.btnRemoveStart,
+                                    courtColors.btnRemoveEnd,
+                                  ],
+                                  onTap: () {
+                                    playersProvider
+                                        .movePlayersFromCourtToUnassigned(
+                                          sectionIndex: sectionIndex,
+                                          targetCourtKind:
+                                              PlayerSectionKind.standby.value,
+                                          played: 0,
+                                        );
+                                  },
+                                  child: Icon(
+                                    Icons.group_remove,
+                                    size: isTablet ? 24.0 : 18.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                // 자동 매칭 버튼
+                                _buildGradientButton(
+                                  isTablet: isTablet,
+                                  width: isTablet ? 120.0 : 80.0,
+                                  height: isTablet ? 45.0 : 30.0,
+                                  colors: [
+                                    courtColors.btnAutoMatchStart,
+                                    courtColors.btnAutoMatchEnd,
+                                  ],
+                                  onTap: () {
+                                    playersProvider
+                                        .assignNextPlayersToStandbyCourt(
+                                          sectionIndex,
+                                        );
+                                  },
+                                  child: Text(
+                                    '자동 매칭',
+                                    style: TextStyle(
+                                      fontSize: isTablet ? 20.0 : 12.0,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                // 코트 삭제 버튼
+                                _buildGradientButton(
+                                  isTablet: isTablet,
+                                  width: isTablet ? 50.0 : 40.0,
+                                  height: isTablet ? 45.0 : 30.0,
+                                  colors: [
+                                    courtColors.btnRemoveCourtStart,
+                                    courtColors.btnRemoveCourtEnd,
+                                  ],
+                                  onTap: () => playersProvider
+                                      .removeStandByPlayers(sectionIndex),
+                                  child: Icon(
+                                    Icons.remove,
+                                    size: isTablet ? 24.0 : 18.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                PopupMenuButton<int>(
+                                  tooltip: '코트 이동/교환',
+                                  color: baseColors.cardBg,
+                                  elevation: 6,
+                                  offset: const Offset(0, 40),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 80,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  onSelected: (int targetIndex) {
+                                    playersProvider.swapStandbyCourts(
+                                      sectionIndex,
+                                      targetIndex,
+                                    );
+                                  },
+                                  itemBuilder: (BuildContext context) {
+                                    return List.generate(
+                                      sectionData.length,
+                                      (index) {
+                                        if (index == sectionIndex) return null;
+                                        return PopupMenuItem<int>(
+                                          value: index,
+                                          height: 40,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.swap_horiz_rounded,
+                                                color: baseColors.primaryAccent,
+                                                size: isTablet ? 24 : 20,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                '${index + 1}번 코트와 교환',
+                                                style: TextStyle(
+                                                  fontSize: isTablet
+                                                      ? 16.0
+                                                      : 14.0,
+                                                  color: baseColors.textPrimary,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ).whereType<PopupMenuEntry<int>>().toList();
+                                  },
+                                  child: IgnorePointer(
+                                    child: _buildGradientButton(
+                                      isTablet: isTablet,
+                                      width: isTablet ? 50.0 : 40.0,
+                                      height: isTablet ? 45.0 : 30.0,
+                                      colors: [
+                                        courtColors.btnSwapStart,
+                                        courtColors.btnSwapEnd,
+                                      ],
+                                      onTap: () {},
+                                      child: Icon(
+                                        Icons.swap_horiz,
+                                        size: isTablet ? 24.0 : 18.0,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                        Container(
+                          margin: const EdgeInsets.all(5.0),
+                          height: isTablet ? 150.0 : 100.0,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                courtColors.standbyZoneBgStart,
+                                courtColors.standbyZoneBgEnd,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(20.0),
+                            border: Border.all(
+                              color: courtColors.standbyZoneBorder,
+                              width: 2.0,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(10),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(20.0),
-                          onTap: playersProvider.addStandByPlayers,
-                          child: Center(
-                            child: Icon(
-                              Icons.add,
-                              size: isTablet ? 60.0 : 40.0,
-                              color: courtColors.standbyZoneIcon,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(20.0),
+                              onTap: playersProvider.addStandByPlayers,
+                              child: Center(
+                                child: Icon(
+                                  Icons.add,
+                                  size: isTablet ? 60.0 : 40.0,
+                                  color: courtColors.standbyZoneIcon,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                        if (sectionData.isNotEmpty)
+                          SizedBox(height: isTablet ? 600.0 : 300.0),
+                      ],
                     ),
-                    SizedBox(height: isTablet ? 600.0 : 300.0),
-                  ],
-                ),
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 
