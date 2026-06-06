@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:realm/realm.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/models/options/option.dart';
 
@@ -120,7 +121,17 @@ class CourtAssignService {
 
     final pairsWithScore = _generateScoredPairs(unassignedPlayers);
 
-    // 상대 팀(첫 번째 팀)과의 매칭 페널티 및 성별 보너스 적용
+    _applyTeamMatchModifiers(pairsWithScore, firstTeamPlayers);
+
+    if (pairsWithScore.isEmpty) return [];
+    return _selectTopCandidate<List<Player>>(pairsWithScore, 'pair') ?? [];
+  }
+
+  /// 상대 팀(첫 번째 팀)과의 매칭 페널티 및 성별, 실력 보너스를 두 번째 팀 후보군에 적용
+  void _applyTeamMatchModifiers(
+    List<Map<String, dynamic>> pairsWithScore,
+    List<Player> firstTeamPlayers,
+  ) {
     for (var entry in pairsWithScore) {
       final playerA = (entry['pair'] as List<Player>)[0];
       final playerB = (entry['pair'] as List<Player>)[1];
@@ -144,9 +155,6 @@ class CourtAssignService {
 
       entry['score'] = (entry['score'] as double) + teamModifier;
     }
-
-    if (pairsWithScore.isEmpty) return [];
-    return _selectTopCandidate<List<Player>>(pairsWithScore, 'pair') ?? [];
   }
 
   /// 3명의 플레이어가 있을 때 3명 중 매칭 점수가 가장 높은 2명을 한 팀으로 가정한 뒤,
@@ -208,10 +216,7 @@ class CourtAssignService {
   /// 코트가 비어있을 때 4명을 완전히 새로 매칭하는 헬퍼 메서드
   List<Player> _assignForEmptyCourt({required List<Player> unassignedPlayers}) {
     // 최적의 첫 번째 팀 선정
-    final firstTeam = getBestMatchPair(
-      unassignedPlayers: unassignedPlayers,
-      currentPlayersOnCourt: const [], // 빈 리스트
-    );
+    final firstTeam = getBestMatchPair(unassignedPlayers: unassignedPlayers);
 
     if (firstTeam.isEmpty) return [];
 
@@ -230,10 +235,7 @@ class CourtAssignService {
   }
 
   /// 점수가 가장 높은 최적의 팀(페어) 하나를 반환 (최상위 2개 팀 중 랜덤 선택)
-  List<Player> getBestMatchPair({
-    required List<Player> unassignedPlayers,
-    required List<Player> currentPlayersOnCourt,
-  }) {
+  List<Player> getBestMatchPair({required List<Player> unassignedPlayers}) {
     final pairs = _generateScoredPairs(unassignedPlayers);
     if (pairs.isEmpty) return [];
     return _selectTopCandidate<List<Player>>(pairs, 'pair') ?? [];
@@ -292,11 +294,6 @@ class CourtAssignService {
       return target.groups.contains(candidate.id);
     }
     return candidate.groups.isEmpty;
-  }
-
-  /// 대상 플레이어와 후보 플레이어가 일치하는 그룹 멤버인지 확인
-  bool _isExactGroupMatch(Player target, Player candidate) {
-    return target.groups.isNotEmpty && target.groups.contains(candidate.id);
   }
 
   /// 상대팀(opponents)과의 중복 플레이 경험에 따른 페널티 계산
@@ -455,13 +452,252 @@ class CourtAssignService {
   Player? _selectBestManagerCandidate(List<Player> players) {
     if (players.isEmpty) return null;
 
-    final managers = players.where((p) => p.role == 'manager').toList();
-    if (managers.isEmpty) return null;
-
-    return managers.reduce((a, b) {
+    return players.reduce((a, b) {
       final scoreA = (a.played + a.lated) * 1.0 - (a.waited * 0.15);
       final scoreB = (b.played + b.lated) * 1.0 - (b.waited * 0.15);
       return scoreA > scoreB ? a : b;
     });
+  }
+
+  List<Player> getRecommendedPlayersForClubMatch({
+    required List<Player> unassignedPlayers,
+    required List<Player> currentPlayersOnCourt,
+    required Map<ObjectId, String> playerGroupLabels,
+  }) {
+    // 1. 비활성화 및 그룹이 없는 유저 필터링
+    List<Player> activePlayers = unassignedPlayers
+        .where((p) => p.activate && playerGroupLabels.containsKey(p.id))
+        .toList();
+
+    // 2. 전체 활성 유저를 대상으로 매칭 시도 및 결과 반환
+    return _matchPlayersForClub(
+      availablePlayers: activePlayers,
+      currentPlayersOnCourt: currentPlayersOnCourt,
+      playerGroupLabels: playerGroupLabels,
+    );
+  }
+
+  List<Player> _matchPlayersForClub({
+    required List<Player> availablePlayers,
+    required List<Player> currentPlayersOnCourt,
+    required Map<ObjectId, String> playerGroupLabels,
+  }) {
+    switch (currentPlayersOnCourt.length) {
+      case 1:
+        return _assignForOnePlayerOnCourtForClubMatch(
+          unassignedPlayers: availablePlayers,
+          currentPlayersOnCourt: currentPlayersOnCourt,
+          playerGroupLabels: playerGroupLabels,
+        );
+      case 2:
+        return _getBestMatchSecondPairForClubMatch(
+          unassignedPlayers: availablePlayers,
+          firstTeamPlayers: currentPlayersOnCourt,
+          playerGroupLabels: playerGroupLabels,
+        );
+      case 3:
+        final fourthPlayer = _getBestMatchForThreePlayersForClubMatch(
+          existingPlayers: currentPlayersOnCourt,
+          unassignedPlayers: availablePlayers,
+          playerGroupLabels: playerGroupLabels,
+        );
+        return fourthPlayer != null ? [fourthPlayer] : [];
+      default:
+        return _assignForEmptyCourtForClubMatch(
+          unassignedPlayers: availablePlayers,
+          playerGroupLabels: playerGroupLabels,
+        );
+    }
+  }
+
+  List<Player> _assignForEmptyCourtForClubMatch({
+    required List<Player> unassignedPlayers,
+    required Map<ObjectId, String> playerGroupLabels,
+  }) {
+    final pairs = _generateScoredPairsForClubMatch(
+      players: unassignedPlayers,
+      playerGroupLabels: playerGroupLabels,
+    );
+    if (pairs.isEmpty) return [];
+
+    final firstTeam = _selectTopCandidate<List<Player>>(pairs, 'pair');
+    if (firstTeam == null || firstTeam.isEmpty) return [];
+    if (!playerGroupLabels.containsKey(firstTeam.first.id)) return [];
+
+    final firstTeamIds = firstTeam.map((p) => p.id.hexString).toSet();
+    final remainingPlayers = unassignedPlayers
+        .where((p) => !firstTeamIds.contains(p.id.hexString))
+        .toList();
+
+    final secondTeam = _getBestMatchSecondPairForClubMatch(
+      unassignedPlayers: remainingPlayers,
+      firstTeamPlayers: firstTeam,
+      playerGroupLabels: playerGroupLabels,
+    );
+
+    return [...firstTeam, ...secondTeam];
+  }
+
+  List<Player> _assignForOnePlayerOnCourtForClubMatch({
+    required List<Player> unassignedPlayers,
+    required List<Player> currentPlayersOnCourt,
+    required Map<ObjectId, String> playerGroupLabels,
+  }) {
+    final firstPlayer = currentPlayersOnCourt.first;
+    final firstPlayerGroup = playerGroupLabels[firstPlayer.id];
+    if (firstPlayerGroup == null) return [];
+
+    final secondPlayer = _getBestMatchPartnerForClubMatch(
+      targetPlayer: firstPlayer,
+      unassignedPlayers: unassignedPlayers,
+      playerGroupLabels: playerGroupLabels,
+    );
+    if (secondPlayer == null) return [];
+
+    final firstTeam = [firstPlayer, secondPlayer];
+    final remainingPlayers = unassignedPlayers
+        .where((p) => p.id.hexString != secondPlayer.id.hexString)
+        .toList();
+
+    final secondTeam = _getBestMatchSecondPairForClubMatch(
+      unassignedPlayers: remainingPlayers,
+      firstTeamPlayers: firstTeam,
+      playerGroupLabels: playerGroupLabels,
+    );
+
+    return [secondPlayer, ...secondTeam];
+  }
+
+  Player? _getBestMatchPartnerForClubMatch({
+    required Player targetPlayer,
+    required List<Player> unassignedPlayers,
+    required Map<ObjectId, String> playerGroupLabels,
+  }) {
+    final targetGroup = playerGroupLabels[targetPlayer.id];
+    if (targetGroup == null) return null;
+
+    final candidates = <Map<String, dynamic>>[];
+    for (var player in unassignedPlayers) {
+      if (playerGroupLabels[player.id] == targetGroup) {
+        double score = calculatePairScore(targetPlayer, player);
+        candidates.add({'player': player, 'score': score});
+      }
+    }
+
+    if (candidates.isEmpty) return null;
+    return _selectTopCandidate<Player>(candidates, 'player');
+  }
+
+  List<Player> _getBestMatchSecondPairForClubMatch({
+    required List<Player> unassignedPlayers,
+    required List<Player> firstTeamPlayers,
+    required Map<ObjectId, String> playerGroupLabels,
+  }) {
+    final firstTeamGroups = firstTeamPlayers
+        .map((p) => playerGroupLabels[p.id])
+        .whereType<String>()
+        .toSet();
+
+    final eligiblePlayers = unassignedPlayers
+        .where((p) => !firstTeamGroups.contains(playerGroupLabels[p.id]))
+        .toList();
+
+    if (eligiblePlayers.length < 2) return [];
+
+    final pairsWithScore = _generateScoredPairsForClubMatch(
+      players: eligiblePlayers,
+      playerGroupLabels: playerGroupLabels,
+    );
+
+    if (pairsWithScore.isEmpty) return [];
+
+    _applyTeamMatchModifiers(pairsWithScore, firstTeamPlayers);
+
+    return _selectTopCandidate<List<Player>>(pairsWithScore, 'pair') ?? [];
+  }
+
+  Player? _getBestMatchForThreePlayersForClubMatch({
+    required List<Player> existingPlayers,
+    required List<Player> unassignedPlayers,
+    required Map<ObjectId, String> playerGroupLabels,
+  }) {
+    if (unassignedPlayers.isEmpty || existingPlayers.length < 3) return null;
+
+    // 1. 코트 위 플레이어들의 그룹별 인원수 계산
+    final groupCounts = <String, int>{};
+    for (var p in existingPlayers) {
+      final g = playerGroupLabels[p.id];
+      if (g != null) {
+        groupCounts[g] = (groupCounts[g] ?? 0) + 1;
+      }
+    }
+
+    // 2. 2대1 구조에서 1명만 있는 그룹(targetGroup) 찾기
+    // 코트 위에 2명인 그룹이 없으면 매칭을 진행하지 않음
+    if (!groupCounts.values.contains(2)) return null;
+
+    String? targetGroup;
+    for (var entry in groupCounts.entries) {
+      if (entry.value == 1) {
+        targetGroup = entry.key;
+        break;
+      }
+    }
+
+    if (targetGroup == null) return null;
+
+    // 1명만 있는 그룹에 속한 코트 위 플레이어(partner) 식별
+    final partner = existingPlayers.firstWhere(
+      (p) => playerGroupLabels[p.id] == targetGroup,
+      orElse: () => existingPlayers.first,
+    );
+
+    // 상대 팀 2명 (2명인 그룹의 플레이어들)
+    final opponents = existingPlayers.where((p) => p.id != partner.id).toList();
+
+    // 3. 대기자 중 targetGroup과 동일한 그룹의 플레이어 후보 필터링 및 점수 계산
+    final candidates = <Map<String, dynamic>>[];
+    for (var candidate in unassignedPlayers) {
+      final candGroup = playerGroupLabels[candidate.id];
+      if (candGroup == targetGroup) {
+        double score = calculatePairScore(partner, candidate);
+        score += _calculatePlayedWithPenalty(candidate, opponents);
+        score += _calculateTeamGenderBonus(opponents, [partner, candidate]);
+        score += _calculateTeamRateBonus(opponents, [partner, candidate]);
+
+        candidates.add({'player': candidate, 'score': score});
+      }
+    }
+
+    if (candidates.isEmpty) return null;
+    return _selectTopCandidate<Player>(candidates, 'player');
+  }
+
+  List<Map<String, dynamic>> _generateScoredPairsForClubMatch({
+    required List<Player> players,
+    required Map<ObjectId, String> playerGroupLabels,
+  }) {
+    final List<Map<String, dynamic>> pairsWithScore = [];
+    final length = players.length;
+
+    for (int i = 0; i < length; i++) {
+      final playerA = players[i];
+      final groupA = playerGroupLabels[playerA.id];
+      if (groupA == null) continue;
+
+      for (int j = i + 1; j < length; j++) {
+        final playerB = players[j];
+        final groupB = playerGroupLabels[playerB.id];
+        if (groupB == null) continue;
+
+        if (groupA == groupB) {
+          pairsWithScore.add({
+            'pair': [playerA, playerB],
+            'score': calculatePairScore(playerA, playerB),
+          });
+        }
+      }
+    }
+    return pairsWithScore;
   }
 }

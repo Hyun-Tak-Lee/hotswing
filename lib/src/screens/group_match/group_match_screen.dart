@@ -126,7 +126,8 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
     final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
     final isMobileSize = !isTablet;
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
     final courtSectionWidget = isLandscape
         ? Row(
@@ -137,11 +138,13 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
                     onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
                     onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
                     onPlayerDrop: _handlePlayerDrop,
+                    isClubMatch: true,
                   ),
                   CourtViewSection.standbyView => StandbyCourtSectionsView(
                     onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
                     onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
                     onPlayerDrop: _handlePlayerDrop,
+                    isClubMatch: true,
                   ),
                 },
               ),
@@ -173,11 +176,13 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
                     onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
                     onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
                     onPlayerDrop: _handlePlayerDrop,
+                    isClubMatch: true,
                   ),
                   CourtViewSection.standbyView => StandbyCourtSectionsView(
                     onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
                     onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
                     onPlayerDrop: _handlePlayerDrop,
+                    isClubMatch: true,
                   ),
                 },
               ),
@@ -200,30 +205,18 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Expanded(
-                  flex: 2,
-                  child: courtSectionWidget,
-                ),
+                Expanded(flex: 2, child: courtSectionWidget),
                 Divider(height: 1.0, color: courtColors.homeDivider),
-                Expanded(
-                  flex: 1,
-                  child: waitingPlayersPanelWidget,
-                ),
+                Expanded(flex: 1, child: waitingPlayersPanelWidget),
               ],
             )
           : Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Expanded(
-                  flex: 2,
-                  child: courtSectionWidget,
-                ),
+                Expanded(flex: 2, child: courtSectionWidget),
                 VerticalDivider(width: 1.0, color: courtColors.homeDivider),
-                Expanded(
-                  flex: 1,
-                  child: waitingPlayersPanelWidget,
-                ),
+                Expanded(flex: 1, child: waitingPlayersPanelWidget),
               ],
             ),
     );

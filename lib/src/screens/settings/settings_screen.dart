@@ -294,7 +294,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '운영진 대기 (운영진 1명일 시 OFF)',
+                                  '운영진 대기 (교류전 제외)',
                                   style: TextStyle(
                                     fontSize: iconAndFontSize,
                                     fontWeight: FontWeight.bold,

@@ -21,12 +21,14 @@ class StandbyCourtSectionsView extends StatelessWidget {
   onPlayerDrop;
   final VoidCallback onCourtPlayerDragStarted;
   final VoidCallback onCourtPlayerDragEnded;
+  final bool isClubMatch;
 
   const StandbyCourtSectionsView({
     super.key,
     required this.onPlayerDrop,
     required this.onCourtPlayerDragStarted,
     required this.onCourtPlayerDragEnded,
+    this.isClubMatch = false,
   });
 
   @override
@@ -131,6 +133,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                     playersProvider
                                         .assignNextPlayersToStandbyCourt(
                                           sectionIndex,
+                                          isClubMatch: isClubMatch,
                                         );
                                   },
                                   child: Text(
@@ -344,6 +347,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                     playersProvider
                                         .assignNextPlayersToStandbyCourt(
                                           sectionIndex,
+                                          isClubMatch: isClubMatch,
                                         );
                                   },
                                   child: Text(

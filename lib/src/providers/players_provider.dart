@@ -541,7 +541,25 @@ class PlayersProvider with ChangeNotifier {
         .toList();
   }
 
-  List<Player> getRecommendedPlayers(List<Player> currentPlayersOnCourt) {
+  List<Player> getRecommendedPlayers(
+    List<Player> currentPlayersOnCourt, {
+    bool isClubMatch = false,
+  }) {
+    if (isClubMatch) {
+      final Map<ObjectId, String> playerGroupLabels = {};
+      for (final player in _players.values) {
+        final info = getGroupInfo(player.id);
+        if (info != null) {
+          playerGroupLabels[player.id] = info.label;
+        }
+      }
+      return _courtService.getRecommendedPlayersForClubMatch(
+        unassignedPlayers: _unassignedPlayers,
+        currentPlayersOnCourt: currentPlayersOnCourt,
+        playerGroupLabels: playerGroupLabels,
+      );
+    }
+
     return _courtService.getRecommendedPlayersForCourt(
       unassignedPlayers: _unassignedPlayers,
       currentPlayersOnCourt: currentPlayersOnCourt,
@@ -581,15 +599,27 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void assignNextPlayersToAssignedCourt(int sectionIndex) {
+  void assignNextPlayersToAssignedCourt(
+    int sectionIndex, {
+    bool isClubMatch = false,
+  }) {
     List<Player> currentPlayers = getAssignedPlayersInCourt(sectionIndex);
-    List<Player> recommendedPlayers = getRecommendedPlayers(currentPlayers);
+    List<Player> recommendedPlayers = getRecommendedPlayers(
+      currentPlayers,
+      isClubMatch: isClubMatch,
+    );
     addPlayersToAssignedCourt(sectionIndex, recommendedPlayers);
   }
 
-  void assignNextPlayersToStandbyCourt(int sectionIndex) {
+  void assignNextPlayersToStandbyCourt(
+    int sectionIndex, {
+    bool isClubMatch = false,
+  }) {
     List<Player> currentPlayers = getStandbyPlayersInCourt(sectionIndex);
-    List<Player> recommendedPlayers = getRecommendedPlayers(currentPlayers);
+    List<Player> recommendedPlayers = getRecommendedPlayers(
+      currentPlayers,
+      isClubMatch: isClubMatch,
+    );
     addPlayersToStandbyCourt(sectionIndex, recommendedPlayers);
   }
 
@@ -707,7 +737,8 @@ class PlayersProvider with ChangeNotifier {
         ..sort((a, b) => a.toString().compareTo(b.toString()));
       final String groupKey = sortedIds.map((id) => id.toString()).join(',');
 
-      final String label = _customGroupNames[groupKey] ??
+      final String label =
+          _customGroupNames[groupKey] ??
           (String.fromCharCode(65 + (i % 26)) +
               (i >= 26 ? '${(i ~/ 26) + 1}' : ''));
       final color = groupPalette[i % groupPalette.length];

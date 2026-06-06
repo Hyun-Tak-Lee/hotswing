@@ -21,12 +21,14 @@ class CourtSectionsView extends StatelessWidget {
   onPlayerDrop;
   final VoidCallback onCourtPlayerDragStarted;
   final VoidCallback onCourtPlayerDragEnded;
+  final bool isClubMatch;
 
   const CourtSectionsView({
     super.key,
     required this.onPlayerDrop,
     required this.onCourtPlayerDragStarted,
     required this.onCourtPlayerDragEnded,
+    this.isClubMatch = false,
   });
 
   @override
@@ -119,6 +121,7 @@ class CourtSectionsView extends StatelessWidget {
                                   isTablet: isTablet,
                                   item: item,
                                   sectionIndex: sectionIndex,
+                                  isClubMatch: isClubMatch,
                                 )
                               else
                                 _buildGradientButton(
@@ -278,6 +281,7 @@ class CourtSectionsView extends StatelessWidget {
                                   isTablet: isTablet,
                                   item: item,
                                   sectionIndex: sectionIndex,
+                                  isClubMatch: isClubMatch,
                                 )
                               else
                                 _buildGradientButton(
@@ -428,12 +432,14 @@ class AutoMatchSplitButton extends StatefulWidget {
   final bool isTablet;
   final List<Player?> item;
   final int sectionIndex;
+  final bool isClubMatch;
 
   const AutoMatchSplitButton({
     super.key,
     required this.isTablet,
     required this.item,
     required this.sectionIndex,
+    this.isClubMatch = false,
   });
 
   @override
@@ -541,6 +547,7 @@ class _AutoMatchSplitButtonState extends State<AutoMatchSplitButton> {
                     onTap: () {
                       playersProvider.assignNextPlayersToAssignedCourt(
                         widget.sectionIndex,
+                        isClubMatch: widget.isClubMatch,
                       );
                     },
                     child: Center(
