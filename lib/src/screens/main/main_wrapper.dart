@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/screens/solo_match/solo_match_screen.dart';
 import 'package:hotswing/src/screens/group_match/group_match_screen.dart';
@@ -37,6 +39,19 @@ class _MainWrapperState extends State<MainWrapper> {
   }
 
   void _onDestinationSelected(int index) async {
+    final playersProvider = Provider.of<PlayersProvider>(
+      context,
+      listen: false,
+    );
+    // 개인전(0) <-> 교류전(1) 상호 전환 시 코트에 선수가 1명이라도 배정되어 있다면 전환을 차단합니다.
+    if ((_selectedIndex == 0 && index == 1) ||
+        (_selectedIndex == 1 && index == 0)) {
+      if (playersProvider.hasActivePlayers) {
+        _showMatchTypeConflictDialog(context);
+        return;
+      }
+    }
+
     if (index == 2) {
       // 플레이어 화면(index=2) 진입 시 인증 오버레이 띄우기
       if (!mounted) return;
@@ -57,16 +72,49 @@ class _MainWrapperState extends State<MainWrapper> {
     });
   }
 
+  void _showMatchTypeConflictDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+              SizedBox(width: 8),
+              Text(
+                '매칭 방식 전환 불가',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: const Text(
+            '코트에 플레이어가 배치되었을 경우 모드 변경이 불가능합니다',
+            style: TextStyle(fontSize: 15, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text(
+                '확인',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtils.isTablet(context);
     final baseColors = context.baseColors;
 
     // 다크모드 여부에 따른 그라데이션 배경색 정의
-    final gradientColors = [
-      baseColors.gradientStart,
-      baseColors.gradientEnd,
-    ];
+    final gradientColors = [baseColors.gradientStart, baseColors.gradientEnd];
 
     // 다크모드 여부에 따른 메인 컨텐츠 영역의 배경색
     final contentBgColor = baseColors.contentBg;

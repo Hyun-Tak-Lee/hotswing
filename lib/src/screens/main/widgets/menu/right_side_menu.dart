@@ -30,10 +30,7 @@ class RightSideMenu extends StatelessWidget {
             child: DrawerHeader(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    baseColors.gradientStart,
-                    baseColors.gradientEnd,
-                  ],
+                  colors: [baseColors.gradientStart, baseColors.gradientEnd],
                   // left_side_menu의 방향과 반대로 설정
                   begin: Alignment.topRight,
                   end: Alignment.bottomLeft,

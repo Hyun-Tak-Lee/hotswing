@@ -120,6 +120,16 @@ class PlayersProvider with ChangeNotifier {
     _customGroupNames.addAll(loadedNames);
   }
 
+  bool get hasActivePlayers {
+    for (var court in _assignedPlayers) {
+      if (court.any((p) => p != null)) return true;
+    }
+    for (var court in _standbyPlayers) {
+      if (court.any((p) => p != null)) return true;
+    }
+    return false;
+  }
+
   Map<ObjectId, Player> get players => Map.unmodifiable(_players);
 
   List<Player> get unassignedPlayers => List.unmodifiable(_unassignedPlayers);
