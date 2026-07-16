@@ -22,9 +22,13 @@ class CryptoUtils {
     String password,
     String secretKey,
   ) {
-    final combined = '$deviceId:$password:$secretKey';
-    final hash = generateHash(combined);
-    return 'encrypted:$hash';
+    final keyBytes = utf8.encode(secretKey);
+    final dataBytes = utf8.encode('$deviceId:$password');
+
+    final hmacSha256 = Hmac(sha256, keyBytes);
+    final digest = hmacSha256.convert(dataBytes);
+
+    return 'encrypted:$digest';
   }
 
   /// 암호화된 기기 ID + 비밀번호 검증 (기기 묶임용)
