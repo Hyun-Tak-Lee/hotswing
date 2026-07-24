@@ -735,38 +735,3 @@ class PlayerDropZone extends StatelessWidget {
     );
   }
 }
-
-class _MiniGroupBadge extends StatelessWidget {
-  final String label;
-  final Color color;
-  final double fontSize;
-
-  const _MiniGroupBadge({
-    required this.label,
-    required this.color,
-    required this.fontSize,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(left: 6.0),
-      padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 1.5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.5), width: 0.8),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.bold,
-          color: color,
-          height: 1.0,
-          decoration: TextDecoration.none,
-        ),
-      ),
-    );
-  }
-}
