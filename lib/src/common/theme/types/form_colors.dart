@@ -146,8 +146,8 @@ class FormColors extends ThemeExtension<FormColors> {
   }
 
   @override
-  FormColors lerp(ThemeExtension<FormColors>? other, double t) {
-    if (other is! FormColors) {
+  FormColors lerp(covariant FormColors? other, double t) {
+    if (other == null) {
       return this;
     }
     return FormColors(
