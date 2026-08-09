@@ -42,8 +42,6 @@ class CourtCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
 
     final playerGrid = Column(
       mainAxisSize: MainAxisSize.max,
