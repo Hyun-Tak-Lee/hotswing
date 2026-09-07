@@ -94,8 +94,8 @@ class PlayerColors extends ThemeExtension<PlayerColors> {
   }
 
   @override
-  PlayerColors lerp(ThemeExtension<PlayerColors>? other, double t) {
-    if (other is! PlayerColors) {
+  PlayerColors lerp(covariant PlayerColors? other, double t) {
+    if (other == null) {
       return this;
     }
     return PlayerColors(

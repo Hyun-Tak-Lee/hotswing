@@ -50,8 +50,8 @@ class DialogColors extends ThemeExtension<DialogColors> {
   }
 
   @override
-  DialogColors lerp(ThemeExtension<DialogColors>? other, double t) {
-    if (other is! DialogColors) {
+  DialogColors lerp(covariant DialogColors? other, double t) {
+    if (other == null) {
       return this;
     }
     return DialogColors(

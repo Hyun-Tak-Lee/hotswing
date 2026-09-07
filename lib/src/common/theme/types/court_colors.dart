@@ -174,8 +174,8 @@ class CourtColors extends ThemeExtension<CourtColors> {
   }
 
   @override
-  CourtColors lerp(ThemeExtension<CourtColors>? other, double t) {
-    if (other is! CourtColors) {
+  CourtColors lerp(covariant CourtColors? other, double t) {
+    if (other == null) {
       return this;
     }
     return CourtColors(

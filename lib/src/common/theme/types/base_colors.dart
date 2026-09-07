@@ -86,8 +86,8 @@ class BaseColors extends ThemeExtension<BaseColors> {
   }
 
   @override
-  BaseColors lerp(ThemeExtension<BaseColors>? other, double t) {
-    if (other is! BaseColors) {
+  BaseColors lerp(covariant BaseColors? other, double t) {
+    if (other == null) {
       return this;
     }
     return BaseColors(
