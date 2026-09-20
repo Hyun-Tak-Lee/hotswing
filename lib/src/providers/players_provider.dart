@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/models/players/player.dart';
@@ -9,6 +11,9 @@ import 'package:hotswing/src/services/player_session_service.dart';
 import 'package:realm/realm.dart';
 
 class PlayersProvider with ChangeNotifier {
+  static const Duration _saveDebounceDuration = Duration(milliseconds: 300);
+  static const Duration _saveMaxWait = Duration(seconds: 1);
+
   late final CourtAssignService _courtService;
   final PlayerSessionService _sessionService = PlayerSessionService();
   final PlayerService _playerService = PlayerService();
@@ -23,6 +28,8 @@ class PlayersProvider with ChangeNotifier {
   Map<ObjectId, GroupInfo>? _cachedGroupInfo;
   List<Player>? _cachedSortedPlayers;
   final Map<String, String> _customGroupNames = {};
+  Timer? _saveDebounce;
+  DateTime? _pendingSince;
 
   @override
   void notifyListeners() {
@@ -36,6 +43,17 @@ class PlayersProvider with ChangeNotifier {
     _courtService = CourtAssignService(_options);
     initialized();
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _saveDebounce?.cancel();
+    _saveDebounce = null;
+    if (_pendingSince != null) {
+      _pendingSince = null;
+      _flushSave();
+    }
+    super.dispose();
   }
 
   void initialized() async {
@@ -105,8 +123,30 @@ class PlayersProvider with ChangeNotifier {
     updateAssignedPlayersListCount(initialCount);
   }
 
-  Future<void> _saveLoadedPlayers() async {
-    await _sessionService.saveSession(
+  void _saveLoadedPlayers() {
+    _saveDebounce?.cancel();
+
+    final now = DateTime.now();
+    // 최초 변경 발생 시점 기록 (연속 조작 중에는 최초 시점이 유지되어 최대 지연 시간 계산에 사용)
+    _pendingSince ??= now;
+
+    // 연속 조작이 계속되더라도 최대 대기 시간(1초)을 초과하면 강제 저장
+    if (now.difference(_pendingSince!) >= _saveMaxWait) {
+      _pendingSince = null;
+      _flushSave();
+      return;
+    }
+
+    // 300ms 동안 추가 조작이 없을 때 저장 수행
+    _saveDebounce = Timer(_saveDebounceDuration, () {
+      _pendingSince = null;
+      _saveDebounce = null;
+      _flushSave();
+    });
+  }
+
+  Future<void> _flushSave() {
+    return _sessionService.saveSession(
       players: _players,
       unassignedPlayers: _unassignedPlayers,
       assignedPlayers: _assignedPlayers,

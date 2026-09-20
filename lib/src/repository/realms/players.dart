@@ -101,6 +101,23 @@ class PlayerRepository {
     }
   }
 
+  /// 여러 플레이어의 groups를 단일 트랜잭션으로 갱신합니다.
+  void updatePlayersGroups(Map<Player, List<ObjectId>> playerGroups) {
+    if (playerGroups.isEmpty) return;
+    try {
+      _realm.write(() {
+        for (final entry in playerGroups.entries) {
+          entry.key.groups.clear();
+          entry.key.groups.addAll(entry.value);
+        }
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+  }
+
   void updateGamesPlayedWith({
     required Player currentPlayer,
     required List<Player?> playersInCourt,

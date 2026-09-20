@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/models/ui/player_drag_data.dart';
+import 'package:hotswing/src/models/ui/group_info.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/common/widgets/dialogs/game_played_dialog.dart';
 import 'package:provider/provider.dart';
@@ -37,8 +38,10 @@ class DraggablePlayerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final playersProvider = Provider.of<PlayersProvider>(context);
-    final groupInfo = playersProvider.getGroupInfo(player.id);
+    // 해당 플레이어의 그룹 정보가 변경될 때만 리빌드되도록 선별 구독
+    final groupInfo = context.select<PlayersProvider, GroupInfo?>(
+      (p) => p.getGroupInfo(player.id),
+    );
     final isTablet = ResponsiveUtils.isTablet(context);
     final baseColors = context.baseColors;
     final playerColors = context.playerColors;
@@ -410,6 +413,7 @@ class DraggablePlayerItem extends StatelessWidget {
         // 탭 기능을 추가하기 위해 GestureDetector로 감싼 위젯
         Widget interactivePlayerContent = GestureDetector(
           onTap: () {
+            final playersProvider = context.read<PlayersProvider>();
             final Map<String, int> newGamesPlayedWithMap = player
                 .gamesPlayedWith
                 .map((key, value) {

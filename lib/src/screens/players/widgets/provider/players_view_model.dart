@@ -74,10 +74,7 @@ class PlayersViewModel extends ChangeNotifier {
   }
 
   // 초기 데이터 로드 (필터 적용 포함)
-  Future<void> _loadInitialData() async {
-    _isLoading = true;
-    notifyListeners();
-
+  void _loadInitialData() {
     final queryBuilder = RealmQueryBuilder()
         .addStartsWithCondition('name', _searchQuery)
         .addInCondition('role', _selectedRoles.map((e) => e.value))

@@ -12,21 +12,19 @@ class PlayerService {
     ObjectId playerId,
   ) {
     final List<ObjectId> updateGroups = [playerId, ...groups];
+    final Map<Player, List<ObjectId>> playerGroups = {};
 
     for (int i = 1; i < updateGroups.length; i++) {
       ObjectId currentPlayerId = updateGroups[i];
       final Player? currentPlayer = player[currentPlayerId];
       if (currentPlayer != null) {
-        final List<ObjectId> otherPlayerIds = updateGroups
+        playerGroups[currentPlayer] = updateGroups
             .where((j) => j != currentPlayerId)
             .toList();
-
-        _playerRepository.updatePlayer(
-          player: currentPlayer,
-          groups: RealmList(otherPlayerIds),
-        );
       }
     }
+
+    _playerRepository.updatePlayersGroups(playerGroups);
   }
 
   void removeGroupPlayers(
@@ -35,14 +33,12 @@ class PlayerService {
     ObjectId playerId,
   ) {
     final List<ObjectId> updateGroups = [playerId, ...groups];
+    final Map<Player, List<ObjectId>> playerGroups = {};
 
-    // 삭제 대상 당사자 본인(playerId)의 그룹 정보를 데이터베이스에서 비워줍니다.
+    // 삭제 대상 당사자 본인(playerId)의 그룹 정보를 비웁니다.
     final Player? targetPlayer = player[playerId];
     if (targetPlayer != null) {
-      _playerRepository.updatePlayer(
-        player: targetPlayer,
-        groups: RealmList<ObjectId>([]),
-      );
+      playerGroups[targetPlayer] = [];
     }
 
     // 나머지 그룹원들의 그룹 목록에서 삭제된 플레이어(playerId)를 제외합니다.
@@ -50,16 +46,13 @@ class PlayerService {
       ObjectId currentPlayerId = updateGroups[i];
       final Player? currentPlayer = player[currentPlayerId];
       if (currentPlayer != null) {
-        final List<ObjectId> updatedPlayerGroups = currentPlayer.groups
+        playerGroups[currentPlayer] = currentPlayer.groups
             .where((id) => id != playerId)
             .toList();
-
-        _playerRepository.updatePlayer(
-          player: currentPlayer,
-          groups: RealmList(updatedPlayerGroups),
-        );
       }
     }
+
+    _playerRepository.updatePlayersGroups(playerGroups);
   }
 
   void clearPlayerGroup(Player player) {
