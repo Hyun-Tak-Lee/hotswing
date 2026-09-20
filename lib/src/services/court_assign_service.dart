@@ -41,9 +41,7 @@ class CourtAssignService {
           final bestManagerCandidate = _selectBestManagerCandidate(managers);
           if (bestManagerCandidate != null) {
             final activePlayersWithoutManager = activePlayers
-                .where(
-                  (p) => p.id.hexString != bestManagerCandidate.id.hexString,
-                )
+                .where((p) => p.id != bestManagerCandidate.id)
                 .toList();
             results = _matchPlayers(
               availablePlayers: activePlayersWithoutManager,
@@ -101,7 +99,7 @@ class CourtAssignService {
 
     final firstTeam = [currentPlayersOnCourt.first, secondPlayer];
     final remainingPlayers = unassignedPlayers
-        .where((p) => p.id.hexString != secondPlayer.id.hexString)
+        .where((p) => p.id != secondPlayer.id)
         .toList();
 
     final secondTeam = _getBestMatchSecondPair(
@@ -124,17 +122,17 @@ class CourtAssignService {
     _applyTeamMatchModifiers(pairsWithScore, firstTeamPlayers);
 
     if (pairsWithScore.isEmpty) return [];
-    return _selectTopCandidate<List<Player>>(pairsWithScore, 'pair') ?? [];
+    return _selectTopCandidate<List<Player>>(pairsWithScore) ?? [];
   }
 
   /// 상대 팀(첫 번째 팀)과의 매칭 페널티 및 성별, 실력 보너스를 두 번째 팀 후보군에 적용
   void _applyTeamMatchModifiers(
-    List<Map<String, dynamic>> pairsWithScore,
+    List<_Candidate<List<Player>>> pairsWithScore,
     List<Player> firstTeamPlayers,
   ) {
     for (var entry in pairsWithScore) {
-      final playerA = (entry['pair'] as List<Player>)[0];
-      final playerB = (entry['pair'] as List<Player>)[1];
+      final playerA = entry.item[0];
+      final playerB = entry.item[1];
 
       double teamModifier = 0.0;
       // 1. 중복 플레이 기반 페널티
@@ -153,7 +151,7 @@ class CourtAssignService {
         playerB,
       ]);
 
-      entry['score'] = (entry['score'] as double) + teamModifier;
+      entry.score += teamModifier;
     }
   }
 
@@ -187,12 +185,10 @@ class CourtAssignService {
 
     // 나머지 1명을 파트너로 설정
     final partner = existingPlayers.firstWhere(
-      (p) =>
-          p.id.hexString != bestOpponent1!.id.hexString &&
-          p.id.hexString != bestOpponent2!.id.hexString,
+      (p) => p.id != bestOpponent1!.id && p.id != bestOpponent2!.id,
     );
 
-    List<Map<String, dynamic>> candidates = [];
+    final candidates = <_Candidate<Player>>[];
 
     for (var candidate in unassignedPlayers) {
       // 그룹 매칭 유효성 검사
@@ -206,11 +202,11 @@ class CourtAssignService {
       score += _calculateTeamGenderBonus(opponents, [partner, candidate]);
       score += _calculateTeamRateBonus(opponents, [partner, candidate]);
 
-      candidates.add({'player': candidate, 'score': score});
+      candidates.add(_Candidate(candidate, score));
     }
 
     if (candidates.isEmpty) return null;
-    return _selectTopCandidate<Player>(candidates, 'player');
+    return _selectTopCandidate<Player>(candidates);
   }
 
   /// 코트가 비어있을 때 4명을 완전히 새로 매칭하는 헬퍼 메서드
@@ -221,9 +217,9 @@ class CourtAssignService {
     if (firstTeam.isEmpty) return [];
 
     // 나머지 인원에서 두 번째 팀 선정
-    final firstTeamIds = firstTeam.map((p) => p.id.hexString).toSet();
+    final firstTeamIds = firstTeam.map((p) => p.id).toSet();
     final remainingPlayers = unassignedPlayers
-        .where((p) => !firstTeamIds.contains(p.id.hexString))
+        .where((p) => !firstTeamIds.contains(p.id))
         .toList();
 
     final secondTeam = _getBestMatchSecondPair(
@@ -238,7 +234,7 @@ class CourtAssignService {
   List<Player> getBestMatchPair({required List<Player> unassignedPlayers}) {
     final pairs = _generateScoredPairs(unassignedPlayers);
     if (pairs.isEmpty) return [];
-    return _selectTopCandidate<List<Player>>(pairs, 'pair') ?? [];
+    return _selectTopCandidate<List<Player>>(pairs) ?? [];
   }
 
   /// 특정 플레이어와 가장 매칭 점수가 높은 1명을 반환
@@ -248,7 +244,7 @@ class CourtAssignService {
   }) {
     if (unassignedPlayers.isEmpty) return null;
 
-    List<Map<String, dynamic>> candidates = [];
+    final candidates = <_Candidate<Player>>[];
 
     for (var player in unassignedPlayers) {
       // 그룹 매칭 유효성 검사
@@ -256,36 +252,31 @@ class CourtAssignService {
 
       double score = calculatePairScore(targetPlayer, player);
 
-      candidates.add({'player': player, 'score': score});
+      candidates.add(_Candidate(player, score));
     }
 
     if (candidates.isEmpty) return null;
-    return _selectTopCandidate<Player>(candidates, 'player');
+    return _selectTopCandidate<Player>(candidates);
   }
 
   // --- 매칭 헬퍼 메서드 추가 ---
-  T? _selectTopCandidate<T>(
-    List<Map<String, dynamic>> candidates,
-    String valueKey,
-  ) {
+  T? _selectTopCandidate<T>(List<_Candidate<T>> candidates) {
     if (candidates.isEmpty) return null;
 
     // 공통 정렬 로직 사용 (무작위성 확보 및 점수 정렬)
     _shuffleAndSort(candidates);
 
     final poolSize = min(_options.randomPoolSize, candidates.length);
-    return candidates[_random.nextInt(poolSize)][valueKey] as T;
+    return candidates[_random.nextInt(poolSize)].item;
   }
 
   /// 리스트를 무작위로 섞은 후 점수 내림차순으로 정렬하는 공통 로직
-  void _shuffleAndSort(List<Map<String, dynamic>> candidates) {
+  void _shuffleAndSort<T>(List<_Candidate<T>> candidates) {
     if (candidates.isEmpty) return;
 
     // 정렬 전 무작위로 섞어서 점수가 같을 때의 무작위성 확보
     candidates.shuffle(_random);
-    candidates.sort(
-      (a, b) => (b['score'] as double).compareTo(a['score'] as double),
-    );
+    candidates.sort((a, b) => b.score.compareTo(a.score));
   }
 
   /// 대상 플레이어(target)와 후보 플레이어(candidate)가 유효한 매칭 후보인지 확인
@@ -405,12 +396,12 @@ class CourtAssignService {
   }
 
   /// 플레이어 리스트에서 가능한 모든 인접 조합을 생성하고 기본 점수를 매겨 정렬함
-  List<Map<String, dynamic>> _generateScoredPairs(List<Player> players) {
+  List<_Candidate<List<Player>>> _generateScoredPairs(List<Player> players) {
     final sortedPlayers = List<Player>.from(players)..shuffle(_random);
     sortedPlayers.sort((a, b) => a.rate.compareTo(b.rate));
 
     const int searchRange = 20;
-    final List<Map<String, dynamic>> pairsWithScore = [];
+    final List<_Candidate<List<Player>>> pairsWithScore = [];
 
     for (int i = 0; i < sortedPlayers.length; i++) {
       final playerA = sortedPlayers[i];
@@ -420,10 +411,12 @@ class CourtAssignService {
         for (int j = i + 1; j < sortedPlayers.length; j++) {
           final playerB = sortedPlayers[j];
           if (playerA.groups.contains(playerB.id)) {
-            pairsWithScore.add({
-              'pair': [playerA, playerB],
-              'score': calculatePairScore(playerA, playerB),
-            });
+            pairsWithScore.add(
+              _Candidate([
+                playerA,
+                playerB,
+              ], calculatePairScore(playerA, playerB)),
+            );
           }
         }
         continue; // 그룹이 있는 플레이어는 아래의 일반 매칭 탐색을 건너뜀
@@ -437,10 +430,9 @@ class CourtAssignService {
         final playerB = sortedPlayers[j];
         if (playerB.groups.isNotEmpty) continue; // B가 그룹이 있다면 일반 매칭 대상에서 제외
 
-        pairsWithScore.add({
-          'pair': [playerA, playerB],
-          'score': calculatePairScore(playerA, playerB),
-        });
+        pairsWithScore.add(
+          _Candidate([playerA, playerB], calculatePairScore(playerA, playerB)),
+        );
       }
     }
 
@@ -520,13 +512,13 @@ class CourtAssignService {
     );
     if (pairs.isEmpty) return [];
 
-    final firstTeam = _selectTopCandidate<List<Player>>(pairs, 'pair');
+    final firstTeam = _selectTopCandidate<List<Player>>(pairs);
     if (firstTeam == null || firstTeam.isEmpty) return [];
     if (!playerGroupLabels.containsKey(firstTeam.first.id)) return [];
 
-    final firstTeamIds = firstTeam.map((p) => p.id.hexString).toSet();
+    final firstTeamIds = firstTeam.map((p) => p.id).toSet();
     final remainingPlayers = unassignedPlayers
-        .where((p) => !firstTeamIds.contains(p.id.hexString))
+        .where((p) => !firstTeamIds.contains(p.id))
         .toList();
 
     final secondTeam = _getBestMatchSecondPairForClubMatch(
@@ -556,7 +548,7 @@ class CourtAssignService {
 
     final firstTeam = [firstPlayer, secondPlayer];
     final remainingPlayers = unassignedPlayers
-        .where((p) => p.id.hexString != secondPlayer.id.hexString)
+        .where((p) => p.id != secondPlayer.id)
         .toList();
 
     final secondTeam = _getBestMatchSecondPairForClubMatch(
@@ -576,16 +568,16 @@ class CourtAssignService {
     final targetGroup = playerGroupLabels[targetPlayer.id];
     if (targetGroup == null) return null;
 
-    final candidates = <Map<String, dynamic>>[];
+    final candidates = <_Candidate<Player>>[];
     for (var player in unassignedPlayers) {
       if (playerGroupLabels[player.id] == targetGroup) {
         double score = calculatePairScore(targetPlayer, player);
-        candidates.add({'player': player, 'score': score});
+        candidates.add(_Candidate(player, score));
       }
     }
 
     if (candidates.isEmpty) return null;
-    return _selectTopCandidate<Player>(candidates, 'player');
+    return _selectTopCandidate<Player>(candidates);
   }
 
   List<Player> _getBestMatchSecondPairForClubMatch({
@@ -613,7 +605,7 @@ class CourtAssignService {
 
     _applyTeamMatchModifiers(pairsWithScore, firstTeamPlayers);
 
-    return _selectTopCandidate<List<Player>>(pairsWithScore, 'pair') ?? [];
+    return _selectTopCandidate<List<Player>>(pairsWithScore) ?? [];
   }
 
   Player? _getBestMatchForThreePlayersForClubMatch({
@@ -656,7 +648,7 @@ class CourtAssignService {
     final opponents = existingPlayers.where((p) => p.id != partner.id).toList();
 
     // 3. 대기자 중 targetGroup과 동일한 그룹의 플레이어 후보 필터링 및 점수 계산
-    final candidates = <Map<String, dynamic>>[];
+    final candidates = <_Candidate<Player>>[];
     for (var candidate in unassignedPlayers) {
       final candGroup = playerGroupLabels[candidate.id];
       if (candGroup == targetGroup) {
@@ -665,19 +657,19 @@ class CourtAssignService {
         score += _calculateTeamGenderBonus(opponents, [partner, candidate]);
         score += _calculateTeamRateBonus(opponents, [partner, candidate]);
 
-        candidates.add({'player': candidate, 'score': score});
+        candidates.add(_Candidate(candidate, score));
       }
     }
 
     if (candidates.isEmpty) return null;
-    return _selectTopCandidate<Player>(candidates, 'player');
+    return _selectTopCandidate<Player>(candidates);
   }
 
-  List<Map<String, dynamic>> _generateScoredPairsForClubMatch({
+  List<_Candidate<List<Player>>> _generateScoredPairsForClubMatch({
     required List<Player> players,
     required Map<ObjectId, String> playerGroupLabels,
   }) {
-    final List<Map<String, dynamic>> pairsWithScore = [];
+    final List<_Candidate<List<Player>>> pairsWithScore = [];
     final length = players.length;
 
     for (int i = 0; i < length; i++) {
@@ -691,13 +683,23 @@ class CourtAssignService {
         if (groupB == null) continue;
 
         if (groupA == groupB) {
-          pairsWithScore.add({
-            'pair': [playerA, playerB],
-            'score': calculatePairScore(playerA, playerB),
-          });
+          pairsWithScore.add(
+            _Candidate([
+              playerA,
+              playerB,
+            ], calculatePairScore(playerA, playerB)),
+          );
         }
       }
     }
     return pairsWithScore;
   }
+}
+
+/// 매칭 후보 및 점수를 보관하는 경량 내부 클래스
+class _Candidate<T> {
+  final T item;
+  double score;
+
+  _Candidate(this.item, this.score);
 }

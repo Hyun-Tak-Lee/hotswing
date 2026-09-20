@@ -21,11 +21,13 @@ class PlayersProvider with ChangeNotifier {
   final List<Player> _unassignedPlayers = [];
   final List<DateTime?> _courtStartTimes = [];
   Map<ObjectId, GroupInfo>? _cachedGroupInfo;
+  List<Player>? _cachedSortedPlayers;
   final Map<String, String> _customGroupNames = {};
 
   @override
   void notifyListeners() {
     _cachedGroupInfo = null;
+    _cachedSortedPlayers = null;
     super.notifyListeners();
   }
 
@@ -142,11 +144,15 @@ class PlayersProvider with ChangeNotifier {
   List<DateTime?> get courtStartTimes => List.unmodifiable(_courtStartTimes);
 
   List<Player> getPlayers() {
+    if (_cachedSortedPlayers != null) {
+      return _cachedSortedPlayers!;
+    }
     var playerList = _players.values.toList();
     playerList.sort((a, b) {
       return a.name.compareTo(b.name);
     });
-    return playerList;
+    _cachedSortedPlayers = List.unmodifiable(playerList);
+    return _cachedSortedPlayers!;
   }
 
   Player? getPlayerById(ObjectId id) {

@@ -121,50 +121,42 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                               ],
                               borderRadius: BorderRadius.circular(12.0),
                             ),
-                            child: SingleChildScrollView(
+                            child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: playerList
-                                    .asMap()
-                                    .entries
-                                    .map<Widget>((entry) {
-                                      int playerIndex = entry.key;
-                                      Player player = entry.value;
-                                      final String playerSectionId =
-                                          'unassigned_$playerIndex';
-                                      return SizedBox(
-                                        width: cardWidth,
-                                        child: PlayerDropZone(
-                                          player: player,
-                                          sectionId: playerSectionId,
-                                          sectionKind: PlayerSectionKind
-                                              .unassigned
-                                              .value,
-                                          sectionIndex: -1,
-                                          subIndex: playerIndex,
-                                          onPlayerDropped:
-                                              (
-                                                data,
-                                                droppedOnPlayer,
-                                                targetId,
-                                                sectionKind,
-                                                targetSectionIdx,
-                                                targetSubIdx,
-                                              ) => widget.onPlayerDrop(
-                                                context,
-                                                data,
-                                                droppedOnPlayer,
-                                                targetId,
-                                                sectionKind,
-                                                targetSectionIdx,
-                                                targetSubIdx,
-                                              ),
+                              itemCount: playerList.length,
+                              itemBuilder: (context, playerIndex) {
+                                Player player = playerList[playerIndex];
+                                final String playerSectionId =
+                                    'unassigned_$playerIndex';
+                                return SizedBox(
+                                  width: cardWidth,
+                                  child: PlayerDropZone(
+                                    player: player,
+                                    sectionId: playerSectionId,
+                                    sectionKind:
+                                        PlayerSectionKind.unassigned.value,
+                                    sectionIndex: -1,
+                                    subIndex: playerIndex,
+                                    onPlayerDropped:
+                                        (
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          sectionKind,
+                                          targetSectionIdx,
+                                          targetSubIdx,
+                                        ) => widget.onPlayerDrop(
+                                          context,
+                                          data,
+                                          droppedOnPlayer,
+                                          targetId,
+                                          sectionKind,
+                                          targetSectionIdx,
+                                          targetSubIdx,
                                         ),
-                                      );
-                                    })
-                                    .toList(),
-                              ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -208,45 +200,39 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
                               ],
                               borderRadius: BorderRadius.circular(12.0),
                             ),
-                            child: SingleChildScrollView(
+                            child: ListView.builder(
                               scrollDirection: Axis.vertical,
-                              child: Column(
-                                children: playerList
-                                    .asMap()
-                                    .entries
-                                    .map<Widget>((entry) {
-                                      int playerIndex = entry.key;
-                                      Player player = entry.value;
-                                      final String playerSectionId =
-                                          'unassigned_$playerIndex';
-                                      return PlayerDropZone(
-                                        player: player,
-                                        sectionId: playerSectionId,
-                                        sectionKind:
-                                            PlayerSectionKind.unassigned.value,
-                                        sectionIndex: -1,
-                                        subIndex: playerIndex,
-                                        onPlayerDropped:
-                                            (
-                                              data,
-                                              droppedOnPlayer,
-                                              targetId,
-                                              sectionKind,
-                                              targetSectionIdx,
-                                              targetSubIdx,
-                                            ) => widget.onPlayerDrop(
-                                              context,
-                                              data,
-                                              droppedOnPlayer,
-                                              targetId,
-                                              sectionKind,
-                                              targetSectionIdx,
-                                              targetSubIdx,
-                                            ),
-                                      );
-                                    })
-                                    .toList(),
-                              ),
+                              itemCount: playerList.length,
+                              itemBuilder: (context, playerIndex) {
+                                Player player = playerList[playerIndex];
+                                final String playerSectionId =
+                                    'unassigned_$playerIndex';
+                                return PlayerDropZone(
+                                  player: player,
+                                  sectionId: playerSectionId,
+                                  sectionKind:
+                                      PlayerSectionKind.unassigned.value,
+                                  sectionIndex: -1,
+                                  subIndex: playerIndex,
+                                  onPlayerDropped:
+                                      (
+                                        data,
+                                        droppedOnPlayer,
+                                        targetId,
+                                        sectionKind,
+                                        targetSectionIdx,
+                                        targetSubIdx,
+                                      ) => widget.onPlayerDrop(
+                                        context,
+                                        data,
+                                        droppedOnPlayer,
+                                        targetId,
+                                        sectionKind,
+                                        targetSectionIdx,
+                                        targetSubIdx,
+                                      ),
+                                );
+                              },
                             ),
                           ),
                         ),

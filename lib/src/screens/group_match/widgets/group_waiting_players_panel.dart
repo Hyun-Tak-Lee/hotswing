@@ -10,15 +10,11 @@ import 'package:provider/provider.dart';
 import 'package:hotswing/src/screens/solo_match/widgets/waiting_players_panel.dart'; // SortCriterion 참조용
 
 class WaitingTabItem {
-  final String label;      // UI에 노출될 탭 라벨 (예: "전체", "그룹 A", "개인")
-  final String type;       // 'all', 'group', 'individual'
+  final String label; // UI에 노출될 탭 라벨 (예: "전체", "그룹 A", "개인")
+  final String type; // 'all', 'group', 'individual'
   final String? groupLabel; // group 타입일 때 필터링에 매핑할 실제 그룹 라벨 (예: "A")
 
-  WaitingTabItem({
-    required this.label,
-    required this.type,
-    this.groupLabel,
-  });
+  WaitingTabItem({required this.label, required this.type, this.groupLabel});
 }
 
 class GroupWaitingPlayersPanel extends StatefulWidget {
@@ -41,7 +37,8 @@ class GroupWaitingPlayersPanel extends StatefulWidget {
   });
 
   @override
-  State<GroupWaitingPlayersPanel> createState() => _GroupWaitingPlayersPanelState();
+  State<GroupWaitingPlayersPanel> createState() =>
+      _GroupWaitingPlayersPanelState();
 }
 
 class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
@@ -49,12 +46,18 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
   bool _sortAscending = true;
 
   // 각 탭에 따른 플레이어 필터링 처리
-  List<Player> _filterPlayersByTab(WaitingTabItem tabItem, List<Player> players, PlayersProvider provider) {
+  List<Player> _filterPlayersByTab(
+    WaitingTabItem tabItem,
+    List<Player> players,
+    PlayersProvider provider,
+  ) {
     switch (tabItem.type) {
       case 'all':
         return players;
       case 'individual':
-        return players.where((p) => provider.getGroupInfo(p.id) == null).toList();
+        return players
+            .where((p) => provider.getGroupInfo(p.id) == null)
+            .toList();
       case 'group':
         return players.where((p) {
           final info = provider.getGroupInfo(p.id);
@@ -71,8 +74,11 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
     final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
     final playersProvider = Provider.of<PlayersProvider>(context);
-    final allUnassignedPlayers = List<Player>.from(playersProvider.unassignedPlayers);
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final allUnassignedPlayers = List<Player>.from(
+      playersProvider.unassignedPlayers,
+    );
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
     // 전체 리스트 정렬
     allUnassignedPlayers.sort((a, b) {
@@ -112,7 +118,9 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
 
     // 2. 동적 탭 리스트 생성
     final List<WaitingTabItem> tabItems = [
-      ...sortedGroups.map((g) => WaitingTabItem(label: '그룹 $g', type: 'group', groupLabel: g)),
+      ...sortedGroups.map(
+        (g) => WaitingTabItem(label: '그룹 $g', type: 'group', groupLabel: g),
+      ),
       WaitingTabItem(label: '미할당', type: 'individual'),
     ];
 
@@ -155,14 +163,23 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                                     isScrollable: true,
                                     tabAlignment: TabAlignment.start,
                                     labelColor: baseColors.primaryAccent,
-                                    unselectedLabelColor: baseColors.textSecondary,
+                                    unselectedLabelColor:
+                                        baseColors.textSecondary,
                                     indicatorColor: baseColors.primaryAccent,
                                     indicatorSize: TabBarIndicatorSize.label,
                                     dividerColor: Colors.transparent,
-                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                    tabs: List.generate(tabItems.length, (index) {
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 4.0,
+                                    ),
+                                    tabs: List.generate(tabItems.length, (
+                                      index,
+                                    ) {
                                       final tabItem = tabItems[index];
-                                      final filteredCount = _filterPlayersByTab(tabItem, allUnassignedPlayers, playersProvider).length;
+                                      final filteredCount = _filterPlayersByTab(
+                                        tabItem,
+                                        allUnassignedPlayers,
+                                        playersProvider,
+                                      ).length;
                                       return Tab(
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -170,17 +187,24 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                                             Text(tabItem.label),
                                             const SizedBox(width: 4),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 2,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                color: baseColors.primaryAccent.withValues(alpha: 0.15),
-                                                borderRadius: BorderRadius.circular(10),
+                                                color: baseColors.primaryAccent
+                                                    .withValues(alpha: 0.15),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
                                               ),
                                               child: Text(
                                                 '$filteredCount',
                                                 style: TextStyle(
                                                   fontSize: 10.0,
                                                   fontWeight: FontWeight.bold,
-                                                  color: baseColors.primaryAccent,
+                                                  color:
+                                                      baseColors.primaryAccent,
                                                 ),
                                               ),
                                             ),
@@ -191,59 +215,69 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                                   ),
                                   Expanded(
                                     child: TabBarView(
-                                      children: List.generate(tabItems.length, (index) {
+                                      children: List.generate(tabItems.length, (
+                                        index,
+                                      ) {
                                         final tabItem = tabItems[index];
-                                        final tabPlayers = _filterPlayersByTab(tabItem, allUnassignedPlayers, playersProvider);
-                                        
+                                        final tabPlayers = _filterPlayersByTab(
+                                          tabItem,
+                                          allUnassignedPlayers,
+                                          playersProvider,
+                                        );
+
                                         if (tabPlayers.isEmpty) {
                                           return Center(
                                             child: Text(
                                               '대기 중인 회원이 없습니다.',
                                               style: TextStyle(
                                                 color: baseColors.textSecondary,
-                                                fontSize: isTablet ? 16.0 : 14.0,
+                                                fontSize: isTablet
+                                                    ? 16.0
+                                                    : 14.0,
                                               ),
                                             ),
                                           );
                                         }
 
-                                        return SingleChildScrollView(
+                                        return ListView.builder(
                                           scrollDirection: Axis.horizontal,
-                                          child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                                            children: tabPlayers.asMap().entries.map<Widget>((entry) {
-                                              int playerIndex = entry.key;
-                                              Player player = entry.value;
-                                              final String playerSectionId = 'unassigned_group_${tabItem.label}_$playerIndex';
-                                              
-                                              return SizedBox(
-                                                width: isTablet ? 200.0 : 160.0,
-                                                child: PlayerDropZone(
-                                                  player: player,
-                                                  sectionId: playerSectionId,
-                                                  sectionKind: PlayerSectionKind.unassigned.value,
-                                                  sectionIndex: -1,
-                                                  subIndex: playerIndex,
-                                                  onPlayerDropped: (
-                                                    data,
-                                                    droppedOnPlayer,
-                                                    targetId,
-                                                    sectionKind,
-                                                    targetSectionIdx,
-                                                    targetSubIdx,
-                                                  ) => widget.onPlayerDrop(
-                                                    context,
-                                                    data,
-                                                    droppedOnPlayer,
-                                                    targetId,
-                                                    sectionKind,
-                                                    targetSectionIdx,
-                                                    targetSubIdx,
-                                                  ),
-                                                ),
-                                              );
-                                            }).toList(),
-                                          ),
+                                          itemCount: tabPlayers.length,
+                                          itemBuilder: (context, playerIndex) {
+                                            Player player =
+                                                tabPlayers[playerIndex];
+                                            final String playerSectionId =
+                                                'unassigned_group_${tabItem.label}_$playerIndex';
+
+                                            return SizedBox(
+                                              width: isTablet ? 200.0 : 160.0,
+                                              child: PlayerDropZone(
+                                                player: player,
+                                                sectionId: playerSectionId,
+                                                sectionKind: PlayerSectionKind
+                                                    .unassigned
+                                                    .value,
+                                                sectionIndex: -1,
+                                                subIndex: playerIndex,
+                                                onPlayerDropped:
+                                                    (
+                                                      data,
+                                                      droppedOnPlayer,
+                                                      targetId,
+                                                      sectionKind,
+                                                      targetSectionIdx,
+                                                      targetSubIdx,
+                                                    ) => widget.onPlayerDrop(
+                                                      context,
+                                                      data,
+                                                      droppedOnPlayer,
+                                                      targetId,
+                                                      sectionKind,
+                                                      targetSectionIdx,
+                                                      targetSubIdx,
+                                                    ),
+                                              ),
+                                            );
+                                          },
                                         );
                                       }),
                                     ),
@@ -265,7 +299,13 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                     )
                   : Column(
                       children: [
-                        _buildHeader(context, isTablet, allUnassignedPlayers.length, baseColors, courtColors),
+                        _buildHeader(
+                          context,
+                          isTablet,
+                          allUnassignedPlayers.length,
+                          baseColors,
+                          courtColors,
+                        ),
                         SizedBox(height: isTablet ? 8.0 : 4.0),
                         Expanded(
                           child: DefaultTabController(
@@ -296,14 +336,23 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                                     isScrollable: true,
                                     tabAlignment: TabAlignment.start,
                                     labelColor: baseColors.primaryAccent,
-                                    unselectedLabelColor: baseColors.textSecondary,
+                                    unselectedLabelColor:
+                                        baseColors.textSecondary,
                                     indicatorColor: baseColors.primaryAccent,
                                     indicatorSize: TabBarIndicatorSize.label,
                                     dividerColor: Colors.transparent,
-                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                    tabs: List.generate(tabItems.length, (index) {
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 4.0,
+                                    ),
+                                    tabs: List.generate(tabItems.length, (
+                                      index,
+                                    ) {
                                       final tabItem = tabItems[index];
-                                      final filteredCount = _filterPlayersByTab(tabItem, allUnassignedPlayers, playersProvider).length;
+                                      final filteredCount = _filterPlayersByTab(
+                                        tabItem,
+                                        allUnassignedPlayers,
+                                        playersProvider,
+                                      ).length;
                                       return Tab(
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -311,17 +360,24 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                                             Text(tabItem.label),
                                             const SizedBox(width: 4),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 2,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                color: baseColors.primaryAccent.withValues(alpha: 0.15),
-                                                borderRadius: BorderRadius.circular(10),
+                                                color: baseColors.primaryAccent
+                                                    .withValues(alpha: 0.15),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
                                               ),
                                               child: Text(
                                                 '$filteredCount',
                                                 style: TextStyle(
                                                   fontSize: 10.0,
                                                   fontWeight: FontWeight.bold,
-                                                  color: baseColors.primaryAccent,
+                                                  color:
+                                                      baseColors.primaryAccent,
                                                 ),
                                               ),
                                             ),
@@ -332,55 +388,66 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                                   ),
                                   Expanded(
                                     child: TabBarView(
-                                      children: List.generate(tabItems.length, (index) {
+                                      children: List.generate(tabItems.length, (
+                                        index,
+                                      ) {
                                         final tabItem = tabItems[index];
-                                        final tabPlayers = _filterPlayersByTab(tabItem, allUnassignedPlayers, playersProvider);
-                                        
+                                        final tabPlayers = _filterPlayersByTab(
+                                          tabItem,
+                                          allUnassignedPlayers,
+                                          playersProvider,
+                                        );
+
                                         if (tabPlayers.isEmpty) {
                                           return Center(
                                             child: Text(
                                               '대기 중인 회원이 없습니다.',
                                               style: TextStyle(
                                                 color: baseColors.textSecondary,
-                                                fontSize: isTablet ? 16.0 : 14.0,
+                                                fontSize: isTablet
+                                                    ? 16.0
+                                                    : 14.0,
                                               ),
                                             ),
                                           );
                                         }
 
-                                        return SingleChildScrollView(
+                                        return ListView.builder(
                                           scrollDirection: Axis.vertical,
-                                          child: Column(
-                                            children: tabPlayers.asMap().entries.map<Widget>((entry) {
-                                              int playerIndex = entry.key;
-                                              Player player = entry.value;
-                                              final String playerSectionId = 'unassigned_group_${tabItem.label}_$playerIndex';
-                                              
-                                              return PlayerDropZone(
-                                                player: player,
-                                                sectionId: playerSectionId,
-                                                sectionKind: PlayerSectionKind.unassigned.value,
-                                                sectionIndex: -1,
-                                                subIndex: playerIndex,
-                                                onPlayerDropped: (
-                                                  data,
-                                                  droppedOnPlayer,
-                                                  targetId,
-                                                  sectionKind,
-                                                  targetSectionIdx,
-                                                  targetSubIdx,
-                                                ) => widget.onPlayerDrop(
-                                                  context,
-                                                  data,
-                                                  droppedOnPlayer,
-                                                  targetId,
-                                                  sectionKind,
-                                                  targetSectionIdx,
-                                                  targetSubIdx,
-                                                ),
-                                              );
-                                            }).toList(),
-                                          ),
+                                          itemCount: tabPlayers.length,
+                                          itemBuilder: (context, playerIndex) {
+                                            Player player =
+                                                tabPlayers[playerIndex];
+                                            final String playerSectionId =
+                                                'unassigned_group_${tabItem.label}_$playerIndex';
+
+                                            return PlayerDropZone(
+                                              player: player,
+                                              sectionId: playerSectionId,
+                                              sectionKind: PlayerSectionKind
+                                                  .unassigned
+                                                  .value,
+                                              sectionIndex: -1,
+                                              subIndex: playerIndex,
+                                              onPlayerDropped:
+                                                  (
+                                                    data,
+                                                    droppedOnPlayer,
+                                                    targetId,
+                                                    sectionKind,
+                                                    targetSectionIdx,
+                                                    targetSubIdx,
+                                                  ) => widget.onPlayerDrop(
+                                                    context,
+                                                    data,
+                                                    droppedOnPlayer,
+                                                    targetId,
+                                                    sectionKind,
+                                                    targetSectionIdx,
+                                                    targetSubIdx,
+                                                  ),
+                                            );
+                                          },
                                         );
                                       }),
                                     ),
@@ -414,28 +481,29 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                   -1,
                 );
               },
-              builder: (
-                BuildContext context,
-                List<PlayerDragData?> candidateData,
-                List<dynamic> rejectedData,
-              ) {
-                final bool isHovering = candidateData.isNotEmpty;
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 10.0),
-                  decoration: BoxDecoration(
-                    color: isHovering
-                        ? Colors.black.withAlpha(50)
-                        : Colors.black.withAlpha(25),
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.delete,
-                    color: Colors.white,
-                    size: isTablet ? 50.0 : 30.0,
-                  ),
-                );
-              },
+              builder:
+                  (
+                    BuildContext context,
+                    List<PlayerDragData?> candidateData,
+                    List<dynamic> rejectedData,
+                  ) {
+                    final bool isHovering = candidateData.isNotEmpty;
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10.0),
+                      decoration: BoxDecoration(
+                        color: isHovering
+                            ? Colors.black.withAlpha(50)
+                            : Colors.black.withAlpha(25),
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                        size: isTablet ? 50.0 : 30.0,
+                      ),
+                    );
+                  },
             ),
           ),
       ],
@@ -568,7 +636,9 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                     decoration: BoxDecoration(
                       color: courtColors.waitingPanelSortBtnBg,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: courtColors.waitingPanelSortBtnBorder),
+                      border: Border.all(
+                        color: courtColors.waitingPanelSortBtnBorder,
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -594,7 +664,11 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                   )
                 : Padding(
                     padding: const EdgeInsets.all(4.0),
-                    child: Icon(Icons.sort, size: 24.0, color: baseColors.textSecondary),
+                    child: Icon(
+                      Icons.sort,
+                      size: 24.0,
+                      color: baseColors.textSecondary,
+                    ),
                   ),
           ),
         ],
@@ -727,9 +801,7 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
               },
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12.0,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 decoration: BoxDecoration(
                   color: courtColors.waitingPanelSortBtnBg,
                   borderRadius: BorderRadius.circular(16),

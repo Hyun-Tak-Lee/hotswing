@@ -370,8 +370,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         _buildIntSliderListItem(
                           context: context,
                           title: '무작위 수치',
-                          leftText: '정밀 매칭',
-                          rightText: '다양한 매칭',
+                          leftText: '최적 조합',
+                          rightText: '랜덤성 부여',
                           value: optionsProvider.randomPoolSize,
                           min: 1,
                           max: 5,

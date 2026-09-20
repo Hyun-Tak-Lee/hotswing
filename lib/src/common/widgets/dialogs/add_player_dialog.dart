@@ -80,9 +80,11 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   ///
   /// [textEditingValue]의 텍스트를 접두사로 사용하여 일치하는 플레이어 목록을 반환합니다.
   Iterable<Player> _findPlayersByName(TextEditingValue textEditingValue) {
-    setState(() {
-      _isLoaded = false;
-    });
+    if (_isLoaded) {
+      setState(() {
+        _isLoaded = false;
+      });
+    }
     if (textEditingValue.text.isEmpty) {
       return const Iterable<Player>.empty();
     }

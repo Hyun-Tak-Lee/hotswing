@@ -104,8 +104,6 @@ class PlayersViewModel extends ChangeNotifier {
 
     _hasMore = _players.length < _queryResults.length;
 
-    await Future.delayed(const Duration(milliseconds: 500));
-
     _isLoading = false;
     notifyListeners();
   }

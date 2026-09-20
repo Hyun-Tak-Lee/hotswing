@@ -151,180 +151,58 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
 
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.75,
-      child: ListView(
+      child: ListView.builder(
         padding: EdgeInsets.zero,
-        children: <Widget>[
-          SizedBox(
-            height: isTablet ? 180 : 120,
-            child: DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [baseColors.gradientStart, baseColors.gradientEnd],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '참여자 (${players.length}명)',
-                    style: TextStyle(
-                      fontSize: iconAndFontSize,
-                      color: baseColors.textPrimary,
-                    ),
+        itemCount: players.length + 1,
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return SizedBox(
+              height: isTablet ? 180 : 120,
+              child: DrawerHeader(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [baseColors.gradientStart, baseColors.gradientEnd],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.delete_sweep),
-                        iconSize: iconAndFontSize,
-                        onPressed: () {
-                          _showClearAllPlayersConfirmationDialog(
-                            playersProvider,
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        tooltip: '게스트 추가',
-                        icon: const Icon(Icons.person_pin),
-                        iconSize: iconAndFontSize,
-                        onPressed: () {
-                          _showAddPlayerDialog(playersProvider, true);
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        tooltip: '일반 참여자 추가',
-                        icon: const Icon(Icons.person_add),
-                        iconSize: iconAndFontSize,
-                        onPressed: () {
-                          _showAddPlayerDialog(playersProvider, false);
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          ...players.map((player) {
-            final groupInfo = playersProvider.getGroupInfo(player.id);
-            return Container(
-              margin: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 4.0,
-              ),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: player.activate == false
-                      ? [
-                          playerColors.playerItemInactive,
-                          playerColors.playerItemInactive,
-                        ]
-                      : [
-                          playerColors.playerItemActiveStart,
-                          playerColors.playerItemActiveEnd,
-                        ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 12.0,
                 ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            player.name,
-                            style: TextStyle(
-                              fontSize: titleFontSize,
-                              fontWeight: FontWeight.bold,
-                              color: baseColors.textPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              PlayerInfoTag(
-                                text: _getRoleLabel(player.role),
-                                color: _getRoleColor(context, player.role),
-                              ),
-                              PlayerInfoTag(
-                                text: _getGenderLabel(player.gender),
-                                color: Colors.indigoAccent,
-                              ),
-                              PlayerSkillRateWidget(
-                                skillLevel: player.grade,
-                                rate: player.rate,
-                              ),
-                              if (groupInfo != null)
-                                PlayerInfoTag(
-                                  text: '그룹 ${groupInfo.label}',
-                                  color: groupInfo.color,
-                                ),
-                            ],
-                          ),
-                        ],
+                    Text(
+                      '참여자 (${players.length}명)',
+                      style: TextStyle(
+                        fontSize: iconAndFontSize,
+                        color: baseColors.textPrimary,
                       ),
                     ),
                     Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.block),
+                          icon: const Icon(Icons.delete_sweep),
                           iconSize: iconAndFontSize,
                           onPressed: () {
-                            playersProvider.toggleIsActivate(player);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          iconSize: iconAndFontSize,
-                          onPressed: () {
-                            _showAddPlayerDialog(
+                            _showClearAllPlayersConfirmationDialog(
                               playersProvider,
-                              false,
-                              existingPlayer: player,
                             );
                           },
                         ),
+                        const SizedBox(width: 8),
                         IconButton(
-                          icon: const Icon(Icons.delete),
+                          tooltip: '게스트 추가',
+                          icon: const Icon(Icons.person_pin),
                           iconSize: iconAndFontSize,
                           onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext dialogContext) {
-                                return ConfirmationDialog(
-                                  message: '"${player.name}" 님을 삭제하시겠습니까?',
-                                  onConfirm: () {
-                                    playersProvider.removePlayer(player.id);
-                                  },
-                                );
-                              },
-                            );
+                            _showAddPlayerDialog(playersProvider, true);
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          tooltip: '일반 참여자 추가',
+                          icon: const Icon(Icons.person_add),
+                          iconSize: iconAndFontSize,
+                          onPressed: () {
+                            _showAddPlayerDialog(playersProvider, false);
                           },
                         ),
                       ],
@@ -333,8 +211,133 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                 ),
               ),
             );
-          }),
-        ],
+          }
+
+          final player = players[index - 1];
+          final groupInfo = playersProvider.getGroupInfo(player.id);
+          return Container(
+            margin: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 4.0,
+            ),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: player.activate == false
+                    ? [
+                        playerColors.playerItemInactive,
+                        playerColors.playerItemInactive,
+                      ]
+                    : [
+                        playerColors.playerItemActiveStart,
+                        playerColors.playerItemActiveEnd,
+                      ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          player.name,
+                          style: TextStyle(
+                            fontSize: titleFontSize,
+                            fontWeight: FontWeight.bold,
+                            color: baseColors.textPrimary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            PlayerInfoTag(
+                              text: _getRoleLabel(player.role),
+                              color: _getRoleColor(context, player.role),
+                            ),
+                            PlayerInfoTag(
+                              text: _getGenderLabel(player.gender),
+                              color: Colors.indigoAccent,
+                            ),
+                            PlayerSkillRateWidget(
+                              skillLevel: player.grade,
+                              rate: player.rate,
+                            ),
+                            if (groupInfo != null)
+                              PlayerInfoTag(
+                                text: '그룹 ${groupInfo.label}',
+                                color: groupInfo.color,
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.block),
+                        iconSize: iconAndFontSize,
+                        onPressed: () {
+                          playersProvider.toggleIsActivate(player);
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        iconSize: iconAndFontSize,
+                        onPressed: () {
+                          _showAddPlayerDialog(
+                            playersProvider,
+                            false,
+                            existingPlayer: player,
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        iconSize: iconAndFontSize,
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext dialogContext) {
+                              return ConfirmationDialog(
+                                message: '"${player.name}" 님을 삭제하시겠습니까?',
+                                onConfirm: () {
+                                  playersProvider.removePlayer(player.id);
+                                },
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
