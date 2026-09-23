@@ -92,8 +92,7 @@ class CourtSectionsView extends StatelessWidget {
                             },
                             headerActions: [
                               // 새로고침 버튼
-                              _buildGradientButton(
-                                isTablet: isTablet,
+                              _AssignedGradientButton(
                                 width: isTablet ? 50.0 : 40.0,
                                 height: isTablet ? 45.0 : 30.0,
                                 colors: [
@@ -124,8 +123,7 @@ class CourtSectionsView extends StatelessWidget {
                                   isClubMatch: isClubMatch,
                                 )
                               else
-                                _buildGradientButton(
-                                  isTablet: isTablet,
+                                _AssignedGradientButton(
                                   width: isTablet ? 150.0 : 90.0,
                                   height: isTablet ? 45.0 : 30.0,
                                   colors: [
@@ -201,8 +199,7 @@ class CourtSectionsView extends StatelessWidget {
                                   }).whereType<PopupMenuEntry<int>>().toList();
                                 },
                                 child: IgnorePointer(
-                                  child: _buildGradientButton(
-                                    isTablet: isTablet,
+                                  child: _AssignedGradientButton(
                                     width: isTablet ? 50.0 : 40.0,
                                     height: isTablet ? 45.0 : 30.0,
                                     colors: [
@@ -252,8 +249,7 @@ class CourtSectionsView extends StatelessWidget {
                             },
                             headerActions: [
                               // 새로고침 버튼
-                              _buildGradientButton(
-                                isTablet: isTablet,
+                              _AssignedGradientButton(
                                 width: isTablet ? 50.0 : 40.0,
                                 height: isTablet ? 45.0 : 30.0,
                                 colors: [
@@ -284,8 +280,7 @@ class CourtSectionsView extends StatelessWidget {
                                   isClubMatch: isClubMatch,
                                 )
                               else
-                                _buildGradientButton(
-                                  isTablet: isTablet,
+                                _AssignedGradientButton(
                                   width: isTablet ? 150.0 : 90.0,
                                   height: isTablet ? 45.0 : 30.0,
                                   colors: [
@@ -361,8 +356,7 @@ class CourtSectionsView extends StatelessWidget {
                                   }).whereType<PopupMenuEntry<int>>().toList();
                                 },
                                 child: IgnorePointer(
-                                  child: _buildGradientButton(
-                                    isTablet: isTablet,
+                                  child: _AssignedGradientButton(
                                     width: isTablet ? 50.0 : 40.0,
                                     height: isTablet ? 45.0 : 30.0,
                                     colors: [
@@ -390,14 +384,25 @@ class CourtSectionsView extends StatelessWidget {
     );
   }
 
-  Widget _buildGradientButton({
-    required bool isTablet,
-    required double width,
-    required double height,
-    required List<Color> colors,
-    required VoidCallback onTap,
-    required Widget child,
-  }) {
+}
+
+class _AssignedGradientButton extends StatelessWidget {
+  const _AssignedGradientButton({
+    required this.width,
+    required this.height,
+    required this.colors,
+    required this.onTap,
+    required this.child,
+  });
+
+  final double width;
+  final double height;
+  final List<Color> colors;
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: width,
       height: height,
@@ -409,7 +414,7 @@ class CourtSectionsView extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: colors.last.withAlpha(100), // 그림자는 끝 색상에 기반해 부드럽게
+            color: colors.last.withAlpha(100),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),

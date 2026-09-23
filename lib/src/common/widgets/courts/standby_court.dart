@@ -97,8 +97,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                               },
                               headerActions: [
                                 // 새로고침 버튼
-                                _buildGradientButton(
-                                  isTablet: isTablet,
+                                _StandbyGradientButton(
                                   width: isTablet ? 50.0 : 40.0,
                                   height: isTablet ? 45.0 : 30.0,
                                   colors: [
@@ -121,8 +120,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                   ),
                                 ),
                                 // 자동 매칭 버튼
-                                _buildGradientButton(
-                                  isTablet: isTablet,
+                                _StandbyGradientButton(
                                   width: isTablet ? 120.0 : 80.0,
                                   height: isTablet ? 45.0 : 30.0,
                                   colors: [
@@ -146,8 +144,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                   ),
                                 ),
                                 // 코트 삭제 버튼
-                                _buildGradientButton(
-                                  isTablet: isTablet,
+                                _StandbyGradientButton(
                                   width: isTablet ? 50.0 : 40.0,
                                   height: isTablet ? 45.0 : 30.0,
                                   colors: [
@@ -216,8 +213,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                     ).whereType<PopupMenuEntry<int>>().toList();
                                   },
                                   child: IgnorePointer(
-                                    child: _buildGradientButton(
-                                      isTablet: isTablet,
+                                    child: _StandbyGradientButton(
                                       width: isTablet ? 50.0 : 40.0,
                                       height: isTablet ? 45.0 : 30.0,
                                       colors: [
@@ -311,8 +307,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                               },
                               headerActions: [
                                 // 새로고침 버튼
-                                _buildGradientButton(
-                                  isTablet: isTablet,
+                                _StandbyGradientButton(
                                   width: isTablet ? 50.0 : 40.0,
                                   height: isTablet ? 45.0 : 30.0,
                                   colors: [
@@ -335,8 +330,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                   ),
                                 ),
                                 // 자동 매칭 버튼
-                                _buildGradientButton(
-                                  isTablet: isTablet,
+                                _StandbyGradientButton(
                                   width: isTablet ? 120.0 : 80.0,
                                   height: isTablet ? 45.0 : 30.0,
                                   colors: [
@@ -360,8 +354,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                   ),
                                 ),
                                 // 코트 삭제 버튼
-                                _buildGradientButton(
-                                  isTablet: isTablet,
+                                _StandbyGradientButton(
                                   width: isTablet ? 50.0 : 40.0,
                                   height: isTablet ? 45.0 : 30.0,
                                   colors: [
@@ -430,8 +423,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                     ).whereType<PopupMenuEntry<int>>().toList();
                                   },
                                   child: IgnorePointer(
-                                    child: _buildGradientButton(
-                                      isTablet: isTablet,
+                                    child: _StandbyGradientButton(
                                       width: isTablet ? 50.0 : 40.0,
                                       height: isTablet ? 45.0 : 30.0,
                                       colors: [
@@ -502,14 +494,25 @@ class StandbyCourtSectionsView extends StatelessWidget {
     );
   }
 
-  Widget _buildGradientButton({
-    required bool isTablet,
-    required double width,
-    required double height,
-    required List<Color> colors,
-    required VoidCallback onTap,
-    required Widget child,
-  }) {
+}
+
+class _StandbyGradientButton extends StatelessWidget {
+  const _StandbyGradientButton({
+    required this.width,
+    required this.height,
+    required this.colors,
+    required this.onTap,
+    required this.child,
+  });
+
+  final double width;
+  final double height;
+  final List<Color> colors;
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: width,
       height: height,
@@ -521,7 +524,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: colors.last.withAlpha(80), // 그림자를 조금 더 연하게
+            color: colors.last.withAlpha(80),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),

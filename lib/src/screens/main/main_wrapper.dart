@@ -26,18 +26,6 @@ class _MainWrapperState extends State<MainWrapper> {
 
   Key _playersScreenKey = UniqueKey();
 
-  Widget _buildContent() {
-    return IndexedStack(
-      index: _selectedIndex,
-      children: [
-        const SoloMatchScreen(),
-        const GroupMatchScreen(),
-        PlayersScreen(key: _playersScreenKey),
-        const SettingsScreen(),
-      ],
-    );
-  }
-
   void _onDestinationSelected(int index) async {
     final playersProvider = context.read<PlayersProvider>();
     // 개인전(0) <-> 교류전(1) 상호 전환 시 코트에 선수가 1명이라도 배정되어 있다면 전환을 차단합니다.
@@ -181,7 +169,10 @@ class _MainWrapperState extends State<MainWrapper> {
                     ),
                   ),
                   clipBehavior: Clip.antiAlias, // 둥근 모서리에 맞춰 내용 자르기
-                  child: _buildContent(),
+                  child: _MainTabStack(
+                    selectedIndex: _selectedIndex,
+                    playersScreenKey: _playersScreenKey,
+                  ),
                 ),
               ),
             ],
@@ -231,13 +222,39 @@ class _MainWrapperState extends State<MainWrapper> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           clipBehavior: Clip.antiAlias,
-          child: _buildContent(),
+          child: _MainTabStack(
+            selectedIndex: _selectedIndex,
+            playersScreenKey: _playersScreenKey,
+          ),
         ),
         bottomNavigationBar: MainNavigationBar(
           selectedIndex: _selectedIndex,
           onDestinationSelected: _onDestinationSelected,
         ),
       ),
+    );
+  }
+}
+
+class _MainTabStack extends StatelessWidget {
+  const _MainTabStack({
+    required this.selectedIndex,
+    required this.playersScreenKey,
+  });
+
+  final int selectedIndex;
+  final Key playersScreenKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return IndexedStack(
+      index: selectedIndex,
+      children: [
+        const SoloMatchScreen(),
+        const GroupMatchScreen(),
+        PlayersScreen(key: playersScreenKey),
+        const SettingsScreen(),
+      ],
     );
   }
 }

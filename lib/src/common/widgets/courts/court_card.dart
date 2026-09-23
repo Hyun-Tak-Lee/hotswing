@@ -49,8 +49,8 @@ class CourtCard extends StatelessWidget {
         Expanded(
           child: Row(
             children: [
-              Expanded(child: _buildDropZone(context, 0)),
-              Expanded(child: _buildDropZone(context, 1)),
+              Expanded(child: _CourtDropZone(card: this, subIndex: 0)),
+              Expanded(child: _CourtDropZone(card: this, subIndex: 1)),
             ],
           ),
         ),
@@ -58,8 +58,8 @@ class CourtCard extends StatelessWidget {
         Expanded(
           child: Row(
             children: [
-              Expanded(child: _buildDropZone(context, 2)),
-              Expanded(child: _buildDropZone(context, 3)),
+              Expanded(child: _CourtDropZone(card: this, subIndex: 2)),
+              Expanded(child: _CourtDropZone(card: this, subIndex: 3)),
             ],
           ),
         ),
@@ -128,12 +128,23 @@ class CourtCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDropZone(BuildContext context, int subIndex) {
+}
+
+class _CourtDropZone extends StatelessWidget {
+  const _CourtDropZone({required this.card, required this.subIndex});
+
+  final CourtCard card;
+  final int subIndex;
+
+  @override
+  Widget build(BuildContext context) {
     return PlayerDropZone(
-      sectionId: '${sectionIndex}_$subIndex',
-      player: players.asMap().containsKey(subIndex) ? players[subIndex] : null,
-      sectionKind: sectionKind,
-      sectionIndex: sectionIndex,
+      sectionId: '${card.sectionIndex}_$subIndex',
+      player: card.players.asMap().containsKey(subIndex)
+          ? card.players[subIndex]
+          : null,
+      sectionKind: card.sectionKind,
+      sectionIndex: card.sectionIndex,
       subIndex: subIndex,
       onPlayerDropped:
           (
@@ -143,7 +154,7 @@ class CourtCard extends StatelessWidget {
             targetSectionKind,
             targetSectionIdx,
             targetSubIdx,
-          ) => onPlayerDrop(
+          ) => card.onPlayerDrop(
             context,
             data,
             droppedOnPlayer,
@@ -152,10 +163,10 @@ class CourtCard extends StatelessWidget {
             targetSectionIdx,
             targetSubIdx,
           ),
-      onDragStartedFromZone: onCourtPlayerDragStarted,
-      onDragEndedFromZone: onCourtPlayerDragEnded,
-      onPlayerRemoved: onPlayerRemoved != null
-          ? () => onPlayerRemoved!(sectionIndex, subIndex)
+      onDragStartedFromZone: card.onCourtPlayerDragStarted,
+      onDragEndedFromZone: card.onCourtPlayerDragEnded,
+      onPlayerRemoved: card.onPlayerRemoved != null
+          ? () => card.onPlayerRemoved!(card.sectionIndex, subIndex)
           : null,
     );
   }

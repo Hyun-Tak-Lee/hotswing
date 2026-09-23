@@ -50,6 +50,15 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
     });
   }
 
+  void _selectSkill(String level) {
+    setState(() {
+      _currentSkillLevel = level;
+      if (skillLevelToRate.containsKey(level)) {
+        _updateRate(skillLevelToRate[level]!);
+      }
+    });
+  }
+
   void _submit() {
     if (_formKey.currentState!.validate()) {
       final viewModel = context.read<PlayersViewModel>();
@@ -98,22 +107,52 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeaderSection(),
+            _PlayerEditHeader(
+              controller: _nameController,
+              isManager: _isManager,
+              isGuest: widget.player.role == 'guest',
+              onToggleManager: () => setState(() => _isManager = !_isManager),
+            ),
             const SizedBox(height: 24),
-            _buildGenderSegment(),
+            _PlayerGenderSegment(
+              currentGender: _currentGender,
+              onSelected: (label) => setState(() => _currentGender = label),
+            ),
             const SizedBox(height: 24),
-            _buildSkillChipList(),
+            _PlayerSkillChipList(
+              currentSkillLevel: _currentSkillLevel,
+              onSelected: _selectSkill,
+            ),
             const SizedBox(height: 24),
-            _buildRateStepper(),
+            _PlayerRateStepper(
+              currentRate: _currentRate,
+              onDecrease: () => _updateRate(_currentRate - 50),
+              onIncrease: () => _updateRate(_currentRate + 50),
+            ),
             const SizedBox(height: 32),
-            _buildFooterActions(),
+            _PlayerEditFooter(onCancel: widget.onCancel, onSubmit: _submit),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildHeaderSection() {
+class _PlayerEditHeader extends StatelessWidget {
+  const _PlayerEditHeader({
+    required this.controller,
+    required this.isManager,
+    required this.isGuest,
+    required this.onToggleManager,
+  });
+
+  final TextEditingController controller;
+  final bool isManager;
+  final bool isGuest;
+  final VoidCallback onToggleManager;
+
+  @override
+  Widget build(BuildContext context) {
     final baseColors = context.baseColors;
     final playerColors = context.playerColors;
     final formColors = context.formColors;
@@ -122,7 +161,7 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
       children: [
         Expanded(
           child: TextFormField(
-            controller: _nameController,
+            controller: controller,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -158,29 +197,45 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
           ),
         ),
         const SizedBox(width: 16),
-        _buildManagerToggle(),
+        _PlayerManagerToggle(
+          isManager: isManager,
+          isGuest: isGuest,
+          onToggle: onToggleManager,
+        ),
       ],
     );
   }
+}
 
-  Widget _buildManagerToggle() {
-    final isGuest = widget.player.role == 'guest';
+class _PlayerManagerToggle extends StatelessWidget {
+  const _PlayerManagerToggle({
+    required this.isManager,
+    required this.isGuest,
+    required this.onToggle,
+  });
+
+  final bool isManager;
+  final bool isGuest;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
     final playerColors = context.playerColors;
     final formColors = context.formColors;
 
     return InkWell(
-      onTap: isGuest ? null : () => setState(() => _isManager = !_isManager),
+      onTap: isGuest ? null : onToggle,
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: _isManager
+          color: isManager
               ? playerColors.managerToggleActiveBg
               : playerColors.managerToggleInactiveBg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: _isManager
+            color: isManager
                 ? formColors.managerToggleActiveBorder
                 : formColors.managerToggleInactiveBorder,
           ),
@@ -188,8 +243,8 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
         child: Column(
           children: [
             Icon(
-              _isManager ? Icons.verified_user : Icons.person_outline,
-              color: _isManager
+              isManager ? Icons.verified_user : Icons.person_outline,
+              color: isManager
                   ? Colors.orange
                   : formColors.managerToggleInactiveText,
             ),
@@ -198,7 +253,7 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: _isManager
+                color: isManager
                     ? Colors.orange
                     : formColors.managerToggleInactiveText,
               ),
@@ -208,8 +263,19 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
       ),
     );
   }
+}
 
-  Widget _buildGenderSegment() {
+class _PlayerGenderSegment extends StatelessWidget {
+  const _PlayerGenderSegment({
+    required this.currentGender,
+    required this.onSelected,
+  });
+
+  final String currentGender;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -224,23 +290,47 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
         const SizedBox(height: 12),
         Row(
           children: [
-            _buildSegmentButton("남", "MALE", Icons.male),
+            _PlayerGenderButton(
+              label: "남",
+              icon: Icons.male,
+              isSelected: currentGender == "남",
+              onSelected: onSelected,
+            ),
             const SizedBox(width: 12),
-            _buildSegmentButton("여", "FEMALE", Icons.female),
+            _PlayerGenderButton(
+              label: "여",
+              icon: Icons.female,
+              isSelected: currentGender == "여",
+              onSelected: onSelected,
+            ),
           ],
         ),
       ],
     );
   }
+}
 
-  Widget _buildSegmentButton(String label, String value, IconData icon) {
-    bool isSelected = _currentGender == label;
+class _PlayerGenderButton extends StatelessWidget {
+  const _PlayerGenderButton({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onSelected,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
     final baseColors = context.baseColors;
     final formColors = context.formColors;
 
     return Expanded(
       child: InkWell(
-        onTap: () => setState(() => _currentGender = label),
+        onTap: () => onSelected(label),
         borderRadius: BorderRadius.circular(12),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -283,8 +373,19 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
       ),
     );
   }
+}
 
-  Widget _buildSkillChipList() {
+class _PlayerSkillChipList extends StatelessWidget {
+  const _PlayerSkillChipList({
+    required this.currentSkillLevel,
+    required this.onSelected,
+  });
+
+  final String currentSkillLevel;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
     final baseColors = context.baseColors;
     final playerColors = context.playerColors;
     final formColors = context.formColors;
@@ -305,21 +406,14 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: skillLevelToRate.keys.map((level) {
-              bool isSelected = _currentSkillLevel == level;
+              final bool isSelected = currentSkillLevel == level;
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: FilterChip(
                   label: Text(level),
                   selected: isSelected,
                   onSelected: (selected) {
-                    if (selected) {
-                      setState(() {
-                        _currentSkillLevel = level;
-                        if (skillLevelToRate.containsKey(level)) {
-                          _updateRate(skillLevelToRate[level]!);
-                        }
-                      });
-                    }
+                    if (selected) onSelected(level);
                   },
                   backgroundColor: playerColors.chipBg,
                   selectedColor: formColors.skillChipActiveBg,
@@ -328,9 +422,7 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
                     color: isSelected
                         ? formColors.skillChipActiveText
                         : baseColors.textPrimary,
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.normal,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               );
@@ -340,8 +432,21 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
       ],
     );
   }
+}
 
-  Widget _buildRateStepper() {
+class _PlayerRateStepper extends StatelessWidget {
+  const _PlayerRateStepper({
+    required this.currentRate,
+    required this.onDecrease,
+    required this.onIncrease,
+  });
+
+  final int currentRate;
+  final VoidCallback onDecrease;
+  final VoidCallback onIncrease;
+
+  @override
+  Widget build(BuildContext context) {
     final formColors = context.formColors;
 
     return Container(
@@ -358,13 +463,10 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
             children: [
               Text(
                 "레이팅 점수",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: formColors.stepperLabelText,
-                ),
+                style: TextStyle(fontSize: 12, color: formColors.stepperLabelText),
               ),
               Text(
-                _currentRate.toString(),
+                currentRate.toString(),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
@@ -375,23 +477,25 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
           ),
           Row(
             children: [
-              _buildStepperButton(
-                Icons.remove,
-                () => _updateRate(_currentRate - 50),
-              ),
+              _PlayerStepperButton(icon: Icons.remove, onPressed: onDecrease),
               const SizedBox(width: 12),
-              _buildStepperButton(
-                Icons.add,
-                () => _updateRate(_currentRate + 50),
-              ),
+              _PlayerStepperButton(icon: Icons.add, onPressed: onIncrease),
             ],
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildStepperButton(IconData icon, VoidCallback onPressed) {
+class _PlayerStepperButton extends StatelessWidget {
+  const _PlayerStepperButton({required this.icon, required this.onPressed});
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
     final formColors = context.formColors;
 
     return Material(
@@ -404,15 +508,23 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
       ),
     );
   }
+}
 
-  Widget _buildFooterActions() {
+class _PlayerEditFooter extends StatelessWidget {
+  const _PlayerEditFooter({required this.onCancel, required this.onSubmit});
+
+  final VoidCallback onCancel;
+  final VoidCallback onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
     final formColors = context.formColors;
 
     return Row(
       children: [
         Expanded(
           child: TextButton(
-            onPressed: widget.onCancel,
+            onPressed: onCancel,
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -432,7 +544,7 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
         Expanded(
           flex: 2,
           child: ElevatedButton(
-            onPressed: _submit,
+            onPressed: onSubmit,
             style: ElevatedButton.styleFrom(
               backgroundColor: formColors.footerSubmitBg,
               foregroundColor: formColors.footerSubmitText,

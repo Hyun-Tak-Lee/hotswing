@@ -66,11 +66,26 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildTab('역할', 0, tabFontSize),
+                  _FilterTab(
+                    title: '역할',
+                    fontSize: tabFontSize,
+                    isSelected: _selectedTabIndex == 0,
+                    onTap: () => setState(() => _selectedTabIndex = 0),
+                  ),
                   const SizedBox(width: 24),
-                  _buildTab('성별', 1, tabFontSize),
+                  _FilterTab(
+                    title: '성별',
+                    fontSize: tabFontSize,
+                    isSelected: _selectedTabIndex == 1,
+                    onTap: () => setState(() => _selectedTabIndex = 1),
+                  ),
                   const SizedBox(width: 24),
-                  _buildTab('급수', 2, tabFontSize),
+                  _FilterTab(
+                    title: '급수',
+                    fontSize: tabFontSize,
+                    isSelected: _selectedTabIndex == 2,
+                    onTap: () => setState(() => _selectedTabIndex = 2),
+                  ),
                 ],
               ),
             ),
@@ -85,7 +100,7 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
 
             // Filter Options
             if (_selectedTabIndex == 0)
-              _buildOptions<PlayerRole>(
+              _FilterOptions<PlayerRole>(
                 values: PlayerRole.values,
                 selectedValues: viewModel.selectedRoles,
                 onSelected: viewModel.toggleRoleFilter,
@@ -93,7 +108,7 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
                 chipFontSize: chipFontSize,
               )
             else if (_selectedTabIndex == 1)
-              _buildOptions<PlayerGender>(
+              _FilterOptions<PlayerGender>(
                 values: PlayerGender.values,
                 selectedValues: viewModel.selectedGenders,
                 onSelected: viewModel.toggleGenderFilter,
@@ -101,7 +116,7 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
                 chipFontSize: chipFontSize,
               )
             else if (_selectedTabIndex == 2)
-              _buildOptions<String>(
+              _FilterOptions<String>(
                 values: skillLevelToRate.keys.toList(),
                 selectedValues: viewModel.selectedSkills,
                 onSelected: viewModel.toggleSkillFilter,
@@ -116,15 +131,26 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
     );
   }
 
-  Widget _buildTab(String title, int index, double fontSize) {
+}
+
+class _FilterTab extends StatelessWidget {
+  const _FilterTab({
+    required this.title,
+    required this.fontSize,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String title;
+  final double fontSize;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
     final formColors = context.formColors;
-    final isSelected = _selectedTabIndex == index;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedTabIndex = index;
-        });
-      },
+      onTap: onTap,
       child: Column(
         children: [
           Text(
@@ -152,14 +178,25 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
       ),
     );
   }
+}
 
-  Widget _buildOptions<T>({
-    required List<T> values,
-    required Set<T> selectedValues,
-    required Function(T) onSelected,
-    required String Function(T) labelBuilder,
-    required double chipFontSize,
-  }) {
+class _FilterOptions<T> extends StatelessWidget {
+  const _FilterOptions({
+    required this.values,
+    required this.selectedValues,
+    required this.onSelected,
+    required this.labelBuilder,
+    required this.chipFontSize,
+  });
+
+  final List<T> values;
+  final Set<T> selectedValues;
+  final Function(T) onSelected;
+  final String Function(T) labelBuilder;
+  final double chipFontSize;
+
+  @override
+  Widget build(BuildContext context) {
     final formColors = context.formColors;
 
     return Wrap(

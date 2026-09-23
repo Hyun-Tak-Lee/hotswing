@@ -251,37 +251,80 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    _buildNameAndManagerSection(
-                      baseColors,
-                      playerColors,
-                      formColors,
-                      labelStyle,
-                      isEditMode,
-                      isGuestMode,
+                    _PlayerNameField(
+                      baseColors: baseColors,
+                      playerColors: playerColors,
+                      formColors: formColors,
+                      labelStyle: labelStyle,
+                      isEditMode: isEditMode,
+                      isManager: _isManager,
+                      name: _name,
+                      findPlayersByName: _findPlayersByName,
+                      onPlayerSelected: _loadPlayerAllForms,
+                      onNameSaved: (value) => _name = value,
                     ),
                     SizedBox(height: fieldSpacing),
-                    _buildSkillLevelField(
-                      baseColors,
-                      playerColors,
-                      formColors,
-                      labelStyle,
+                    _PlayerSkillLevelField(
+                      baseColors: baseColors,
+                      playerColors: playerColors,
+                      formColors: formColors,
+                      labelStyle: labelStyle,
+                      isLoaded: _isLoaded,
+                      isManager: _isManager,
+                      selectedSkillLevel: _selectedSkillLevel,
+                      rateController: _rateController,
+                      rate: _rate,
+                      maxRate: _maxRate,
+                      onChanged: _onSkillChanged,
+                      onRateUpdated: _updateRate,
+                      onRateEdited: (parsed) {
+                        setState(() {
+                          _rate = parsed;
+                        });
+                      },
+                      onRateSaved: (value) => _rate = value,
                     ),
                     SizedBox(height: fieldSpacing),
-                    _buildGenderField(
-                      baseColors,
-                      playerColors,
-                      formColors,
-                      labelStyle,
+                    _PlayerGenderField(
+                      baseColors: baseColors,
+                      playerColors: playerColors,
+                      formColors: formColors,
+                      labelStyle: labelStyle,
+                      isLoaded: _isLoaded,
+                      isManager: _isManager,
+                      selectedGender: _selectedGender,
+                      genders: _genders,
+                      onChanged: (newValue) {
+                        setState(() {
+                          _selectedGender = newValue;
+                        });
+                      },
+                      onSaved: (value) => _selectedGender = value,
                     ),
                     SizedBox(height: fieldSpacing),
-                    _buildGroupPlayerField(),
+                    _PlayerGroupField(
+                      players: widget.playersProvider.players.values.toList(),
+                      currentGroups: widget.player?.groups ?? const [],
+                      groups: _groups,
+                      currentId: _id,
+                      onSelectionChanged: (selectedOptions) {
+                        setState(() {
+                          _groups = selectedOptions;
+                        });
+                      },
+                    ),
                     if (isEditMode) ...[
                       SizedBox(height: fieldSpacing),
-                      _buildStatsRow(
-                        baseColors,
-                        playerColors,
-                        formColors,
-                        labelStyle,
+                      _PlayerStatsRow(
+                        baseColors: baseColors,
+                        playerColors: playerColors,
+                        formColors: formColors,
+                        labelStyle: labelStyle,
+                        isManager: _isManager,
+                        playCount: _playCount,
+                        waitCount: _waitCount,
+                        onPlayCountSaved: (value) => _playCount = value,
+                        onWaitCountSaved: (value) => _waitCount = value,
                       ),
                     ],
                   ],
@@ -332,17 +375,115 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     );
   }
 
-  /// 이름 입력 필드와 운영진 토글 스위치 섹션을 빌드합니다.
-  ///
-  /// [isEditMode]인 경우 자동완성이 비활성화되며, [isGuestMode]인 경우 운영진 토글이 숨겨집니다.
-  Widget _buildNameAndManagerSection(
-    BaseColors baseColors,
-    PlayerColors playerColors,
-    FormColors formColors,
-    TextStyle? labelStyle,
-    bool isEditMode,
-    bool isGuestMode,
-  ) {
+  void _onSkillChanged(String? newValue) {
+    setState(() {
+      _selectedSkillLevel = newValue;
+      if (newValue != null && skillLevelToRate.containsKey(newValue)) {
+        _updateRate(skillLevelToRate[newValue]!);
+      }
+    });
+  }
+
+  /// 레이팅을 주어진 [newRate]로 업데이트합니다.
+  /// 값은 0에서 [_maxRate] 사이로 제한됩니다.
+  void _updateRate(int newRate) {
+    final clampedRate = newRate.clamp(0, _maxRate);
+    setState(() {
+      _rate = clampedRate;
+      _rateController.text = clampedRate.toString();
+    });
+  }
+
+}
+
+InputDecoration _playerInputDecoration(
+  BuildContext context, {
+  required BaseColors baseColors,
+  required PlayerColors playerColors,
+  required FormColors formColors,
+  required String labelText,
+  required bool isManager,
+  double? customVerticalPadding,
+  Widget? suffixIcon,
+  bool isDisabled = false,
+}) {
+  return InputDecoration(
+    labelText: labelText,
+    labelStyle: TextStyle(
+      color: isDisabled
+          ? baseColors.textSecondary.withValues(alpha: 0.5)
+          : baseColors.textSecondary,
+    ),
+    floatingLabelStyle: TextStyle(
+      color: isDisabled
+          ? baseColors.textSecondary.withValues(alpha: 0.5)
+          : baseColors.textPrimary,
+      fontWeight: FontWeight.bold,
+    ),
+    filled: true,
+    fillColor: isDisabled ? playerColors.chipBg : playerColors.playerInputFill,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        color: isDisabled ? Colors.transparent : formColors.inputBorder,
+        width: 1,
+      ),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        color: isDisabled ? Colors.transparent : formColors.inputBorder,
+        width: 1,
+      ),
+    ),
+    disabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Colors.transparent, width: 0),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        color: isManager ? playerColors.roleManager : formColors.inputFocusBorder,
+        width: 2,
+      ),
+    ),
+    contentPadding: EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical:
+          customVerticalPadding ??
+          (ResponsiveUtils.isTablet(context) ? 16.0 : 12.0),
+    ),
+    suffixIcon: suffixIcon,
+  );
+}
+
+class _PlayerNameField extends StatelessWidget {
+  const _PlayerNameField({
+    required this.baseColors,
+    required this.playerColors,
+    required this.formColors,
+    required this.labelStyle,
+    required this.isEditMode,
+    required this.isManager,
+    required this.name,
+    required this.findPlayersByName,
+    required this.onPlayerSelected,
+    required this.onNameSaved,
+  });
+
+  final BaseColors baseColors;
+  final PlayerColors playerColors;
+  final FormColors formColors;
+  final TextStyle? labelStyle;
+  final bool isEditMode;
+  final bool isManager;
+  final String? name;
+  final Iterable<Player> Function(TextEditingValue) findPlayersByName;
+  final ValueChanged<Player> onPlayerSelected;
+  final FormFieldSetter<String> onNameSaved;
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -351,12 +492,12 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               return Autocomplete<Player>(
-                initialValue: TextEditingValue(text: _name ?? ''),
+                initialValue: TextEditingValue(text: name ?? ''),
                 optionsBuilder: (TextEditingValue value) {
                   if (isEditMode) return const Iterable<Player>.empty();
-                  return _findPlayersByName(value);
+                  return findPlayersByName(value);
                 },
-                onSelected: _loadPlayerAllForms,
+                onSelected: onPlayerSelected,
                 displayStringForOption: (Player player) => player.name,
                 optionsViewBuilder: (context, onSelected, options) {
                   return Align(
@@ -381,9 +522,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                               return ListTile(
                                 title: Text(
                                   '${option.name} ($skillLevel)',
-                                  style: TextStyle(
-                                    color: baseColors.textPrimary,
-                                  ),
+                                  style: TextStyle(color: baseColors.textPrimary),
                                 ),
                                 onTap: () => onSelected(option),
                               );
@@ -394,45 +533,45 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     ),
                   );
                 },
-                fieldViewBuilder:
-                    (context, controller, focusNode, onFieldSubmitted) {
-                      return TapRegion(
-                        groupId: const ValueKey('player_name_input'),
-                        child: TextFormField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          decoration: _getCommonInputDecoration(
-                            baseColors,
-                            playerColors,
-                            formColors,
-                            '이름',
-                            isDisabled: false,
-                            customVerticalPadding:
-                                ResponsiveUtils.isTablet(context) ? 12.0 : 8.0,
-                            suffixIcon: IconButton(
-                              onPressed: () {
-                                FocusManager.instance.primaryFocus?.unfocus();
-                              },
-                              icon: const Icon(Icons.check),
-                            ),
-                          ),
-                          style: labelStyle,
-                          maxLength: 10,
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(10),
-                          ],
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return '이름을 입력하세요';
-                            }
-                            if (value.length > 10) return '이름은 10자 이하로 입력해주세요';
-                            return null;
+                fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                  return TapRegion(
+                    groupId: const ValueKey('player_name_input'),
+                    child: TextFormField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      decoration: _playerInputDecoration(
+                        context,
+                        baseColors: baseColors,
+                        playerColors: playerColors,
+                        formColors: formColors,
+                        labelText: '이름',
+                        isManager: isManager,
+                        isDisabled: false,
+                        customVerticalPadding: ResponsiveUtils.isTablet(context)
+                            ? 12.0
+                            : 8.0,
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            FocusManager.instance.primaryFocus?.unfocus();
                           },
-                          onSaved: (value) => _name = value,
-                          onFieldSubmitted: (_) => onFieldSubmitted(),
+                          icon: const Icon(Icons.check),
                         ),
-                      );
-                    },
+                      ),
+                      style: labelStyle,
+                      maxLength: 10,
+                      inputFormatters: [LengthLimitingTextInputFormatter(10)],
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '이름을 입력하세요';
+                        }
+                        if (value.length > 10) return '이름은 10자 이하로 입력해주세요';
+                        return null;
+                      },
+                      onSaved: onNameSaved,
+                      onFieldSubmitted: (_) => onFieldSubmitted(),
+                    ),
+                  );
+                },
               );
             },
           ),
@@ -440,88 +579,130 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       ],
     );
   }
+}
 
-  /// 레이팅을 주어진 [newRate]로 업데이트합니다.
-  /// 값은 0에서 [_maxRate] 사이로 제한됩니다.
-  void _updateRate(int newRate) {
-    final clampedRate = newRate.clamp(0, _maxRate);
-    setState(() {
-      _rate = clampedRate;
-      _rateController.text = clampedRate.toString();
-    });
-  }
+class _PlayerSkillLevelField extends StatelessWidget {
+  const _PlayerSkillLevelField({
+    required this.baseColors,
+    required this.playerColors,
+    required this.formColors,
+    required this.labelStyle,
+    required this.isLoaded,
+    required this.isManager,
+    required this.selectedSkillLevel,
+    required this.rateController,
+    required this.rate,
+    required this.maxRate,
+    required this.onChanged,
+    required this.onRateUpdated,
+    required this.onRateEdited,
+    required this.onRateSaved,
+  });
 
-  /// 급수 선택 드롭다운과 레이팅 입력 필드를 포함한 행을 빌드합니다.
-  Widget _buildSkillLevelField(
-    BaseColors baseColors,
-    PlayerColors playerColors,
-    FormColors formColors,
-    TextStyle? labelStyle,
-  ) {
+  final BaseColors baseColors;
+  final PlayerColors playerColors;
+  final FormColors formColors;
+  final TextStyle? labelStyle;
+  final bool isLoaded;
+  final bool isManager;
+  final String? selectedSkillLevel;
+  final TextEditingController rateController;
+  final int? rate;
+  final int maxRate;
+  final ValueChanged<String?> onChanged;
+  final ValueChanged<int> onRateUpdated;
+  final ValueChanged<int> onRateEdited;
+  final ValueChanged<int> onRateSaved;
+
+  @override
+  Widget build(BuildContext context) {
     return Opacity(
-      opacity: _isLoaded ? 0.5 : 1.0,
+      opacity: isLoaded ? 0.5 : 1.0,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             flex: 2,
             child: DropdownButtonFormField<String>(
-              decoration: _getCommonInputDecoration(
-                baseColors,
-                playerColors,
-                formColors,
-                '급수',
-                isDisabled: _isLoaded,
-                customVerticalPadding: ResponsiveUtils.isTablet(context)
-                    ? 6.0
-                    : 2.0,
+              decoration: _playerInputDecoration(
+                context,
+                baseColors: baseColors,
+                playerColors: playerColors,
+                formColors: formColors,
+                labelText: '급수',
+                isManager: isManager,
+                isDisabled: isLoaded,
+                customVerticalPadding: ResponsiveUtils.isTablet(context) ? 6.0 : 2.0,
               ),
               isExpanded: true,
               isDense: false,
-              key: ValueKey('skill_$_selectedSkillLevel'),
-              initialValue: _selectedSkillLevel,
+              key: ValueKey('skill_$selectedSkillLevel'),
+              initialValue: selectedSkillLevel,
               items: skillLevelToRate.keys.map((String level) {
                 return DropdownMenuItem<String>(
                   value: level,
                   child: Text(level, style: labelStyle),
                 );
               }).toList(),
-              onChanged: _isLoaded
-                  ? null
-                  : (newValue) {
-                      setState(() {
-                        _selectedSkillLevel = newValue;
-                        if (newValue != null &&
-                            skillLevelToRate.containsKey(newValue)) {
-                          _updateRate(skillLevelToRate[newValue]!);
-                        }
-                      });
-                    },
+              onChanged: isLoaded ? null : onChanged,
               validator: (value) => value == null ? '급수를 선택하세요.' : null,
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
             flex: 3,
-            child: _buildRateField(
-              baseColors,
-              playerColors,
-              formColors,
-              labelStyle,
+            child: _PlayerRateField(
+              baseColors: baseColors,
+              playerColors: playerColors,
+              formColors: formColors,
+              labelStyle: labelStyle,
+              isLoaded: isLoaded,
+              isManager: isManager,
+              controller: rateController,
+              rate: rate,
+              maxRate: maxRate,
+              onRateUpdated: onRateUpdated,
+              onRateEdited: onRateEdited,
+              onRateSaved: onRateSaved,
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  /// 레이팅 증가/감소 버튼과 직접 입력 가능한 레이팅 필드를 빌드합니다.
-  Widget _buildRateField(
-    BaseColors baseColors,
-    PlayerColors playerColors,
-    FormColors formColors,
-    TextStyle? labelStyle,
-  ) {
+class _PlayerRateField extends StatelessWidget {
+  const _PlayerRateField({
+    required this.baseColors,
+    required this.playerColors,
+    required this.formColors,
+    required this.labelStyle,
+    required this.isLoaded,
+    required this.isManager,
+    required this.controller,
+    required this.rate,
+    required this.maxRate,
+    required this.onRateUpdated,
+    required this.onRateEdited,
+    required this.onRateSaved,
+  });
+
+  final BaseColors baseColors;
+  final PlayerColors playerColors;
+  final FormColors formColors;
+  final TextStyle? labelStyle;
+  final bool isLoaded;
+  final bool isManager;
+  final TextEditingController controller;
+  final int? rate;
+  final int maxRate;
+  final ValueChanged<int> onRateUpdated;
+  final ValueChanged<int> onRateEdited;
+  final ValueChanged<int> onRateSaved;
+
+  @override
+  Widget build(BuildContext context) {
     final bool isTablet = ResponsiveUtils.isTablet(context);
     final double iconSize = isTablet ? 24.0 : 20.0;
     final EdgeInsets padding = isTablet
@@ -538,50 +719,49 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
           constraints: constraints,
           iconSize: iconSize,
           icon: const Icon(Icons.remove),
-          onPressed: _isLoaded
+          onPressed: isLoaded
               ? null
               : () {
-                  int currentRate =
-                      int.tryParse(_rateController.text) ?? (_rate ?? 0);
+                  final int currentRate = int.tryParse(controller.text) ?? (rate ?? 0);
                   int newRate = ((currentRate - 1) ~/ 50) * 50;
                   if (newRate < 0) newRate = 0;
-                  _updateRate(newRate);
+                  onRateUpdated(newRate);
                 },
         ),
         Expanded(
           child: TextFormField(
-            controller: _rateController,
-            decoration: _getCommonInputDecoration(
-              baseColors,
-              playerColors,
-              formColors,
-              'Rate',
-              isDisabled: _isLoaded,
+            controller: controller,
+            decoration: _playerInputDecoration(
+              context,
+              baseColors: baseColors,
+              playerColors: playerColors,
+              formColors: formColors,
+              labelText: 'Rate',
+              isManager: isManager,
+              isDisabled: isLoaded,
               customVerticalPadding: isTablet ? 6.0 : 2.0,
             ),
             style: labelStyle?.copyWith(fontSize: isTablet ? null : 14.0),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            enabled: !_isLoaded,
+            enabled: !isLoaded,
             onChanged: (value) {
               int? parsed = int.tryParse(value);
               if (parsed != null) {
-                if (parsed > _maxRate) {
-                  parsed = _maxRate;
-                  _rateController.text = _maxRate.toString();
-                  _rateController.selection = TextSelection.fromPosition(
-                    TextPosition(offset: _rateController.text.length),
+                if (parsed > maxRate) {
+                  parsed = maxRate;
+                  controller.text = maxRate.toString();
+                  controller.selection = TextSelection.fromPosition(
+                    TextPosition(offset: controller.text.length),
                   );
                 } else if (parsed < 0) {
                   parsed = 0;
-                  _rateController.text = '0';
-                  _rateController.selection = TextSelection.fromPosition(
-                    TextPosition(offset: _rateController.text.length),
+                  controller.text = '0';
+                  controller.selection = TextSelection.fromPosition(
+                    TextPosition(offset: controller.text.length),
                   );
                 }
-                setState(() {
-                  _rate = parsed;
-                });
+                onRateEdited(parsed);
               }
             },
             validator: (value) {
@@ -589,8 +769,8 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
               return null;
             },
             onSaved: (value) {
-              int parsed = int.tryParse(value ?? '') ?? (_rate ?? 0);
-              _rate = parsed.clamp(0, _maxRate);
+              final int parsed = int.tryParse(value ?? '') ?? (rate ?? 0);
+              onRateSaved(parsed.clamp(0, maxRate));
             },
           ),
         ),
@@ -599,66 +779,97 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
           constraints: constraints,
           iconSize: iconSize,
           icon: const Icon(Icons.add),
-          onPressed: _isLoaded
+          onPressed: isLoaded
               ? null
               : () {
-                  int currentRate =
-                      int.tryParse(_rateController.text) ?? (_rate ?? 0);
+                  final int currentRate = int.tryParse(controller.text) ?? (rate ?? 0);
                   int newRate = (currentRate ~/ 50) * 50 + 50;
-                  if (newRate > _maxRate) newRate = _maxRate;
-                  _updateRate(newRate);
+                  if (newRate > maxRate) newRate = maxRate;
+                  onRateUpdated(newRate);
                 },
         ),
       ],
     );
   }
+}
 
-  /// 성별 선택 드롭다운 필드를 빌드합니다.
-  Widget _buildGenderField(
-    BaseColors baseColors,
-    PlayerColors playerColors,
-    FormColors formColors,
-    TextStyle? labelStyle,
-  ) {
+class _PlayerGenderField extends StatelessWidget {
+  const _PlayerGenderField({
+    required this.baseColors,
+    required this.playerColors,
+    required this.formColors,
+    required this.labelStyle,
+    required this.isLoaded,
+    required this.isManager,
+    required this.selectedGender,
+    required this.genders,
+    required this.onChanged,
+    required this.onSaved,
+  });
+
+  final BaseColors baseColors;
+  final PlayerColors playerColors;
+  final FormColors formColors;
+  final TextStyle? labelStyle;
+  final bool isLoaded;
+  final bool isManager;
+  final PlayerGender? selectedGender;
+  final List<PlayerGender> genders;
+  final ValueChanged<PlayerGender?> onChanged;
+  final FormFieldSetter<PlayerGender> onSaved;
+
+  @override
+  Widget build(BuildContext context) {
     return Opacity(
-      opacity: _isLoaded ? 0.5 : 1.0,
+      opacity: isLoaded ? 0.5 : 1.0,
       child: DropdownButtonFormField<PlayerGender>(
-        key: ValueKey('gender_$_selectedGender'),
+        key: ValueKey('gender_$selectedGender'),
         isExpanded: true,
         isDense: false,
-        decoration: _getCommonInputDecoration(
-          baseColors,
-          playerColors,
-          formColors,
-          '성별',
-          isDisabled: _isLoaded,
+        decoration: _playerInputDecoration(
+          context,
+          baseColors: baseColors,
+          playerColors: playerColors,
+          formColors: formColors,
+          labelText: '성별',
+          isManager: isManager,
+          isDisabled: isLoaded,
           customVerticalPadding: ResponsiveUtils.isTablet(context) ? 6.0 : 2.0,
         ),
-        initialValue: _selectedGender,
-        items: _genders.map((PlayerGender gender) {
+        initialValue: selectedGender,
+        items: genders.map((PlayerGender gender) {
           return DropdownMenuItem<PlayerGender>(
             value: gender,
             child: Text(gender.label, style: labelStyle),
           );
         }).toList(),
-        onChanged: _isLoaded
-            ? null
-            : (newValue) {
-                setState(() {
-                  _selectedGender = newValue;
-                });
-              },
+        onChanged: isLoaded ? null : onChanged,
         validator: (value) => value == null ? '성별을 선택하세요.' : null,
-        onSaved: (value) => _selectedGender = value,
+        onSaved: onSaved,
       ),
     );
   }
+}
 
-  /// 그룹 플레이어 다중 선택 필드를 빌드합니다.
-  Widget _buildGroupPlayerField() {
-    final List<Player> sortedPlayers =
-        widget.playersProvider.players.values.toList()
-          ..sort((a, b) => a.name.compareTo(b.name));
+class _PlayerGroupField extends StatelessWidget {
+  const _PlayerGroupField({
+    required this.players,
+    required this.currentGroups,
+    required this.groups,
+    required this.currentId,
+    required this.onSelectionChanged,
+  });
+
+  final List<Player> players;
+  final List<ObjectId> currentGroups;
+  final List<ObjectId> groups;
+  final ObjectId? currentId;
+  final ValueChanged<List<ObjectId>> onSelectionChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Player> sortedPlayers = List<Player>.from(players)
+      ..sort((a, b) => a.name.compareTo(b.name));
 
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 60.0),
@@ -668,40 +879,55 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         optionsId: sortedPlayers.map((p) => p.id).toList(),
         groupsOptionId: sortedPlayers
             .where(
-              (p) =>
-                  p.groups.isNotEmpty &&
-                  !(widget.player?.groups.contains(p.id) ?? false),
+              (p) => p.groups.isNotEmpty && !currentGroups.contains(p.id),
             )
             .map((p) => p.id)
             .toList(),
-        initialValue: _groups,
-        currentId: _id,
-        onSelectionChanged: (selectedOptions) {
-          setState(() {
-            _groups = selectedOptions;
-          });
-        },
+        initialValue: groups,
+        currentId: currentId,
+        onSelectionChanged: onSelectionChanged,
       ),
     );
   }
+}
 
-  /// (수정 모드에만 표시되는) 플레이 횟수와 대기 횟수 입력 필드를 빌드합니다.
-  Widget _buildStatsRow(
-    BaseColors baseColors,
-    PlayerColors playerColors,
-    FormColors formColors,
-    TextStyle? labelStyle,
-  ) {
+class _PlayerStatsRow extends StatelessWidget {
+  const _PlayerStatsRow({
+    required this.baseColors,
+    required this.playerColors,
+    required this.formColors,
+    required this.labelStyle,
+    required this.isManager,
+    required this.playCount,
+    required this.waitCount,
+    required this.onPlayCountSaved,
+    required this.onWaitCountSaved,
+  });
+
+  final BaseColors baseColors;
+  final PlayerColors playerColors;
+  final FormColors formColors;
+  final TextStyle? labelStyle;
+  final bool isManager;
+  final int? playCount;
+  final int? waitCount;
+  final ValueChanged<int?> onPlayCountSaved;
+  final ValueChanged<int?> onWaitCountSaved;
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
         Expanded(
           child: TextFormField(
-            initialValue: _playCount?.toString(),
-            decoration: _getCommonInputDecoration(
-              baseColors,
-              playerColors,
-              formColors,
-              '플레이 횟수',
+            initialValue: playCount?.toString(),
+            decoration: _playerInputDecoration(
+              context,
+              baseColors: baseColors,
+              playerColors: playerColors,
+              formColors: formColors,
+              labelText: '플레이 횟수',
+              isManager: isManager,
               isDisabled: false,
             ),
             style: labelStyle,
@@ -711,18 +937,20 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
               if (value == null || value.isEmpty) return '입력 필요';
               return null;
             },
-            onSaved: (value) => _playCount = int.tryParse(value ?? '0'),
+            onSaved: (value) => onPlayCountSaved(int.tryParse(value ?? '0')),
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
           child: TextFormField(
-            initialValue: _waitCount?.toString(),
-            decoration: _getCommonInputDecoration(
-              baseColors,
-              playerColors,
-              formColors,
-              '대기 횟수',
+            initialValue: waitCount?.toString(),
+            decoration: _playerInputDecoration(
+              context,
+              baseColors: baseColors,
+              playerColors: playerColors,
+              formColors: formColors,
+              labelText: '대기 횟수',
+              isManager: isManager,
               isDisabled: false,
             ),
             style: labelStyle,
@@ -732,73 +960,10 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
               if (value == null || value.isEmpty) return '입력 필요';
               return null;
             },
-            onSaved: (value) => _waitCount = int.tryParse(value ?? '0'),
+            onSaved: (value) => onWaitCountSaved(int.tryParse(value ?? '0')),
           ),
         ),
       ],
-    );
-  }
-
-  InputDecoration _getCommonInputDecoration(
-    BaseColors baseColors,
-    PlayerColors playerColors,
-    FormColors formColors,
-    String labelText, {
-    double? customVerticalPadding,
-    Widget? suffixIcon,
-    bool isDisabled = false,
-  }) {
-    return InputDecoration(
-      labelText: labelText,
-      labelStyle: TextStyle(
-        color: isDisabled
-            ? baseColors.textSecondary.withValues(alpha: 0.5)
-            : baseColors.textSecondary,
-      ),
-      floatingLabelStyle: TextStyle(
-        color: isDisabled
-            ? baseColors.textSecondary.withValues(alpha: 0.5)
-            : baseColors.textPrimary,
-        fontWeight: FontWeight.bold,
-      ),
-      filled: true,
-      fillColor: isDisabled
-          ? playerColors.chipBg
-          : playerColors.playerInputFill,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(
-          color: isDisabled ? Colors.transparent : formColors.inputBorder,
-          width: 1,
-        ),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(
-          color: isDisabled ? Colors.transparent : formColors.inputBorder,
-          width: 1,
-        ),
-      ),
-      disabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.transparent, width: 0),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(
-          color: _isManager
-              ? playerColors.roleManager
-              : formColors.inputFocusBorder,
-          width: 2,
-        ),
-      ),
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical:
-            customVerticalPadding ??
-            (ResponsiveUtils.isTablet(context) ? 16.0 : 12.0),
-      ),
-      suffixIcon: suffixIcon,
     );
   }
 }

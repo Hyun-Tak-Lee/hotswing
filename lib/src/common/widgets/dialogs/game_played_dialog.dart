@@ -65,37 +65,6 @@ class GamePlayedDialog extends StatelessWidget {
         return a.key.compareTo(b.key);
       });
 
-    // 전적 항목 표현을 위한 소형 위젯 빌더
-    Widget buildSummaryItem(String label, String value, Color valueColor) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.0,
-              fontWeight: FontWeight.w600,
-              color: baseColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 6.0),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 15.0,
-              fontWeight: FontWeight.bold,
-              color: valueColor,
-            ),
-          ),
-        ],
-      );
-    }
-
-    // 요약 카드 내 수직 디바이더 빌더
-    Widget buildSummaryDivider() {
-      return Container(height: 24.0, width: 1.2, color: formColors.filterDivider);
-    }
-
     // 상세 시간 포맷팅
     final String formattedPlayTime =
         '${player.playTime ~/ 60}분 ${player.playTime % 60}초';
@@ -112,22 +81,26 @@ class GamePlayedDialog extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          buildSummaryItem(
-            '총 플레이',
-            '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}회',
-            baseColors.primaryAccent,
+          _PlaySummaryItem(
+            label: '총 플레이',
+            value:
+                '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}회',
+            labelColor: baseColors.textSecondary,
+            valueColor: baseColors.primaryAccent,
           ),
-          buildSummaryDivider(),
-          buildSummaryItem(
-            '누적 대기',
-            '${player.waited}회',
-            baseColors.textSecondary,
+          _PlaySummaryDivider(color: formColors.filterDivider),
+          _PlaySummaryItem(
+            label: '누적 대기',
+            value: '${player.waited}회',
+            labelColor: baseColors.textSecondary,
+            valueColor: baseColors.textSecondary,
           ),
-          buildSummaryDivider(),
-          buildSummaryItem(
-            '총 플레이 시간',
-            formattedPlayTime,
-            playerColors.genderTag,
+          _PlaySummaryDivider(color: formColors.filterDivider),
+          _PlaySummaryItem(
+            label: '총 플레이 시간',
+            value: formattedPlayTime,
+            labelColor: baseColors.textSecondary,
+            valueColor: playerColors.genderTag,
           ),
         ],
       ),
@@ -195,5 +168,56 @@ class GamePlayedDialog extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _PlaySummaryItem extends StatelessWidget {
+  const _PlaySummaryItem({
+    required this.label,
+    required this.value,
+    required this.labelColor,
+    required this.valueColor,
+  });
+
+  final String label;
+  final String value;
+  final Color labelColor;
+  final Color valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.0,
+            fontWeight: FontWeight.w600,
+            color: labelColor,
+          ),
+        ),
+        const SizedBox(height: 6.0),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 15.0,
+            fontWeight: FontWeight.bold,
+            color: valueColor,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PlaySummaryDivider extends StatelessWidget {
+  const _PlaySummaryDivider({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(height: 24.0, width: 1.2, color: color);
   }
 }

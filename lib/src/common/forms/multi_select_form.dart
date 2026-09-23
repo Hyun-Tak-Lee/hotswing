@@ -73,46 +73,6 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
     widget.onSelectionChanged(_selectedOptions);
   }
 
-  Widget _buildSelectedOptionsTitle(BaseColors baseColors) {
-    if (_selectedOptions.isEmpty) {
-      return Text(
-        widget.title,
-        style: TextStyle(
-          color: baseColors.textSecondary,
-          fontWeight: FontWeight.normal,
-          fontSize: _labelFontSize,
-        ),
-      );
-    }
-
-    final sortedSelected = List<ObjectId>.from(_selectedOptions)
-      ..sort((a, b) {
-        final indexA = widget.optionsId.indexOf(a);
-        final indexB = widget.optionsId.indexOf(b);
-        return indexA.compareTo(indexB);
-      });
-
-    List<Widget> selectedChips = [];
-    for (ObjectId selectedId in sortedSelected) {
-      int index = widget.optionsId.indexOf(selectedId);
-      if (index != -1) {
-        selectedChips.add(
-          Chip(
-            label: Text(
-              widget.options[index],
-              style: TextStyle(fontSize: _chipFontSize),
-            ),
-            onDeleted: () {
-              _onOptionChanged(selectedId, false);
-            },
-          ),
-        );
-      }
-    }
-
-    return Wrap(spacing: 6.0, runSpacing: 6.0, children: selectedChips);
-  }
-
   void _toggleMenu(BaseColors baseColors) {
     if (_isMenuOpen) {
       _closeMenu();
@@ -220,7 +180,15 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
         link: _layerLink,
         child: ListTile(
           onTap: () => _toggleMenu(baseColors),
-          title: _buildSelectedOptionsTitle(baseColors),
+          title: _SelectedOptionsTitle(
+            title: widget.title,
+            selectedOptions: _selectedOptions,
+            options: widget.options,
+            optionsId: widget.optionsId,
+            labelFontSize: _labelFontSize,
+            chipFontSize: _chipFontSize,
+            onDeleted: (selectedId) => _onOptionChanged(selectedId, false),
+          ),
           trailing: Icon(
             _isMenuOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
             color: baseColors.textSecondary,
@@ -228,5 +196,62 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
         ),
       ),
     );
+  }
+}
+
+class _SelectedOptionsTitle extends StatelessWidget {
+  const _SelectedOptionsTitle({
+    required this.title,
+    required this.selectedOptions,
+    required this.options,
+    required this.optionsId,
+    required this.labelFontSize,
+    required this.chipFontSize,
+    required this.onDeleted,
+  });
+
+  final String title;
+  final List<ObjectId> selectedOptions;
+  final List<String> options;
+  final List<ObjectId> optionsId;
+  final double labelFontSize;
+  final double chipFontSize;
+  final ValueChanged<ObjectId> onDeleted;
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    if (selectedOptions.isEmpty) {
+      return Text(
+        title,
+        style: TextStyle(
+          color: baseColors.textSecondary,
+          fontWeight: FontWeight.normal,
+          fontSize: labelFontSize,
+        ),
+      );
+    }
+
+    final sortedSelected = List<ObjectId>.from(selectedOptions)
+      ..sort((a, b) {
+        final indexA = optionsId.indexOf(a);
+        final indexB = optionsId.indexOf(b);
+        return indexA.compareTo(indexB);
+      });
+
+    final List<Widget> selectedChips = [];
+    for (final ObjectId selectedId in sortedSelected) {
+      final int index = optionsId.indexOf(selectedId);
+      if (index != -1) {
+        selectedChips.add(
+          Chip(
+            label: Text(options[index], style: TextStyle(fontSize: chipFontSize)),
+            onDeleted: () => onDeleted(selectedId),
+          ),
+        );
+      }
+    }
+
+    return Wrap(spacing: 6.0, runSpacing: 6.0, children: selectedChips);
   }
 }
