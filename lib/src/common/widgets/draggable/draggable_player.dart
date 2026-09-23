@@ -488,7 +488,7 @@ class DraggablePlayerItem extends StatelessWidget {
                   ],
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (groupInfo != null)
@@ -506,22 +506,18 @@ class DraggablePlayerItem extends StatelessWidget {
                             width: 0.8,
                           ),
                         ),
-                        width: double.infinity,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            groupInfo.label,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: (nameFontSize - 7.0).clamp(8.0, 18.0),
-                              fontWeight: FontWeight.bold,
-                              color: groupInfo.color,
-                              height: 1.0,
-                              decoration: TextDecoration.none,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        child: Text(
+                          groupInfo.label,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: (nameFontSize - 7.0).clamp(8.0, 18.0),
+                            fontWeight: FontWeight.bold,
+                            color: groupInfo.color,
+                            height: 1.0,
+                            decoration: TextDecoration.none,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     FittedBox(
@@ -649,9 +645,7 @@ class PlayerDropZone extends StatelessWidget {
         sectionKind == 'assigned' || sectionKind == 'standby';
     final double? currentHeight = isWithinCourtCard
         ? null
-        : (isLandscape
-            ? null
-            : (isTablet ? 160.0 : 140.0));
+        : (isLandscape ? null : (isTablet ? 160.0 : 140.0));
 
     return DragTarget<PlayerDragData>(
       onWillAcceptWithDetails: (details) {
