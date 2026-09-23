@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// Google Material 3 (M3) 기본 다이얼로그 표준 규격에 맞춘 공통 확인 다이얼로그
 class ConfirmationDialog extends StatelessWidget {
   final String? title;
-  final String message;
+  final String? message;
+  final Color? messageColor;
   final String confirmText;
   final String cancelText;
   final bool isDestructive;
@@ -13,7 +14,8 @@ class ConfirmationDialog extends StatelessWidget {
   const ConfirmationDialog({
     super.key,
     this.title,
-    required this.message,
+    this.message,
+    this.messageColor,
     this.confirmText = '확인',
     this.cancelText = '취소',
     this.isDestructive = false,
@@ -23,100 +25,97 @@ class ConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final baseColors = context.baseColors;
-    final formColors = context.formColors;
-    final textTheme = Theme.of(context).textTheme;
-    final bool isMobile = ResponsiveUtils.isMobile(context);
-    final double dialogWidth = isMobile
-        ? MediaQuery.of(context).size.width * 0.8
-        : 450.0;
 
-    final titleStyle = ResponsiveUtils.getResponsiveStyle(
-      context,
-      textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: baseColors.textPrimary),
-    );
-    final messageStyle = ResponsiveUtils.getResponsiveStyle(
-      context,
-      textTheme.bodyLarge?.copyWith(color: baseColors.textSecondary),
-    );
-    final buttonStyle = ResponsiveUtils.getResponsiveStyle(
-      context,
-      textTheme.titleMedium?.copyWith(color: baseColors.textPrimary),
-    );
-    final destructiveButtonStyle = buttonStyle?.copyWith(color: Colors.redAccent);
+    final hasTitle = title != null && title!.isNotEmpty;
+    final hasMessage = message != null && message!.isNotEmpty;
+
+    // 파괴적 액션(삭제/초기화)일 때와 일반 액션일 때의 색상
+    final Color actionConfirmColor = isDestructive
+        ? Colors.redAccent
+        : baseColors.primaryAccent;
 
     return AlertDialog(
       backgroundColor: baseColors.cardBg,
       surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.0)),
-      contentPadding: EdgeInsets.zero,
-      actionsPadding: EdgeInsets.zero,
-      title: title != null
-          ? Text(title!, style: titleStyle, textAlign: TextAlign.center)
-          : null,
-      content: Container(
-        padding: const EdgeInsets.only(
-          left: 24.0,
-          right: 24.0,
-          top: 12.0, // title이 있을 경우 간격 조정 필요하지만 단순화
-          bottom: 24.0,
-        ),
-        width: dialogWidth,
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: formColors.filterDivider)),
-        ),
-        child: Text(message, style: messageStyle, textAlign: TextAlign.center),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28.0), // M3 표준 corner radius
       ),
+      titlePadding: EdgeInsets.fromLTRB(
+        24.0,
+        24.0,
+        24.0,
+        hasMessage ? 16.0 : 24.0,
+      ),
+      contentPadding: const EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 20.0),
+      actionsPadding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+      // M3 표준: 아이콘이 없는 경우 Start-aligned(좌측 정렬)
+      title: hasTitle
+          ? Text(
+              title!,
+              style: TextStyle(
+                fontSize: 20.0,
+                fontWeight: FontWeight.bold,
+                color: baseColors.textPrimary,
+                letterSpacing: -0.2,
+              ),
+            )
+          : null,
+      content: hasMessage
+          ? Text(
+              message!,
+              style: TextStyle(
+                fontSize: 15.0,
+                height: 1.5,
+                color: messageColor ?? baseColors.textSecondary,
+              ),
+            )
+          : null,
       actions: <Widget>[
-        IntrinsicHeight(
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(28.0),
-                      ),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(cancelText, style: buttonStyle),
-                ),
-              ),
-              SizedBox(
-                height: kMinInteractiveDimension,
-                child: VerticalDivider(
-                  thickness: 1,
-                  color: formColors.filterDivider,
-                  width: 1,
-                ),
-              ),
-              Expanded(
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        bottomRight: Radius.circular(28.0),
-                      ),
-                    ),
-                  ),
-                  onPressed: () {
-                    onConfirm();
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(
-                    confirmText,
-                    style: isDestructive ? destructiveButtonStyle : buttonStyle,
-                  ),
-                ),
-              ),
-            ],
+        TextButton(
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 10.0,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            cancelText,
+            style: TextStyle(
+              fontSize: 15.0,
+              fontWeight: FontWeight.w600,
+              color: baseColors.textSecondary,
+            ),
+          ),
+        ),
+        const SizedBox(width: 4.0),
+        TextButton(
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 10.0,
+            ),
+            backgroundColor: isDestructive
+                ? actionConfirmColor.withValues(alpha: 0.1)
+                : Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+          ),
+          onPressed: () {
+            onConfirm();
+            Navigator.of(context).pop();
+          },
+          child: Text(
+            confirmText,
+            style: TextStyle(
+              fontSize: 15.0,
+              fontWeight: FontWeight.bold,
+              color: actionConfirmColor,
+            ),
           ),
         ),
       ],

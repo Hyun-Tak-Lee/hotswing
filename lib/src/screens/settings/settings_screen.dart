@@ -31,7 +31,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final baseColors = context.baseColors;
     final colorScheme = context.colorScheme;
 
-    // 라이트 모드 이전 색상 완벽 복원 및 다크 모드 적응을 위한 변수 정의
     final dynamicCardBg = baseColors.cardBg;
     final dynamicCardShadow = baseColors.cardShadow;
     final dynamicBorder = Border.all(color: baseColors.cardBorderColor);
@@ -47,408 +46,429 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final headerFontSize = iconAndFontSize * 1.2;
 
     return Scaffold(
-      backgroundColor: Colors.transparent, // 부모 컨테이너의 배경색 활용
-      body: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: EdgeInsets.symmetric(
-              horizontal: isTablet ? 32.0 : 16.0,
-              vertical: 24.0,
-            ),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                // 테마 설정 섹션
-                _buildSectionHeader(
-                  title: '테마 설정',
-                  fontSize: headerFontSize,
-                  isExpanded: _isThemeExpanded,
-                  onToggle: () =>
-                      setState(() => _isThemeExpanded = !_isThemeExpanded),
-                  colorScheme: colorScheme,
-                ),
-                AnimatedCrossFade(
-                  firstChild: const SizedBox(width: double.infinity),
-                  secondChild: Container(
-                    margin: const EdgeInsets.only(bottom: 24.0, top: 4.0),
-                    decoration: BoxDecoration(
-                      color: dynamicCardBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: dynamicBorder,
-                      boxShadow: [
-                        BoxShadow(
-                          color: dynamicCardShadow,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20.0,
-                        vertical: 16.0,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '화면 모드 설정',
-                            style: TextStyle(
-                              fontSize: iconAndFontSize,
-                              fontWeight: FontWeight.bold,
-                              color: dynamicText,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: SegmentedButton<ThemeMode>(
-                              segments: const <ButtonSegment<ThemeMode>>[
-                                ButtonSegment<ThemeMode>(
-                                  value: ThemeMode.system,
-                                  label: Text('시스템 설정'),
-                                  icon: Icon(Icons.brightness_auto),
-                                ),
-                                ButtonSegment<ThemeMode>(
-                                  value: ThemeMode.light,
-                                  label: Text('라이트 모드'),
-                                  icon: Icon(Icons.light_mode),
-                                ),
-                                ButtonSegment<ThemeMode>(
-                                  value: ThemeMode.dark,
-                                  label: Text('다크 모드'),
-                                  icon: Icon(Icons.dark_mode),
-                                ),
-                              ],
-                              selected: <ThemeMode>{themeProvider.themeMode},
-                              onSelectionChanged:
-                                  (Set<ThemeMode> newSelection) {
-                                    themeProvider.setThemeMode(
-                                      newSelection.first,
-                                    );
-                                  },
-                              showSelectedIcon: false,
-                            ),
+      backgroundColor: Colors.transparent,
+      body: ListView.builder(
+        padding: EdgeInsets.symmetric(
+          horizontal: isTablet ? 32.0 : 16.0,
+          vertical: 24.0,
+        ),
+        itemCount: 4,
+        itemBuilder: (context, index) {
+          switch (index) {
+            case 0:
+              // 테마 설정 섹션
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SettingSectionHeader(
+                    title: '테마 설정',
+                    fontSize: headerFontSize,
+                    isExpanded: _isThemeExpanded,
+                    onToggle: () =>
+                        setState(() => _isThemeExpanded = !_isThemeExpanded),
+                    colorScheme: colorScheme,
+                  ),
+                  AnimatedCrossFade(
+                    firstChild: const SizedBox(width: double.infinity),
+                    secondChild: Container(
+                      margin: const EdgeInsets.only(bottom: 24.0, top: 4.0),
+                      decoration: BoxDecoration(
+                        color: dynamicCardBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: dynamicBorder,
+                        boxShadow: [
+                          BoxShadow(
+                            color: dynamicCardShadow,
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                            spreadRadius: 1,
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  crossFadeState: _isThemeExpanded
-                      ? CrossFadeState.showSecond
-                      : CrossFadeState.showFirst,
-                  duration: const Duration(milliseconds: 300),
-                ),
-                const SizedBox(height: 16),
-
-                // 코트 관리 섹션
-                _buildSectionHeader(
-                  title: '코트 관리',
-                  fontSize: headerFontSize,
-                  isExpanded: _isCourtExpanded,
-                  onToggle: () =>
-                      setState(() => _isCourtExpanded = !_isCourtExpanded),
-                  colorScheme: colorScheme,
-                ),
-                AnimatedCrossFade(
-                  firstChild: const SizedBox(width: double.infinity),
-                  secondChild: Container(
-                    margin: const EdgeInsets.only(bottom: 24.0, top: 4.0),
-                    decoration: BoxDecoration(
-                      color: dynamicCardBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: dynamicBorder,
-                      boxShadow: [
-                        BoxShadow(
-                          color: dynamicCardShadow,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                          spreadRadius: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20.0,
+                          vertical: 16.0,
                         ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20.0,
-                        vertical: 16.0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '화면 모드 설정',
+                              style: TextStyle(
+                                fontSize: iconAndFontSize,
+                                fontWeight: FontWeight.bold,
+                                color: dynamicText,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: SegmentedButton<ThemeMode>(
+                                segments: const <ButtonSegment<ThemeMode>>[
+                                  ButtonSegment<ThemeMode>(
+                                    value: ThemeMode.system,
+                                    label: Text('시스템 설정'),
+                                    icon: Icon(Icons.brightness_auto),
+                                  ),
+                                  ButtonSegment<ThemeMode>(
+                                    value: ThemeMode.light,
+                                    label: Text('라이트 모드'),
+                                    icon: Icon(Icons.light_mode),
+                                  ),
+                                  ButtonSegment<ThemeMode>(
+                                    value: ThemeMode.dark,
+                                    label: Text('다크 모드'),
+                                    icon: Icon(Icons.dark_mode),
+                                  ),
+                                ],
+                                selected: <ThemeMode>{themeProvider.themeMode},
+                                onSelectionChanged:
+                                    (Set<ThemeMode> newSelection) {
+                                      themeProvider.setThemeMode(
+                                        newSelection.first,
+                                      );
+                                    },
+                                showSelectedIcon: false,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  '코트 수 설정',
-                                  style: TextStyle(
-                                    fontSize: iconAndFontSize,
-                                    fontWeight: FontWeight.bold,
-                                    color: dynamicText,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: dynamicPrimary.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  '${optionsProvider.numberOfSections}개',
-                                  style: TextStyle(
-                                    fontSize: iconAndFontSize,
-                                    fontWeight: FontWeight.bold,
-                                    color: dynamicDarkAccent,
-                                  ),
-                                ),
-                              ),
-                              const Expanded(child: SizedBox()),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              activeTrackColor: dynamicPrimary,
-                              inactiveTrackColor: dynamicInactiveTrack,
-                              thumbColor: dynamicThumb,
-                              overlayColor: dynamicPrimary.withValues(
-                                alpha: 0.2,
-                              ),
-                              valueIndicatorColor: dynamicPrimary,
-                              trackHeight: 6.0,
-                            ),
-                            child: Slider(
-                              value: optionsProvider.numberOfSections
-                                  .toDouble(),
-                              min: 1,
-                              max: 10,
-                              divisions: 9,
-                              label: optionsProvider.numberOfSections
-                                  .round()
-                                  .toString(),
-                              onChanged: (double value) {
-                                int newNumberOfSections = value.round();
-                                optionsProvider.setNumberOfSections(
-                                  newNumberOfSections,
-                                );
-                                playersProvider.updateAssignedPlayersListCount(
-                                  newNumberOfSections,
-                                );
-                              },
-                            ),
+                    ),
+                    crossFadeState: _isThemeExpanded
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
+                    duration: const Duration(milliseconds: 300),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              );
+
+            case 1:
+              // 코트 관리 섹션
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SettingSectionHeader(
+                    title: '코트 관리',
+                    fontSize: headerFontSize,
+                    isExpanded: _isCourtExpanded,
+                    onToggle: () =>
+                        setState(() => _isCourtExpanded = !_isCourtExpanded),
+                    colorScheme: colorScheme,
+                  ),
+                  AnimatedCrossFade(
+                    firstChild: const SizedBox(width: double.infinity),
+                    secondChild: Container(
+                      margin: const EdgeInsets.only(bottom: 24.0, top: 4.0),
+                      decoration: BoxDecoration(
+                        color: dynamicCardBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: dynamicBorder,
+                        boxShadow: [
+                          BoxShadow(
+                            color: dynamicCardShadow,
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                            spreadRadius: 1,
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  crossFadeState: _isCourtExpanded
-                      ? CrossFadeState.showSecond
-                      : CrossFadeState.showFirst,
-                  duration: const Duration(milliseconds: 300),
-                ),
-
-                // 매칭 조건 설정 섹션
-                const SizedBox(height: 16),
-                _buildSectionHeader(
-                  title: '매칭 조건 설정',
-                  fontSize: headerFontSize,
-                  isExpanded: _isMatchingExpanded,
-                  onToggle: () => setState(
-                    () => _isMatchingExpanded = !_isMatchingExpanded,
-                  ),
-                  colorScheme: colorScheme,
-                ),
-
-                AnimatedCrossFade(
-                  firstChild: const SizedBox(width: double.infinity),
-                  secondChild: Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.symmetric(vertical: 8.0),
-                          decoration: BoxDecoration(
-                            color: dynamicCardBg,
-                            borderRadius: BorderRadius.circular(16),
-                            border: dynamicBorder,
-                            boxShadow: [
-                              BoxShadow(
-                                color: dynamicCardShadow,
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                                spreadRadius: 1,
-                              ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20.0,
-                              vertical: 16.0,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20.0,
+                          vertical: 16.0,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
-                                Text(
-                                  '운영진 대기 (교류전 제외)',
-                                  style: TextStyle(
-                                    fontSize: iconAndFontSize,
-                                    fontWeight: FontWeight.bold,
-                                    color: dynamicText,
+                                Expanded(
+                                  child: Text(
+                                    '코트 수 설정',
+                                    style: TextStyle(
+                                      fontSize: iconAndFontSize,
+                                      fontWeight: FontWeight.bold,
+                                      color: dynamicText,
+                                    ),
                                   ),
                                 ),
-                                Switch.adaptive(
-                                  value: optionsProvider.reserveManager,
-                                  activeTrackColor: dynamicPrimary,
-                                  onChanged: (bool value) {
-                                    optionsProvider.setReserveManager(value);
-                                  },
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: dynamicPrimary.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '${optionsProvider.numberOfSections}개',
+                                    style: TextStyle(
+                                      fontSize: iconAndFontSize,
+                                      fontWeight: FontWeight.bold,
+                                      color: dynamicDarkAccent,
+                                    ),
+                                  ),
+                                ),
+                                const Expanded(child: SizedBox()),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                activeTrackColor: dynamicPrimary,
+                                inactiveTrackColor: dynamicInactiveTrack,
+                                thumbColor: dynamicThumb,
+                                overlayColor: dynamicPrimary.withValues(
+                                  alpha: 0.2,
+                                ),
+                                valueIndicatorColor: dynamicPrimary,
+                                trackHeight: 6.0,
+                              ),
+                              child: Slider(
+                                value: optionsProvider.numberOfSections
+                                    .toDouble(),
+                                min: 1,
+                                max: 10,
+                                divisions: 9,
+                                label: optionsProvider.numberOfSections
+                                    .round()
+                                    .toString(),
+                                onChanged: (double value) {
+                                  int newNumberOfSections = value.round();
+                                  optionsProvider.setNumberOfSections(
+                                    newNumberOfSections,
+                                  );
+                                  playersProvider.updateAssignedPlayersListCount(
+                                    newNumberOfSections,
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    crossFadeState: _isCourtExpanded
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
+                    duration: const Duration(milliseconds: 300),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              );
+
+            case 2:
+              // 매칭 조건 설정 섹션
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SettingSectionHeader(
+                    title: '매칭 조건 설정',
+                    fontSize: headerFontSize,
+                    isExpanded: _isMatchingExpanded,
+                    onToggle: () => setState(
+                      () => _isMatchingExpanded = !_isMatchingExpanded,
+                    ),
+                    colorScheme: colorScheme,
+                  ),
+                  AnimatedCrossFade(
+                    firstChild: const SizedBox(width: double.infinity),
+                    secondChild: Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.symmetric(vertical: 8.0),
+                            decoration: BoxDecoration(
+                              color: dynamicCardBg,
+                              borderRadius: BorderRadius.circular(16),
+                              border: dynamicBorder,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: dynamicCardShadow,
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                  spreadRadius: 1,
                                 ),
                               ],
                             ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20.0,
+                                vertical: 16.0,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '운영진 대기 (교류전 제외)',
+                                    style: TextStyle(
+                                      fontSize: iconAndFontSize,
+                                      fontWeight: FontWeight.bold,
+                                      color: dynamicText,
+                                    ),
+                                  ),
+                                  Switch.adaptive(
+                                    value: optionsProvider.reserveManager,
+                                    activeTrackColor: dynamicPrimary,
+                                    onChanged: (bool value) {
+                                      optionsProvider.setReserveManager(value);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                        _buildSliderListItem(
-                          context: context,
-                          title: '실력 매칭',
-                          leftText: '2명씩 균등',
-                          rightText: '4인 균등',
-                          value: optionsProvider.skillWeight,
-                          onChanged: (double value) =>
-                              optionsProvider.setSkillWeight(value),
-                          iconAndFontSize: iconAndFontSize,
-                          colorScheme: colorScheme,
-                        ),
-                        _buildSliderListItem(
-                          context: context,
-                          title: '성별 분포',
-                          leftText: '남2여2 혼성',
-                          rightText: '단일 성별 위주',
-                          value: optionsProvider.genderWeight,
-                          onChanged: (double value) =>
-                              optionsProvider.setGenderWeight(value),
-                          iconAndFontSize: iconAndFontSize,
-                          colorScheme: colorScheme,
-                        ),
-                        _buildSliderListItem(
-                          context: context,
-                          title: '대기 횟수 우선순위',
-                          leftText: '조합 우선',
-                          rightText: '대기 긴 사람 우선',
-                          value: optionsProvider.waitedWeight,
-                          onChanged: (double value) =>
-                              optionsProvider.setWaitedWeight(value),
-                          iconAndFontSize: iconAndFontSize,
-                          colorScheme: colorScheme,
-                        ),
-                        _buildSliderListItem(
-                          context: context,
-                          title: '경기 횟수 보정',
-                          leftText: '무시',
-                          rightText: '균등한 경기 수 반영',
-                          value: optionsProvider.playedWeight,
-                          onChanged: (double value) =>
-                              optionsProvider.setPlayedWeight(value),
-                          iconAndFontSize: iconAndFontSize,
-                          colorScheme: colorScheme,
-                        ),
-                        _buildSliderListItem(
-                          context: context,
-                          title: '중복 매칭 피하기',
-                          leftText: '무시',
-                          rightText: '다양한 사람과 매칭',
-                          value: optionsProvider.playedWithWeight,
-                          onChanged: (double value) =>
-                              optionsProvider.setPlayedWithWeight(value),
-                          iconAndFontSize: iconAndFontSize,
-                          colorScheme: colorScheme,
-                        ),
-                        _buildIntSliderListItem(
-                          context: context,
-                          title: '무작위 수치',
-                          leftText: '최적 조합',
-                          rightText: '랜덤성 부여',
-                          value: optionsProvider.randomPoolSize,
-                          min: 1,
-                          max: 5,
-                          divisions: 4,
-                          unit: '',
-                          onChanged: (int value) =>
-                              optionsProvider.setRandomPoolSize(value),
-                          iconAndFontSize: iconAndFontSize,
-                          colorScheme: colorScheme,
-                        ),
-                      ],
+                          SettingSliderCard(
+                            title: '실력 매칭',
+                            leftText: '2명씩 균등',
+                            rightText: '4인 균등',
+                            value: optionsProvider.skillWeight,
+                            onChanged: (double value) =>
+                                optionsProvider.setSkillWeight(value),
+                            iconAndFontSize: iconAndFontSize,
+                          ),
+                          SettingSliderCard(
+                            title: '성별 분포',
+                            leftText: '남2여2 혼성',
+                            rightText: '단일 성별 위주',
+                            value: optionsProvider.genderWeight,
+                            onChanged: (double value) =>
+                                optionsProvider.setGenderWeight(value),
+                            iconAndFontSize: iconAndFontSize,
+                          ),
+                          SettingSliderCard(
+                            title: '대기 횟수 우선순위',
+                            leftText: '조합 우선',
+                            rightText: '대기 긴 사람 우선',
+                            value: optionsProvider.waitedWeight,
+                            onChanged: (double value) =>
+                                optionsProvider.setWaitedWeight(value),
+                            iconAndFontSize: iconAndFontSize,
+                          ),
+                          SettingSliderCard(
+                            title: '경기 횟수 보정',
+                            leftText: '무시',
+                            rightText: '균등한 경기 수 반영',
+                            value: optionsProvider.playedWeight,
+                            onChanged: (double value) =>
+                                optionsProvider.setPlayedWeight(value),
+                            iconAndFontSize: iconAndFontSize,
+                          ),
+                          SettingSliderCard(
+                            title: '중복 매칭 피하기',
+                            leftText: '무시',
+                            rightText: '다양한 사람과 매칭',
+                            value: optionsProvider.playedWithWeight,
+                            onChanged: (double value) =>
+                                optionsProvider.setPlayedWithWeight(value),
+                            iconAndFontSize: iconAndFontSize,
+                          ),
+                          SettingIntSliderCard(
+                            title: '무작위 수치',
+                            leftText: '최적 조합',
+                            rightText: '랜덤성 부여',
+                            value: optionsProvider.randomPoolSize,
+                            min: 1,
+                            max: 5,
+                            divisions: 4,
+                            unit: '',
+                            onChanged: (int value) =>
+                                optionsProvider.setRandomPoolSize(value),
+                            iconAndFontSize: iconAndFontSize,
+                          ),
+                        ],
+                      ),
                     ),
+                    crossFadeState: _isMatchingExpanded
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
+                    duration: const Duration(milliseconds: 300),
                   ),
-                  crossFadeState: _isMatchingExpanded
-                      ? CrossFadeState.showSecond
-                      : CrossFadeState.showFirst,
-                  duration: const Duration(milliseconds: 300),
-                ),
+                  const SizedBox(height: 16),
+                ],
+              );
 
-                const SizedBox(height: 48), // 하단 여백 추가
-                // 플레이어 관리 섹션
-                const SizedBox(height: 16),
-                _buildSectionHeader(
-                  title: '플레이어 관리',
-                  fontSize: headerFontSize,
-                  isExpanded: _isPlayerExpanded,
-                  onToggle: () =>
-                      setState(() => _isPlayerExpanded = !_isPlayerExpanded),
-                  colorScheme: colorScheme,
-                ),
-                AnimatedCrossFade(
-                  firstChild: const SizedBox(width: double.infinity),
-                  secondChild: Padding(
-                    padding: const EdgeInsets.only(top: 4.0, bottom: 24.0),
-                    child: _buildIntSliderListItem(
-                      context: context,
-                      title: '미활동 플레이어 정리 기간',
-                      leftText: '30일',
-                      rightText: '180일',
-                      value: optionsProvider.inactiveDaysThreshold,
-                      min: 30,
-                      max: 180,
-                      divisions: 30,
-                      unit: '일',
-                      onChanged: (int value) =>
-                          optionsProvider.setInactiveDaysThreshold(value),
-                      iconAndFontSize: iconAndFontSize,
-                      colorScheme: colorScheme,
+            case 3:
+              // 플레이어 관리 섹션
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SettingSectionHeader(
+                    title: '플레이어 관리',
+                    fontSize: headerFontSize,
+                    isExpanded: _isPlayerExpanded,
+                    onToggle: () =>
+                        setState(() => _isPlayerExpanded = !_isPlayerExpanded),
+                    colorScheme: colorScheme,
+                  ),
+                  AnimatedCrossFade(
+                    firstChild: const SizedBox(width: double.infinity),
+                    secondChild: Padding(
+                      padding: const EdgeInsets.only(top: 4.0, bottom: 24.0),
+                      child: SettingIntSliderCard(
+                        title: '미활동 플레이어 정리 기간',
+                        leftText: '30일',
+                        rightText: '180일',
+                        value: optionsProvider.inactiveDaysThreshold,
+                        min: 30,
+                        max: 180,
+                        divisions: 30,
+                        unit: '일',
+                        onChanged: (int value) =>
+                            optionsProvider.setInactiveDaysThreshold(value),
+                        iconAndFontSize: iconAndFontSize,
+                      ),
                     ),
+                    crossFadeState: _isPlayerExpanded
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
+                    duration: const Duration(milliseconds: 300),
                   ),
-                  crossFadeState: _isPlayerExpanded
-                      ? CrossFadeState.showSecond
-                      : CrossFadeState.showFirst,
-                  duration: const Duration(milliseconds: 300),
-                ),
+                  const SizedBox(height: 32),
+                ],
+              );
 
-                const SizedBox(height: 48),
-              ]),
-            ),
-          ),
-        ],
+            default:
+              return const SizedBox.shrink();
+          }
+        },
       ),
     );
   }
+}
 
-  Widget _buildSectionHeader({
-    required String title,
-    required double fontSize,
-    required bool isExpanded,
-    required VoidCallback onToggle,
-    required ColorScheme colorScheme,
-  }) {
+class SettingSectionHeader extends StatelessWidget {
+  final String title;
+  final double fontSize;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+  final ColorScheme colorScheme;
+
+  const SettingSectionHeader({
+    super.key,
+    required this.title,
+    required this.fontSize,
+    required this.isExpanded,
+    required this.onToggle,
+    required this.colorScheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final baseColors = context.baseColors;
     final primaryColor = baseColors.primaryAccent;
     final textColor = baseColors.textPrimary;
-    final iconColor =
-        colorScheme.brightness == Brightness.dark ? colorScheme.onSurfaceVariant : Colors.grey.shade600;
+    final iconColor = colorScheme.brightness == Brightness.dark
+        ? colorScheme.onSurfaceVariant
+        : Colors.grey.shade600;
 
     return InkWell(
       onTap: onToggle,
@@ -486,17 +506,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildSliderListItem({
-    required BuildContext context,
-    required String title,
-    required String leftText,
-    required String rightText,
-    required double value,
-    required ValueChanged<double> onChanged,
-    required double iconAndFontSize,
-    required ColorScheme colorScheme,
-  }) {
+class SettingSliderCard extends StatelessWidget {
+  final String title;
+  final String leftText;
+  final String rightText;
+  final double value;
+  final ValueChanged<double> onChanged;
+  final double iconAndFontSize;
+
+  const SettingSliderCard({
+    super.key,
+    required this.title,
+    required this.leftText,
+    required this.rightText,
+    required this.value,
+    required this.onChanged,
+    required this.iconAndFontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final baseColors = context.baseColors;
     final cardBg = baseColors.cardBg;
     final shadowColor = baseColors.cardShadow;
@@ -603,21 +634,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildIntSliderListItem({
-    required BuildContext context,
-    required String title,
-    required String leftText,
-    required String rightText,
-    required int value,
-    required int min,
-    required int max,
-    required int divisions,
-    required String unit,
-    required ValueChanged<int> onChanged,
-    required double iconAndFontSize,
-    required ColorScheme colorScheme,
-  }) {
+class SettingIntSliderCard extends StatelessWidget {
+  final String title;
+  final String leftText;
+  final String rightText;
+  final int value;
+  final int min;
+  final int max;
+  final int divisions;
+  final String unit;
+  final ValueChanged<int> onChanged;
+  final double iconAndFontSize;
+
+  const SettingIntSliderCard({
+    super.key,
+    required this.title,
+    required this.leftText,
+    required this.rightText,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.divisions,
+    required this.unit,
+    required this.onChanged,
+    required this.iconAndFontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final displayValue = '$value$unit';
     final baseColors = context.baseColors;
     final cardBg = baseColors.cardBg;
