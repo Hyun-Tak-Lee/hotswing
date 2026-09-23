@@ -36,7 +36,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
     final baseColors = context.baseColors;
     final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
-    final playersProvider = Provider.of<PlayersProvider>(context);
+    final playersProvider = context.watch<PlayersProvider>();
     final sectionData = playersProvider.standbyPlayers;
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;

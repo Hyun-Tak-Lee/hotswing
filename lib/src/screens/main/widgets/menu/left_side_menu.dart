@@ -138,7 +138,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
 
   @override
   Widget build(BuildContext context) {
-    final playersProvider = Provider.of<PlayersProvider>(context);
+    final playersProvider = context.watch<PlayersProvider>();
     final players = playersProvider.getPlayers();
 
     final isTablet = ResponsiveUtils.isTablet(context);

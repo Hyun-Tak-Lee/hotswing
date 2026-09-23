@@ -82,10 +82,7 @@ class ResetPlayerStatsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final playersProvider = Provider.of<PlayersProvider>(
-      context,
-      listen: false,
-    );
+    final playersProvider = context.read<PlayersProvider>();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

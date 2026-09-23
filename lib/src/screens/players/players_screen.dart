@@ -46,7 +46,7 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
 
   void _onScroll() {
     if (!mounted) return;
-    final viewModel = Provider.of<PlayersViewModel>(context, listen: false);
+    final viewModel = context.read<PlayersViewModel>();
 
     final double triggerThreshold = ResponsiveUtils.isTablet(context)
         ? 250.0
@@ -59,7 +59,7 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
   }
 
   void _showFilterBottomSheet(BuildContext context) async {
-    final viewModel = Provider.of<PlayersViewModel>(context, listen: false);
+    final viewModel = context.read<PlayersViewModel>();
 
     await showModalBottomSheet(
       context: context,
@@ -79,7 +79,7 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<PlayersViewModel>(context);
+    final viewModel = context.watch<PlayersViewModel>();
     final isTablet = ResponsiveUtils.isTablet(context);
     final baseColors = context.baseColors;
     final playerColors = context.playerColors;

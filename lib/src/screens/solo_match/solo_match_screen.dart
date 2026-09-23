@@ -33,10 +33,7 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
     int targetSectionIndex,
     int targetSubIndex,
   ) {
-    final playersProvider = Provider.of<PlayersProvider>(
-      context,
-      listen: false,
-    );
+    final playersProvider = context.read<PlayersProvider>();
     final String sourceSectionKind = data.sectionKind;
     final int sourceSectionIndex = data.sectionIndex;
     final int sourceSubIndex = data.subIndex;

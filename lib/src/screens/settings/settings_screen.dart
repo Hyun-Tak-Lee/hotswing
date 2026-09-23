@@ -21,12 +21,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final optionsProvider = Provider.of<OptionsProvider>(context);
-    final playersProvider = Provider.of<PlayersProvider>(
-      context,
-      listen: false,
-    );
+    final themeProvider = context.watch<ThemeProvider>();
+    final optionsProvider = context.watch<OptionsProvider>();
+    final playersProvider = context.read<PlayersProvider>();
 
     final baseColors = context.baseColors;
     final colorScheme = context.colorScheme;
@@ -244,9 +241,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   optionsProvider.setNumberOfSections(
                                     newNumberOfSections,
                                   );
-                                  playersProvider.updateAssignedPlayersListCount(
-                                    newNumberOfSections,
-                                  );
+                                  playersProvider
+                                      .updateAssignedPlayersListCount(
+                                        newNumberOfSections,
+                                      );
                                 },
                               ),
                             ),

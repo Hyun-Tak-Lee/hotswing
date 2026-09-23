@@ -34,7 +34,6 @@ class PlayerListTile extends StatelessWidget {
     return genderValue;
   }
 
-
   Color _getRoleColor(PlayerColors playerColors, String roleValue) {
     if (roleValue == 'manager') return playerColors.roleManager;
     if (roleValue == 'user') return playerColors.roleUser;
@@ -52,14 +51,17 @@ class PlayerListTile extends StatelessWidget {
     final textScale = ResponsiveUtils.getTextScale(context);
     final baseFontSize = 14.0 * textScale;
 
-    final playersProvider = Provider.of<PlayersProvider>(context);
+    final playersProvider = context.watch<PlayersProvider>();
     final groupInfo = playersProvider.getGroupInfo(player.id);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [playerColors.playerItemActiveStart, playerColors.playerItemActiveEnd],
+          colors: [
+            playerColors.playerItemActiveStart,
+            playerColors.playerItemActiveEnd,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -135,7 +137,10 @@ class PlayerListTile extends StatelessWidget {
                     if (onDelete != null) ...[
                       const SizedBox(width: 8),
                       IconButton(
-                        icon: Icon(Icons.delete, color: baseColors.textSecondary),
+                        icon: Icon(
+                          Icons.delete,
+                          color: baseColors.textSecondary,
+                        ),
                         onPressed: onDelete,
                       ),
                     ],
@@ -203,10 +208,7 @@ class _GroupBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: color.withValues(alpha: 0.5),
-          width: 1.0,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.5), width: 1.0),
       ),
       child: Text(
         '그룹 $label',

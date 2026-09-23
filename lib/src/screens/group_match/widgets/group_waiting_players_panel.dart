@@ -92,7 +92,7 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
     final baseColors = context.baseColors;
     final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
-    final playersProvider = Provider.of<PlayersProvider>(context);
+    final playersProvider = context.watch<PlayersProvider>();
     final allUnassignedPlayers = List<Player>.from(
       playersProvider.unassignedPlayers,
     );

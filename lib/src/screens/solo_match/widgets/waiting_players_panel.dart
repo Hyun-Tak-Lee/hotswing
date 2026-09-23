@@ -63,7 +63,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
     final baseColors = context.baseColors;
     final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
-    final playersProvider = Provider.of<PlayersProvider>(context);
+    final playersProvider = context.watch<PlayersProvider>();
     final playerList = List<Player>.from(playersProvider.unassignedPlayers);
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;

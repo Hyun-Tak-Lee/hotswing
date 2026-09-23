@@ -52,7 +52,7 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
-      final viewModel = Provider.of<PlayersViewModel>(context, listen: false);
+      final viewModel = context.read<PlayersViewModel>();
 
       String role = widget.player.role == 'guest'
           ? 'guest'

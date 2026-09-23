@@ -39,10 +39,7 @@ class _MainWrapperState extends State<MainWrapper> {
   }
 
   void _onDestinationSelected(int index) async {
-    final playersProvider = Provider.of<PlayersProvider>(
-      context,
-      listen: false,
-    );
+    final playersProvider = context.read<PlayersProvider>();
     // 개인전(0) <-> 교류전(1) 상호 전환 시 코트에 선수가 1명이라도 배정되어 있다면 전환을 차단합니다.
     if ((_selectedIndex == 0 && index == 1) ||
         (_selectedIndex == 1 && index == 0)) {

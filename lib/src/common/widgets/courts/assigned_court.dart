@@ -36,7 +36,7 @@ class CourtSectionsView extends StatelessWidget {
     final baseColors = context.baseColors;
     final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
-    final playersProvider = Provider.of<PlayersProvider>(context);
+    final playersProvider = context.watch<PlayersProvider>();
     final sectionData = playersProvider.assignedPlayers;
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
@@ -453,7 +453,7 @@ class _AutoMatchSplitButtonState extends State<AutoMatchSplitButton> {
   Widget build(BuildContext context) {
     final baseColors = context.baseColors;
     final courtColors = context.courtColors;
-    final playersProvider = Provider.of<PlayersProvider>(context);
+    final playersProvider = context.watch<PlayersProvider>();
     final standbyCourts = playersProvider.standbyPlayers;
     final hasFullStandby = standbyCourts.any(
       (court) => court.every((p) => p != null),

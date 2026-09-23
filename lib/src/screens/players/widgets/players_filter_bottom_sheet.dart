@@ -30,7 +30,7 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<PlayersViewModel>(context);
+    final viewModel = context.watch<PlayersViewModel>();
     final isTablet = ResponsiveUtils.isTablet(context);
 
     final baseColors = context.baseColors;
