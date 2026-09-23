@@ -8,6 +8,7 @@ import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/screens/solo_match/widgets/waiting_players_panel.dart'; // SortCriterion 참조용
+import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 
 class WaitingTabItem {
   final String label; // UI에 노출될 탭 라벨 (예: "전체", "그룹 A", "개인")
@@ -44,6 +45,24 @@ class GroupWaitingPlayersPanel extends StatefulWidget {
 class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
   SortCriterion _sortCriterion = SortCriterion.played;
   bool _sortAscending = true;
+
+  @override
+  void initState() {
+    super.initState();
+    SharedProvider().getString(waitingSortCriterionKey).then((val) {
+      if (val != null && mounted) {
+        setState(() => _sortCriterion = val == 'name' ? SortCriterion.name : SortCriterion.played);
+      }
+    });
+  }
+
+  void _onSortSelected(SortCriterion newValue) {
+    setState(() {
+      _sortCriterion = newValue;
+      _sortAscending = true;
+    });
+    SharedProvider().saveString(waitingSortCriterionKey, newValue.name);
+  }
 
   // 각 탭에 따른 플레이어 필터링 처리
   List<Player> _filterPlayersByTab(
@@ -567,12 +586,7 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            onSelected: (SortCriterion newValue) {
-              setState(() {
-                _sortCriterion = newValue;
-                _sortAscending = true;
-              });
-            },
+            onSelected: _onSortSelected,
             itemBuilder: (BuildContext context) {
               return [
                 PopupMenuItem<SortCriterion>(
@@ -739,12 +753,7 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              onSelected: (SortCriterion newValue) {
-                setState(() {
-                  _sortCriterion = newValue;
-                  _sortAscending = true;
-                });
-              },
+              onSelected: _onSortSelected,
               itemBuilder: (BuildContext context) {
                 return [
                   PopupMenuItem<SortCriterion>(

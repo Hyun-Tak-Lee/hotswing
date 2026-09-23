@@ -7,8 +7,11 @@ import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 
 enum SortCriterion { played, name }
+
+const String waitingSortCriterionKey = 'standby_sort';
 
 class WaitingPlayersPanel extends StatefulWidget {
   final bool showDeleteOverlay;
@@ -36,6 +39,24 @@ class WaitingPlayersPanel extends StatefulWidget {
 class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
   SortCriterion _sortCriterion = SortCriterion.played;
   bool _sortAscending = true;
+
+  @override
+  void initState() {
+    super.initState();
+    SharedProvider().getString(waitingSortCriterionKey).then((val) {
+      if (val != null && mounted) {
+        setState(() => _sortCriterion = val == 'name' ? SortCriterion.name : SortCriterion.played);
+      }
+    });
+  }
+
+  void _onSortSelected(SortCriterion newValue) {
+    setState(() {
+      _sortCriterion = newValue;
+      _sortAscending = true;
+    });
+    SharedProvider().saveString(waitingSortCriterionKey, newValue.name);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -346,12 +367,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            onSelected: (SortCriterion newValue) {
-              setState(() {
-                _sortCriterion = newValue;
-                _sortAscending = true;
-              });
-            },
+            onSelected: _onSortSelected,
             itemBuilder: (BuildContext context) {
               return [
                 PopupMenuItem<SortCriterion>(
@@ -518,12 +534,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              onSelected: (SortCriterion newValue) {
-                setState(() {
-                  _sortCriterion = newValue;
-                  _sortAscending = true;
-                });
-              },
+              onSelected: _onSortSelected,
               itemBuilder: (BuildContext context) {
                 return [
                   PopupMenuItem<SortCriterion>(
