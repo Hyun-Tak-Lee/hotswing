@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// 플레이어 목록, 카드, 태그 및 세부 폼 관련 UI 요소의 테마 색상을 정의하는 [ThemeExtension].
 @immutable
 class PlayerColors extends ThemeExtension<PlayerColors> {
   final Color playerItemActiveStart;

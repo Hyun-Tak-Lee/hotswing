@@ -9,7 +9,7 @@ import 'package:realm/realm.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
-// 개별 플레이어를 나타내는 드래그 가능한 위젯
+/// 개별 플레이어의 상세 정보(이름, 등급, 통계, 그룹)를 표시하며 드래그 조작을 지원하는 위젯.
 class DraggablePlayerItem extends StatelessWidget {
   final Player player;
   final dynamic sourceSectionId;
@@ -595,7 +595,7 @@ class DraggablePlayerItem extends StatelessWidget {
   }
 }
 
-// 플레이어를 담고, 다른 플레이어를 드롭할 수 있는 영역 위젯
+/// 플레이어를 배치할 수 있는 슬롯 영역을 제공하고, 드롭 타겟 역할을 수행하는 위젯.
 class PlayerDropZone extends StatelessWidget {
   final dynamic sectionId;
   final Player? player;

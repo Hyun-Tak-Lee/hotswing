@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hotswing/src/services/system/activation_service.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
-/// 활성화 화면
-///
-/// 사용자가 마스터 비밀번호를 입력하여 앱을 활성화하는 화면
+/// 사용자가 마스터 비밀번호를 입력하여 기기 라이센스를 활성화하는 화면 위젯.
 class ActivationScreen extends StatefulWidget {
+  /// [ActivationScreen] 생성자.
   const ActivationScreen({super.key});
 
   @override
@@ -22,49 +21,6 @@ class _ActivationScreenState extends State<ActivationScreen> {
   void dispose() {
     _passwordController.dispose();
     super.dispose();
-  }
-
-  Future<void> _handleActivation() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    final password = _passwordController.text;
-    final success = await _activationService.activateWithPassword(password);
-
-    if (!mounted) return;
-
-    if (success) {
-      // 활성화 성공 - 앱 재시작 필요
-      // 간단한 방법: 사용자에게 앱 재시작 요청
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: const Text('활성화 완료'),
-          content: const Text('앱이 성공적으로 활성화되었습니다.\n앱을 재시작해주세요.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // 앱 종료 (사용자가 수동으로 재시작)
-                Navigator.of(context).pop();
-              },
-              child: const Text('확인'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      // 활성화 실패
-      setState(() {
-        _isLoading = false;
-        _errorMessage = '비밀번호가 올바르지 않습니다.';
-        _passwordController.clear();
-      });
-    }
   }
 
   @override
@@ -84,11 +40,7 @@ class _ActivationScreenState extends State<ActivationScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // 로고 또는 타이틀
-                Icon(
-                  Icons.lock_outline,
-                  size: 80,
-                  color: colorScheme.primary,
-                ),
+                Icon(Icons.lock_outline, size: 80, color: colorScheme.primary),
                 const SizedBox(height: 24),
                 Text(
                   '앱 활성화',
@@ -160,5 +112,52 @@ class _ActivationScreenState extends State<ActivationScreen> {
         ),
       ),
     );
+  }
+
+  // ==========================================
+  // Private Helper Methods
+  // ==========================================
+
+  Future<void> _handleActivation() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final password = _passwordController.text;
+    final success = await _activationService.activateWithPassword(password);
+
+    if (!mounted) return;
+
+    if (success) {
+      // 활성화 성공 - 앱 재시작 필요
+      // 간단한 방법: 사용자에게 앱 재시작 요청
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('활성화 완료'),
+          content: const Text('앱이 성공적으로 활성화되었습니다.\n앱을 재시작해주세요.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // 앱 종료 (사용자가 수동으로 재시작)
+                Navigator.of(context).pop();
+              },
+              child: const Text('확인'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // 활성화 실패
+      setState(() {
+        _isLoading = false;
+        _errorMessage = '비밀번호가 올바르지 않습니다.';
+        _passwordController.clear();
+      });
+    }
   }
 }

@@ -8,10 +8,19 @@ import 'package:hotswing/src/common/theme/app_colors.dart';
 /// 단일 코트를 렌더링하는 공통 위젯.
 /// [CourtSectionsView]와 [StandbyCourtSectionsView]에서 공유합니다.
 class CourtCard extends StatelessWidget {
+  /// 코트 섹션 인덱스.
   final int sectionIndex;
+
+  /// 코트에 배정된 플레이어 목록 (최대 4명, 빈 자리는 null).
   final List<Player?> players;
+
+  /// 섹션 종류 (예: 경기 코트, 대기 코트).
   final String sectionKind;
+
+  /// 코트 헤더에 배치할 액션 위젯 목록.
   final List<Widget> headerActions;
+
+  /// 플레이어 드롭 시 호출되는 콜백.
   final Function(
     BuildContext,
     PlayerDragData,
@@ -22,10 +31,17 @@ class CourtCard extends StatelessWidget {
     int,
   )
   onPlayerDrop;
+
+  /// 코트 내 플레이어 드래그 시작 시 호출되는 콜백.
   final VoidCallback onCourtPlayerDragStarted;
+
+  /// 코트 내 플레이어 드래그 종료 시 호출되는 콜백.
   final VoidCallback onCourtPlayerDragEnded;
+
+  /// 코트 내 플레이어 삭제/제거 시 호출되는 콜백 (선택).
   final Function(int sectionIndex, int subIndex)? onPlayerRemoved;
 
+  /// [CourtCard] 생성자.
   const CourtCard({
     super.key,
     required this.sectionIndex,

@@ -13,9 +13,12 @@ import '../../../../common/utils/ui/responsive_utils.dart';
 import '../../../../enums/player_feature.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 메인 화면 좌측 서랍(Drawer) 메뉴 위젯으로, 현재 세션의 참여자 목록 관리 기능을 제공.
 class LeftSideMenu extends StatefulWidget {
+  /// [LeftSideMenu] 생성자.
   const LeftSideMenu({super.key, required this.isMobileSize});
 
+  /// 모바일 화면 크기 여부.
   final bool isMobileSize;
 
   @override
@@ -26,114 +29,6 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
   @override
   void dispose() {
     super.dispose();
-  }
-
-  String _getRoleLabel(String roleValue) {
-    try {
-      return PlayerRole.values.firstWhere((e) => e.value == roleValue).label;
-    } catch (_) {
-      return roleValue;
-    }
-  }
-
-  String _getGenderLabel(String genderValue) {
-    if (genderValue == '남') return '남성';
-    if (genderValue == '여') return '여성';
-    return genderValue;
-  }
-
-  Color _getRoleColor(BuildContext context, String roleValue) {
-    if (roleValue == 'manager') return Colors.orange;
-    if (roleValue == 'user') return Colors.green;
-    if (roleValue == 'guest') return Colors.grey;
-    return Theme.of(context).colorScheme.onSurface;
-  }
-
-  Future<void> _showAddPlayerDialog(
-    PlayersProvider playersProvider,
-    bool isGuest, {
-    Player? existingPlayer,
-  }) async {
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AddPlayerDialog(
-          playersProvider: playersProvider,
-          player: existingPlayer,
-          isGuest: isGuest,
-        );
-      },
-    );
-    try {
-      if (result != null &&
-          result['name'] != null &&
-          result['rate'] != null &&
-          result['gender'] != null &&
-          result['role'] != null) {
-        if (existingPlayer != null) {
-          playersProvider.updatePlayer(
-            playerId: existingPlayer.id,
-            newName: result['name'] as String,
-            newRate: result['rate'] as int,
-            newGrade: result['grade'] as String,
-            newGender: result['gender'] as String,
-            newRole: result['role'] as String,
-            newPlayed: result['played'] as int,
-            newWaited: result['waited'] as int,
-            newGroups: result['groups'] as List<ObjectId>,
-          );
-        } else {
-          int latedValue = 0;
-          if (playersProvider.players.isNotEmpty) {
-            final playedList =
-                playersProvider.players.values.map((p) => p.played).toList()
-                  ..sort();
-            latedValue = playedList[playedList.length ~/ 3];
-          }
-
-          if (result['loaded'] as bool) {
-            playersProvider.loadPlayer(
-              result['player'],
-              result['groups'] as List<ObjectId>,
-              latedValue,
-            );
-          } else {
-            playersProvider.addPlayer(
-              name: result['name'] as String,
-              rate: result['rate'] as int,
-              grade: result['grade'] as String,
-              gender: result['gender'] as String,
-              role: result['role'] as String,
-              played: 0,
-              waited: 0,
-              lated: latedValue,
-              groups: result['groups'] as List<ObjectId>,
-            );
-          }
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    }
-  }
-
-  // 모든 플레이어를 삭제하기 전에 확인 대화 상자를 표시하는 함수
-  Future<void> _showClearAllPlayersConfirmationDialog(
-    PlayersProvider playersProvider,
-  ) async {
-    await showDialog<bool>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return ConfirmationDialog(
-          message: '모든 참여자를 삭제하시겠습니까?',
-          onConfirm: () {
-            playersProvider.clearPlayers();
-          },
-        );
-      },
-    );
   }
 
   @override
@@ -336,6 +231,114 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           );
         },
       ),
+    );
+  }
+
+  String _getRoleLabel(String roleValue) {
+    try {
+      return PlayerRole.values.firstWhere((e) => e.value == roleValue).label;
+    } catch (_) {
+      return roleValue;
+    }
+  }
+
+  String _getGenderLabel(String genderValue) {
+    if (genderValue == '남') return '남성';
+    if (genderValue == '여') return '여성';
+    return genderValue;
+  }
+
+  Color _getRoleColor(BuildContext context, String roleValue) {
+    if (roleValue == 'manager') return Colors.orange;
+    if (roleValue == 'user') return Colors.green;
+    if (roleValue == 'guest') return Colors.grey;
+    return Theme.of(context).colorScheme.onSurface;
+  }
+
+  Future<void> _showAddPlayerDialog(
+    PlayersProvider playersProvider,
+    bool isGuest, {
+    Player? existingPlayer,
+  }) async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AddPlayerDialog(
+          playersProvider: playersProvider,
+          player: existingPlayer,
+          isGuest: isGuest,
+        );
+      },
+    );
+    try {
+      if (result != null &&
+          result['name'] != null &&
+          result['rate'] != null &&
+          result['gender'] != null &&
+          result['role'] != null) {
+        if (existingPlayer != null) {
+          playersProvider.updatePlayer(
+            playerId: existingPlayer.id,
+            newName: result['name'] as String,
+            newRate: result['rate'] as int,
+            newGrade: result['grade'] as String,
+            newGender: result['gender'] as String,
+            newRole: result['role'] as String,
+            newPlayed: result['played'] as int,
+            newWaited: result['waited'] as int,
+            newGroups: result['groups'] as List<ObjectId>,
+          );
+        } else {
+          int latedValue = 0;
+          if (playersProvider.players.isNotEmpty) {
+            final playedList =
+                playersProvider.players.values.map((p) => p.played).toList()
+                  ..sort();
+            latedValue = playedList[playedList.length ~/ 3];
+          }
+
+          if (result['loaded'] as bool) {
+            playersProvider.loadPlayer(
+              result['player'],
+              result['groups'] as List<ObjectId>,
+              latedValue,
+            );
+          } else {
+            playersProvider.addPlayer(
+              name: result['name'] as String,
+              rate: result['rate'] as int,
+              grade: result['grade'] as String,
+              gender: result['gender'] as String,
+              role: result['role'] as String,
+              played: 0,
+              waited: 0,
+              lated: latedValue,
+              groups: result['groups'] as List<ObjectId>,
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+  }
+
+  // 모든 플레이어를 삭제하기 전에 확인 대화 상자를 표시하는 함수
+  Future<void> _showClearAllPlayersConfirmationDialog(
+    PlayersProvider playersProvider,
+  ) async {
+    await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return ConfirmationDialog(
+          message: '모든 참여자를 삭제하시겠습니까?',
+          onConfirm: () {
+            playersProvider.clearPlayers();
+          },
+        );
+      },
     );
   }
 }

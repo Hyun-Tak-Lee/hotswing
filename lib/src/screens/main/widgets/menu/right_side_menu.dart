@@ -4,9 +4,12 @@ import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/common/widgets/dialogs/confirmation_dialog.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 메인 화면 우측 서랍(Drawer) 옵션 메뉴 위젯.
 class RightSideMenu extends StatelessWidget {
+  /// [RightSideMenu] 생성자.
   const RightSideMenu({super.key, required this.isMobileSize});
 
+  /// 모바일 화면 크기 여부.
   final bool isMobileSize;
 
   @override
@@ -34,14 +37,19 @@ class RightSideMenu extends StatelessWidget {
   }
 }
 
+/// 우측 서랍 메뉴의 헤더 위젯.
 class RightSideMenuHeader extends StatelessWidget {
+  /// [RightSideMenuHeader] 생성자.
   const RightSideMenuHeader({
     super.key,
     required this.isMobileSize,
     required this.iconAndFontSize,
   });
 
+  /// 모바일 화면 크기 여부.
   final bool isMobileSize;
+
+  /// 아이콘 및 폰트 크기.
   final double iconAndFontSize;
 
   @override
@@ -75,9 +83,12 @@ class RightSideMenuHeader extends StatelessWidget {
   }
 }
 
+/// 플레이어들의 경기 참여 기록(플레이 횟수)을 초기화할 수 있는 메뉴 타일 위젯.
 class ResetPlayerStatsTile extends StatelessWidget {
+  /// [ResetPlayerStatsTile] 생성자.
   const ResetPlayerStatsTile({super.key, required this.iconAndFontSize});
 
+  /// 아이콘 및 폰트 크기.
   final double iconAndFontSize;
 
   @override

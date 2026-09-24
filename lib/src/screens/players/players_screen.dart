@@ -9,7 +9,9 @@ import 'package:hotswing/src/screens/players/widgets/player_edit_form.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 전체 등록된 선수 목록 조회, 검색, 필터링, 수정 및 일괄 삭제 기능을 제공하는 화면 위젯.
 class PlayersScreen extends StatelessWidget {
+  /// [PlayersScreen] 생성자.
   const PlayersScreen({super.key});
 
   @override
@@ -42,39 +44,6 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (!mounted) return;
-    final viewModel = context.read<PlayersViewModel>();
-
-    final double triggerThreshold = ResponsiveUtils.isTablet(context)
-        ? 250.0
-        : 200.0;
-
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - triggerThreshold) {
-      viewModel.loadMore();
-    }
-  }
-
-  void _showFilterBottomSheet(BuildContext context) async {
-    final viewModel = context.read<PlayersViewModel>();
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return ChangeNotifierProvider.value(
-          value: viewModel,
-          child: const PlayersFilterBottomSheet(),
-        );
-      },
-    );
-
-    // 바텀 시트가 닫힌 후 필터 일괄 적용하여 쿼리 패치
-    viewModel.applyFilters();
   }
 
   @override
@@ -295,6 +264,43 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
         ),
       ],
     );
+  }
+
+  // ==========================================
+  // Private Helper Methods
+  // ==========================================
+
+  void _onScroll() {
+    if (!mounted) return;
+    final viewModel = context.read<PlayersViewModel>();
+
+    final double triggerThreshold = ResponsiveUtils.isTablet(context)
+        ? 250.0
+        : 200.0;
+
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - triggerThreshold) {
+      viewModel.loadMore();
+    }
+  }
+
+  void _showFilterBottomSheet(BuildContext context) async {
+    final viewModel = context.read<PlayersViewModel>();
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return ChangeNotifierProvider.value(
+          value: viewModel,
+          child: const PlayersFilterBottomSheet(),
+        );
+      },
+    );
+
+    // 바텀 시트가 닫힌 후 필터 일괄 적용하여 쿼리 패치
+    viewModel.applyFilters();
   }
 
   void _showDeleteDialog(

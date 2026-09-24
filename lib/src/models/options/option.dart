@@ -1,8 +1,8 @@
 import 'package:realm/realm.dart';
 
-// Realm 에 저장될 데이터 모델
 part 'option.realm.dart';
 
+/// Realm 데이터베이스에 저장되는 앱 운영 옵션 엔티티 모델 스키마.
 @RealmModel()
 class _Options {
   @PrimaryKey()

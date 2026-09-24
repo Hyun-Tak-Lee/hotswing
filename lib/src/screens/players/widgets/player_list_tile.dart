@@ -8,38 +8,24 @@ import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 
+/// 플레이어 목록 화면에서 개별 플레이어의 상세 정보를 보여주는 리스트 타일 위젯.
 class PlayerListTile extends StatelessWidget {
+  /// 표시할 플레이어 객체.
   final Player player;
+
+  /// 삭제 버튼 클릭 시 호출되는 콜백.
   final VoidCallback? onDelete;
+
+  /// 수정 버튼 클릭 시 호출되는 콜백.
   final VoidCallback? onEdit;
 
+  /// [PlayerListTile] 생성자.
   const PlayerListTile({
     super.key,
     required this.player,
     this.onDelete,
     this.onEdit,
   });
-
-  String _getRoleLabel(String roleValue) {
-    try {
-      return PlayerRole.values.firstWhere((e) => e.value == roleValue).label;
-    } catch (_) {
-      return roleValue;
-    }
-  }
-
-  String _getGenderLabel(String genderValue) {
-    if (genderValue == '남') return '남성';
-    if (genderValue == '여') return '여성';
-    return genderValue;
-  }
-
-  Color _getRoleColor(PlayerColors playerColors, String roleValue) {
-    if (roleValue == 'manager') return playerColors.roleManager;
-    if (roleValue == 'user') return playerColors.roleUser;
-    if (roleValue == 'guest') return playerColors.roleGuest;
-    return Colors.grey;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -186,6 +172,27 @@ class PlayerListTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getRoleLabel(String roleValue) {
+    try {
+      return PlayerRole.values.firstWhere((e) => e.value == roleValue).label;
+    } catch (_) {
+      return roleValue;
+    }
+  }
+
+  String _getGenderLabel(String genderValue) {
+    if (genderValue == '남') return '남성';
+    if (genderValue == '여') return '여성';
+    return genderValue;
+  }
+
+  Color _getRoleColor(PlayerColors playerColors, String roleValue) {
+    if (roleValue == 'manager') return playerColors.roleManager;
+    if (roleValue == 'user') return playerColors.roleUser;
+    if (roleValue == 'guest') return playerColors.roleGuest;
+    return Colors.grey;
   }
 }
 

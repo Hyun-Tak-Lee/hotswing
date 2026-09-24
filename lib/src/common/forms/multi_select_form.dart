@@ -2,15 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:realm/realm.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 여러 옵션을 오버레이 드롭다운 형태로 복수 선택할 수 있는 폼 위젯.
 class MultiSelectForm extends StatefulWidget {
+  /// 선택 항목이 비어있을 때 표시할 제목/플레이스홀더.
   final String title;
+
+  /// 표시할 옵션 레이블 목록.
   final List<String> options;
+
+  /// 옵션 레이블에 대응하는 [ObjectId] 목록.
   final List<ObjectId> optionsId;
+
+  /// 이미 다른 그룹 등에 속해 비활성화 처리할 옵션의 [ObjectId] 목록.
   final List<ObjectId> groupsOptionId;
+
+  /// 초기에 선택된 [ObjectId] 목록.
   final List<ObjectId> initialValue;
+
+  /// 선택 변경 시 호출되는 콜백.
   final Function(List<ObjectId>) onSelectionChanged;
+
+  /// 현재 수정 중인 플레이어/엔티티의 ID (자기 자신 선택 방지용).
   final ObjectId? currentId;
 
+  /// [MultiSelectForm] 생성자.
   const MultiSelectForm({
     super.key,
     required this.title,
@@ -57,6 +72,35 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
   void dispose() {
     _closeMenu();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 1.0,
+      color: baseColors.cardBg,
+      child: CompositedTransformTarget(
+        link: _layerLink,
+        child: ListTile(
+          onTap: () => _toggleMenu(baseColors),
+          title: _SelectedOptionsTitle(
+            title: widget.title,
+            selectedOptions: _selectedOptions,
+            options: widget.options,
+            optionsId: widget.optionsId,
+            labelFontSize: _labelFontSize,
+            chipFontSize: _chipFontSize,
+            onDeleted: (selectedId) => _onOptionChanged(selectedId, false),
+          ),
+          trailing: Icon(
+            _isMenuOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+            color: baseColors.textSecondary,
+          ),
+        ),
+      ),
+    );
   }
 
   void _onOptionChanged(ObjectId option, bool? isSelected) {
@@ -165,35 +209,6 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final baseColors = context.baseColors;
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 1.0,
-      color: baseColors.cardBg,
-      child: CompositedTransformTarget(
-        link: _layerLink,
-        child: ListTile(
-          onTap: () => _toggleMenu(baseColors),
-          title: _SelectedOptionsTitle(
-            title: widget.title,
-            selectedOptions: _selectedOptions,
-            options: widget.options,
-            optionsId: widget.optionsId,
-            labelFontSize: _labelFontSize,
-            chipFontSize: _chipFontSize,
-            onDeleted: (selectedId) => _onOptionChanged(selectedId, false),
-          ),
-          trailing: Icon(
-            _isMenuOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-            color: baseColors.textSecondary,
-          ),
-        ),
       ),
     );
   }

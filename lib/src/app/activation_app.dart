@@ -4,8 +4,9 @@ import 'package:hotswing/src/providers/theme_provider.dart';
 import 'package:hotswing/src/screens/activation/activation_screen.dart';
 import 'package:hotswing/src/common/theme/app_theme.dart';
 
-/// 활성화 앱 (비밀번호 입력 화면)
+/// 미활성화 상태일 때 사용자에게 라이센스 인증 화면을 제공하는 루트 애플리케이션 위젯.
 class ActivationApp extends StatelessWidget {
+  /// [ActivationApp] 생성자.
   const ActivationApp({super.key});
 
   @override
@@ -21,4 +22,3 @@ class ActivationApp extends StatelessWidget {
     );
   }
 }
-

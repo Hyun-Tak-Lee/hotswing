@@ -4,6 +4,7 @@ import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 import 'package:realm/realm.dart';
 
+/// 앱 재시작 시 세션 유지를 위해 경기/대기 상태 데이터를 로컬 스토리지에 저장하고 복원하는 서비스.
 class PlayerSessionService {
   final SharedProvider _sharedProvider = SharedProvider();
 
@@ -25,30 +26,35 @@ class PlayerSessionService {
 
   // MARK: - Load Methods
 
+  /// 로컬 저장소에서 세션에 등록된 전체 선수 ID 목록을 복원합니다.
   Future<List<ObjectId>> loadPlayerIds() async {
     final ids = await _sharedProvider.getStringList(_keyPlayers);
     _cachedPlayers = List<String>.from(ids);
     return ids.map((id) => ObjectId.fromHexString(id)).toList();
   }
 
+  /// 로컬 저장소에서 미배정(대기열) 선수 ID 목록을 복원합니다.
   Future<List<ObjectId>> loadUnassignedPlayerIds() async {
     final ids = await _sharedProvider.getStringList(_keyUnassignedPlayers);
     _cachedUnassignedPlayers = List<String>.from(ids);
     return ids.map((id) => ObjectId.fromHexString(id)).toList();
   }
 
+  /// 로컬 저장소에서 진행 코트별 선수 ID 2차원 목록을 복원합니다.
   Future<List<List<ObjectId?>>> loadAssignedPlayerIds() async {
     final encodedList = await _sharedProvider.getStringList(_keyAssignedPlayers);
     _cachedAssignedPlayers = List<String>.from(encodedList);
     return _decodeCourts(encodedList);
   }
 
+  /// 로컬 저장소에서 대기 코트별 선수 ID 2차원 목록을 복원합니다.
   Future<List<List<ObjectId?>>> loadStandbyPlayerIds() async {
     final encodedList = await _sharedProvider.getStringList(_keyStandbyPlayers);
     _cachedStandbyPlayers = List<String>.from(encodedList);
     return _decodeCourts(encodedList);
   }
 
+  /// 로컬 저장소에서 코트별 경기 시작 시각 목록을 복원합니다.
   Future<List<DateTime?>> loadCourtStartTimes() async {
     final stringList = await _sharedProvider.getStringList(_keyCourtStartTimes);
     _cachedCourtStartTimes = List<String>.from(stringList);
@@ -57,6 +63,7 @@ class PlayerSessionService {
         .toList();
   }
 
+  /// 로컬 저장소에서 동반 그룹 사용자 정의 이름 맵을 복원합니다.
   Future<Map<String, String>> loadCustomGroupNames() async {
     final jsonStr = await _sharedProvider.getString(_keyCustomGroupNames);
     _cachedCustomGroupNames = jsonStr ?? '';
@@ -73,6 +80,9 @@ class PlayerSessionService {
 
   // MARK: - Save Method
 
+  /// 현재 코트 배정 현황, 대기 선수 및 그룹 설정 등 세션 전체 상태를 로컬 저장소에 저장합니다.
+  ///
+  /// 캐시와 비교하여 변경된 항목만 선택적으로 비동기 저장합니다.
   Future<void> saveSession({
     required Map<ObjectId, Player> players,
     required List<Player> unassignedPlayers,

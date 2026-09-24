@@ -9,8 +9,9 @@ enum _AuthMode {
   setNewManagerPassword,
 }
 
-/// 특정 화면(예: 선수 관리)에 진입하기 위한 관리자 인증 오버레이 다이얼로그 (공통 위젯)
+/// 특정 화면(예: 선수 관리)에 진입하기 위한 관리자 인증 오버레이 다이얼로그 (공통 위젯).
 class ManagerAuthOverlay extends StatefulWidget {
+  /// [ManagerAuthOverlay] 생성자.
   const ManagerAuthOverlay({super.key});
 
   @override
@@ -31,76 +32,10 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
     _checkInitialState();
   }
 
-  Future<void> _checkInitialState() async {
-    final hasPassword = await _authService.hasManagerPassword();
-    setState(() {
-      _currentMode = hasPassword
-          ? _AuthMode.verifyManager
-          : _AuthMode.verifyActivationForInit;
-      _isLoading = false;
-    });
-  }
-
   @override
   void dispose() {
     _passwordController.dispose();
     super.dispose();
-  }
-
-  Future<void> _handleSubmit() async {
-    if (_passwordController.text.isEmpty) return;
-
-    setState(() {
-      _errorMessage = null;
-    });
-
-    final password = _passwordController.text;
-
-    switch (_currentMode) {
-      case _AuthMode.verifyManager:
-        final isValid = await _authService.verifyManagerPassword(password);
-        if (isValid) {
-          if (mounted) Navigator.of(context).pop(true);
-        } else {
-          setState(() {
-            _errorMessage = '비밀번호가 일치하지 않습니다.';
-            _passwordController.clear();
-          });
-        }
-        break;
-
-      case _AuthMode.verifyActivationForInit:
-      case _AuthMode.verifyActivationForReset:
-        final isValid = _authService.verifyActivationPassword(password);
-        if (isValid) {
-          setState(() {
-            _currentMode = _AuthMode.setNewManagerPassword;
-            _passwordController.clear();
-          });
-        } else {
-          setState(() {
-            _errorMessage = '활성화 비밀번호가 일치하지 않습니다.';
-            _passwordController.clear();
-          });
-        }
-        break;
-
-      case _AuthMode.setNewManagerPassword:
-        if (password.length < 4) {
-          setState(() {
-            _errorMessage = '비밀번호는 4자리 이상이어야 합니다.';
-          });
-          return;
-        }
-        await _authService.setManagerPassword(password);
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('관리자 비밀번호가 설정되었습니다.')));
-          Navigator.of(context).pop(true); // 새 비밀번호 설정 완료 시 인증 통과로 처리
-        }
-        break;
-    }
   }
 
   @override
@@ -217,7 +152,10 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: formColors.inputFocusBorder, width: 2),
+                  borderSide: BorderSide(
+                    color: formColors.inputFocusBorder,
+                    width: 2,
+                  ),
                 ),
                 filled: true,
                 fillColor: playerColors.playerInputFill,
@@ -296,5 +234,75 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
         ),
       ),
     );
+  }
+
+  // ==========================================
+  // Private Helper Methods
+  // ==========================================
+
+  Future<void> _checkInitialState() async {
+    final hasPassword = await _authService.hasManagerPassword();
+    setState(() {
+      _currentMode = hasPassword
+          ? _AuthMode.verifyManager
+          : _AuthMode.verifyActivationForInit;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _handleSubmit() async {
+    if (_passwordController.text.isEmpty) return;
+
+    setState(() {
+      _errorMessage = null;
+    });
+
+    final password = _passwordController.text;
+
+    switch (_currentMode) {
+      case _AuthMode.verifyManager:
+        final isValid = await _authService.verifyManagerPassword(password);
+        if (isValid) {
+          if (mounted) Navigator.of(context).pop(true);
+        } else {
+          setState(() {
+            _errorMessage = '비밀번호가 일치하지 않습니다.';
+            _passwordController.clear();
+          });
+        }
+        break;
+
+      case _AuthMode.verifyActivationForInit:
+      case _AuthMode.verifyActivationForReset:
+        final isValid = _authService.verifyActivationPassword(password);
+        if (isValid) {
+          setState(() {
+            _currentMode = _AuthMode.setNewManagerPassword;
+            _passwordController.clear();
+          });
+        } else {
+          setState(() {
+            _errorMessage = '활성화 비밀번호가 일치하지 않습니다.';
+            _passwordController.clear();
+          });
+        }
+        break;
+
+      case _AuthMode.setNewManagerPassword:
+        if (password.length < 4) {
+          setState(() {
+            _errorMessage = '비밀번호는 4자리 이상이어야 합니다.';
+          });
+          return;
+        }
+        await _authService.setManagerPassword(password);
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('관리자 비밀번호가 설정되었습니다.')));
+          Navigator.of(context).pop(true); // 새 비밀번호 설정 완료 시 인증 통과로 처리
+        }
+        break;
+    }
   }
 }

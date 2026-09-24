@@ -5,10 +5,15 @@ import 'package:hotswing/src/screens/players/widgets/provider/players_view_model
 import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 플레이어 정보를 수정할 수 있는 인라인 폼 위젯.
 class PlayerEditForm extends StatefulWidget {
+  /// 수정할 대상 플레이어 객체.
   final Player player;
+
+  /// 수정 취소 시 호출되는 콜백.
   final VoidCallback onCancel;
 
+  /// [PlayerEditForm] 생성자.
   const PlayerEditForm({
     super.key,
     required this.player,
@@ -42,45 +47,6 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
   void dispose() {
     _nameController.dispose();
     super.dispose();
-  }
-
-  void _updateRate(int newRate) {
-    setState(() {
-      _currentRate = newRate.clamp(0, 7500);
-    });
-  }
-
-  void _selectSkill(String level) {
-    setState(() {
-      _currentSkillLevel = level;
-      if (skillLevelToRate.containsKey(level)) {
-        _updateRate(skillLevelToRate[level]!);
-      }
-    });
-  }
-
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
-      final viewModel = context.read<PlayersViewModel>();
-
-      String role = widget.player.role == 'guest'
-          ? 'guest'
-          : (_isManager ? 'manager' : 'user');
-
-      viewModel.updatePlayer(
-        player: widget.player,
-        name: _nameController.text,
-        role: role,
-        rate: _currentRate,
-        grade: _currentSkillLevel,
-        gender: _currentGender,
-        played: widget.player.played,
-        waited: widget.player.waited,
-        groups: widget.player.groups,
-      );
-
-      viewModel.toggleEditMode(null);
-    }
   }
 
   @override
@@ -135,6 +101,45 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
         ),
       ),
     );
+  }
+
+  void _updateRate(int newRate) {
+    setState(() {
+      _currentRate = newRate.clamp(0, 7500);
+    });
+  }
+
+  void _selectSkill(String level) {
+    setState(() {
+      _currentSkillLevel = level;
+      if (skillLevelToRate.containsKey(level)) {
+        _updateRate(skillLevelToRate[level]!);
+      }
+    });
+  }
+
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      final viewModel = context.read<PlayersViewModel>();
+
+      String role = widget.player.role == 'guest'
+          ? 'guest'
+          : (_isManager ? 'manager' : 'user');
+
+      viewModel.updatePlayer(
+        player: widget.player,
+        name: _nameController.text,
+        role: role,
+        rate: _currentRate,
+        grade: _currentSkillLevel,
+        gender: _currentGender,
+        played: widget.player.played,
+        waited: widget.player.waited,
+        groups: widget.player.groups,
+      );
+
+      viewModel.toggleEditMode(null);
+    }
   }
 }
 

@@ -3,14 +3,28 @@ import 'package:hotswing/src/common/theme/app_colors.dart';
 
 /// Google Material 3 (M3) 기본 다이얼로그 표준 규격에 맞춘 공통 확인 다이얼로그
 class ConfirmationDialog extends StatelessWidget {
+  /// 다이얼로그 제목 (선택).
   final String? title;
+
+  /// 다이얼로그 메시지 본문 (선택).
   final String? message;
+
+  /// 메시지 텍스트 색상 (선택).
   final Color? messageColor;
+
+  /// 확인 버튼 텍스트.
   final String confirmText;
+
+  /// 취소 버튼 텍스트.
   final String cancelText;
+
+  /// 위험/삭제 작업 여부 (확인 버튼 강조 색상 변경).
   final bool isDestructive;
+
+  /// 확인 버튼 클릭 시 실행될 콜백.
   final VoidCallback onConfirm;
 
+  /// [ConfirmationDialog] 생성자.
   const ConfirmationDialog({
     super.key,
     this.title,

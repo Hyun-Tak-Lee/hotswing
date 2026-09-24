@@ -8,6 +8,7 @@ import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 배정된 진행 코트들의 목록을 반응형(가로/세로)으로 배치하여 렌더링하는 위젯.
 class CourtSectionsView extends StatelessWidget {
   final Function(
     BuildContext,
@@ -383,56 +384,9 @@ class CourtSectionsView extends StatelessWidget {
       },
     );
   }
-
 }
 
-class _AssignedGradientButton extends StatelessWidget {
-  const _AssignedGradientButton({
-    required this.width,
-    required this.height,
-    required this.colors,
-    required this.onTap,
-    required this.child,
-  });
-
-  final double width;
-  final double height;
-  final List<Color> colors;
-  final VoidCallback onTap;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: colors,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colors.last.withAlpha(100),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(15.0),
-          onTap: onTap,
-          child: Center(child: child),
-        ),
-      ),
-    );
-  }
-}
-
+/// 자동 추천 매칭 실행 또는 대기 코트 팀 승격을 선택할 수 있는 스플릿 드롭다운 버튼 위젯.
 class AutoMatchSplitButton extends StatefulWidget {
   final bool isTablet;
   final List<Player?> item;
@@ -611,6 +565,53 @@ class _AutoMatchSplitButtonState extends State<AutoMatchSplitButton> {
           ),
         );
       },
+    );
+  }
+}
+
+class _AssignedGradientButton extends StatelessWidget {
+  const _AssignedGradientButton({
+    required this.width,
+    required this.height,
+    required this.colors,
+    required this.onTap,
+    required this.child,
+  });
+
+  final double width;
+  final double height;
+  final List<Color> colors;
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colors.last.withAlpha(100),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(15.0),
+          onTap: onTap,
+          child: Center(child: child),
+        ),
+      ),
     );
   }
 }

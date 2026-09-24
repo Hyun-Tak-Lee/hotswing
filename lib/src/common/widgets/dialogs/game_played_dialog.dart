@@ -3,11 +3,18 @@ import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 특정 선수의 경기 횟수, 대기 횟수, 총 경기 시간 및 함께 경기한 선수 통계를 표시하는 상세 다이얼로그.
 class GamePlayedDialog extends StatelessWidget {
+  /// 상세 정보를 조회할 대상 선수.
   final Player player;
+
+  /// 함께 경기한 상대방들의 이름과 경기 수 매핑.
   final Map<String, int> gamesPlayedWithMap;
+
+  /// 아직 한 번도 함께 경기하지 않은 선수들의 이름 목록.
   final List<String> notPlayedWithNames;
 
+  /// [GamePlayedDialog] 생성자.
   const GamePlayedDialog({
     super.key,
     required this.gamesPlayedWithMap,

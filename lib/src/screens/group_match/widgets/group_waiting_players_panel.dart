@@ -12,16 +12,27 @@ import 'package:hotswing/src/common/constants/player_constants.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 import 'package:hotswing/src/screens/solo_match/widgets/waiting_panel_header.dart';
 
+/// 대기 패널의 탭(전체, 그룹, 개인) 항목 데이터 모델.
 class WaitingTabItem {
-  final String label; // UI에 노출될 탭 라벨 (예: "전체", "그룹 A", "개인")
-  final String type; // 'all', 'group', 'individual'
-  final String? groupLabel; // group 타입일 때 필터링에 매핑할 실제 그룹 라벨 (예: "A")
+  /// UI에 노출될 탭 라벨 (예: "전체", "그룹 A", "개인").
+  final String label;
 
+  /// 탭 유형 ('all', 'group', 'individual').
+  final String type;
+
+  /// 그룹 유형일 때 필터링에 매핑할 실제 그룹 라벨 (예: "A").
+  final String? groupLabel;
+
+  /// [WaitingTabItem] 생성자.
   WaitingTabItem({required this.label, required this.type, this.groupLabel});
 }
 
+/// 단체전 화면에서 대기 중인 플레이어 목록 및 그룹별 탭을 표시하는 패널 위젯.
 class GroupWaitingPlayersPanel extends StatefulWidget {
+  /// 드래그 중인 플레이어를 대기 패널로 삭제/해제할 때 표시할 오버레이 활성화 여부.
   final bool showDeleteOverlay;
+
+  /// 플레이어 드롭 시 호출되는 콜백.
   final Function(
     BuildContext context,
     PlayerDragData data,
@@ -33,6 +44,7 @@ class GroupWaitingPlayersPanel extends StatefulWidget {
   )
   onPlayerDrop;
 
+  /// [GroupWaitingPlayersPanel] 생성자.
   const GroupWaitingPlayersPanel({
     super.key,
     required this.showDeleteOverlay,
@@ -60,37 +72,6 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
         );
       }
     });
-  }
-
-  void _onSortSelected(SortCriterion newValue) {
-    setState(() {
-      _sortCriterion = newValue;
-      _sortAscending = true;
-    });
-    SharedProvider().saveString(PlayerConstants.waitingSortCriterionKey, newValue.name);
-  }
-
-  // 각 탭에 따른 플레이어 필터링 처리
-  List<Player> _filterPlayersByTab(
-    WaitingTabItem tabItem,
-    List<Player> players,
-    PlayersProvider provider,
-  ) {
-    switch (tabItem.type) {
-      case 'all':
-        return players;
-      case 'individual':
-        return players
-            .where((p) => provider.getGroupInfo(p.id) == null)
-            .toList();
-      case 'group':
-        return players.where((p) {
-          final info = provider.getGroupInfo(p.id);
-          return info != null && info.label == tabItem.groupLabel;
-        }).toList();
-      default:
-        return players;
-    }
   }
 
   @override
@@ -506,5 +487,35 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
           ),
       ],
     );
+  }
+
+  void _onSortSelected(SortCriterion newValue) {
+    setState(() {
+      _sortCriterion = newValue;
+      _sortAscending = true;
+    });
+    SharedProvider().saveString(PlayerConstants.waitingSortCriterionKey, newValue.name);
+  }
+
+  List<Player> _filterPlayersByTab(
+    WaitingTabItem tabItem,
+    List<Player> players,
+    PlayersProvider provider,
+  ) {
+    switch (tabItem.type) {
+      case 'all':
+        return players;
+      case 'individual':
+        return players
+            .where((p) => provider.getGroupInfo(p.id) == null)
+            .toList();
+      case 'group':
+        return players.where((p) {
+          final info = provider.getGroupInfo(p.id);
+          return info != null && info.label == tabItem.groupLabel;
+        }).toList();
+      default:
+        return players;
+    }
   }
 }

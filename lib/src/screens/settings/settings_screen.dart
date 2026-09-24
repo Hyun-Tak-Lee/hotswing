@@ -6,7 +6,9 @@ import 'package:hotswing/src/providers/theme_provider.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 테마 모드, 코트 수, 매칭 알고리즘 가중치 및 비활동 회원 정리 등 환경설정을 관리하는 화면 위젯.
 class SettingsScreen extends StatefulWidget {
+  /// [SettingsScreen] 생성자.
   const SettingsScreen({super.key});
 
   @override
@@ -443,6 +445,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
+/// 설정 화면 섹션 헤더 위젯. 접기/펼치기 토글 기능을 제공합니다.
 class SettingSectionHeader extends StatelessWidget {
   final String title;
   final double fontSize;
@@ -506,6 +509,7 @@ class SettingSectionHeader extends StatelessWidget {
   }
 }
 
+/// 부동소수점(double) 가중치 값을 조절하기 위한 슬라이더 카드 위젯.
 class SettingSliderCard extends StatelessWidget {
   final String title;
   final String leftText;
@@ -634,6 +638,7 @@ class SettingSliderCard extends StatelessWidget {
   }
 }
 
+/// 정수(int) 값을 조절하기 위한 슬라이더 카드 위젯.
 class SettingIntSliderCard extends StatelessWidget {
   final String title;
   final String leftText;

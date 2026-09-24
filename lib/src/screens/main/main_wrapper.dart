@@ -13,7 +13,9 @@ import 'package:hotswing/src/screens/main/widgets/menu/left_side_menu.dart';
 import 'package:hotswing/src/screens/main/widgets/menu/right_side_menu.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 모바일/태블릿 반응형 네비게이션 및 주요 화면 전환을 관괄하는 메인 래퍼 위젯.
 class MainWrapper extends StatefulWidget {
+  /// [MainWrapper] 생성자.
   const MainWrapper({super.key});
 
   @override
@@ -25,73 +27,6 @@ class _MainWrapperState extends State<MainWrapper> {
   int _selectedIndex = 0;
 
   Key _playersScreenKey = UniqueKey();
-
-  void _onDestinationSelected(int index) async {
-    final playersProvider = context.read<PlayersProvider>();
-    // 개인전(0) <-> 교류전(1) 상호 전환 시 코트에 선수가 1명이라도 배정되어 있다면 전환을 차단합니다.
-    if ((_selectedIndex == 0 && index == 1) ||
-        (_selectedIndex == 1 && index == 0)) {
-      if (playersProvider.hasActivePlayers) {
-        _showMatchTypeConflictDialog(context);
-        return;
-      }
-    }
-
-    if (index == 2) {
-      // 플레이어 화면(index=2) 진입 시 인증 오버레이 띄우기
-      if (!mounted) return;
-      final bool? isAuthenticated = await showDialog<bool>(
-        context: context,
-        barrierDismissible: true,
-        builder: (context) => const ManagerAuthOverlay(),
-      );
-
-      // 인증 취소 또는 실패 시 화면 전환 중지
-      if (isAuthenticated != true) {
-        return;
-      }
-      _playersScreenKey = UniqueKey();
-    }
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  void _showMatchTypeConflictDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
-              SizedBox(width: 8),
-              Text(
-                '매칭 방식 전환 불가',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          content: const Text(
-            '코트에 플레이어가 배치되었을 경우 모드 변경이 불가능합니다',
-            style: TextStyle(fontSize: 15, height: 1.4),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text(
-                '확인',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -232,6 +167,77 @@ class _MainWrapperState extends State<MainWrapper> {
           onDestinationSelected: _onDestinationSelected,
         ),
       ),
+    );
+  }
+
+  // ==========================================
+  // Private Helper Methods
+  // ==========================================
+
+  void _onDestinationSelected(int index) async {
+    final playersProvider = context.read<PlayersProvider>();
+    // 개인전(0) <-> 교류전(1) 상호 전환 시 코트에 선수가 1명이라도 배정되어 있다면 전환을 차단합니다.
+    if ((_selectedIndex == 0 && index == 1) ||
+        (_selectedIndex == 1 && index == 0)) {
+      if (playersProvider.hasActivePlayers) {
+        _showMatchTypeConflictDialog(context);
+        return;
+      }
+    }
+
+    if (index == 2) {
+      // 플레이어 화면(index=2) 진입 시 인증 오버레이 띄우기
+      if (!mounted) return;
+      final bool? isAuthenticated = await showDialog<bool>(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) => const ManagerAuthOverlay(),
+      );
+
+      // 인증 취소 또는 실패 시 화면 전환 중지
+      if (isAuthenticated != true) {
+        return;
+      }
+      _playersScreenKey = UniqueKey();
+    }
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  void _showMatchTypeConflictDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+              SizedBox(width: 8),
+              Text(
+                '매칭 방식 전환 불가',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: const Text(
+            '코트에 플레이어가 배치되었을 경우 모드 변경이 불가능합니다',
+            style: TextStyle(fontSize: 15, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text(
+                '확인',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -6,7 +6,9 @@ import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 플레이어 필터(역할, 성별, 급수)를 선택할 수 있는 바텀 시트 위젯.
 class PlayersFilterBottomSheet extends StatefulWidget {
+  /// [PlayersFilterBottomSheet] 생성자.
   const PlayersFilterBottomSheet({super.key});
 
   @override

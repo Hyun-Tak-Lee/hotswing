@@ -5,56 +5,82 @@ import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/common/utils/database/realm_query_builder.dart';
 import 'package:realm/realm.dart';
 
+/// 선수 관리 화면의 필터링, 검색, 무한 스크롤, 다중 선택 및 편집 상태를 관리하는 뷰모델.
 class PlayersViewModel extends ChangeNotifier {
+  // 한 번에 불러올 데이터 개수
+  static const int _pageSize = 30;
+
   final PlayerRepository _repository = PlayerRepository.instance;
 
   // 현재 화면에 표시되는 플레이어 목록
   List<Player> _players = [];
-  List<Player> get players => _players;
 
   // 로딩 상태 (UI 인디케이터 제어용)
   bool _isLoading = false;
-  bool get isLoading => _isLoading;
 
   // 추가 데이터 존재 여부 (무한 스크롤 제어용)
   bool _hasMore = true;
-  bool get hasMore => _hasMore;
 
   // 필터 상태 (다중 선택 가능)
   final Set<PlayerRole> _selectedRoles = {};
-  Set<PlayerRole> get selectedRoles => _selectedRoles;
 
   // 성별 필터 (다중 선택 가능)
   final Set<PlayerGender> _selectedGenders = {};
-  Set<PlayerGender> get selectedGenders => _selectedGenders;
 
   // 선택 모드 상태
   bool _isSelectionMode = false;
-  bool get isSelectionMode => _isSelectionMode;
 
   // 선택된 플레이어 ID 집합
   final Set<ObjectId> _selectedPlayerIds = {};
-  Set<ObjectId> get selectedPlayerIds => _selectedPlayerIds;
 
   // 이름 검색어
   String _searchQuery = '';
-  String get searchQuery => _searchQuery;
 
   // 급수 필터 (다중 선택 가능, skill_utils 기준 키값)
   final Set<String> _selectedSkills = {};
-  Set<String> get selectedSkills => _selectedSkills;
 
   // 현재 수정 중인 플레이어 ID
   ObjectId? _editingPlayerId;
-  ObjectId? get editingPlayerId => _editingPlayerId;
-
-  // 한 번에 불러올 데이터 개수
-  static const int _pageSize = 30;
 
   // 필터링 및 정렬된 전체 쿼리 결과 (지연 로딩을 위해 전체 객체를 메모리에 두지 않고 쿼리 결과만 유지)
   late RealmResults<Player> _queryResults;
 
   bool _isDisposed = false;
+
+  /// [PlayersViewModel] 생성자. 초기 데이터를 조회합니다.
+  PlayersViewModel() {
+    _loadInitialData();
+  }
+
+  /// 현재 화면에 로드되어 표시되는 선수 목록.
+  List<Player> get players => _players;
+
+  /// 추가 데이터 로딩 중 여부.
+  bool get isLoading => _isLoading;
+
+  /// 다음 페이지 데이터가 존재하는지 여부.
+  bool get hasMore => _hasMore;
+
+  /// 선택된 역할 필터 목록.
+  Set<PlayerRole> get selectedRoles => _selectedRoles;
+
+  /// 선택된 성별 필터 목록.
+  Set<PlayerGender> get selectedGenders => _selectedGenders;
+
+  /// 다중 선택 모드 활성화 여부.
+  bool get isSelectionMode => _isSelectionMode;
+
+  /// 선택된 선수들의 식별자 집합.
+  Set<ObjectId> get selectedPlayerIds => _selectedPlayerIds;
+
+  /// 현재 입력된 이름 검색어.
+  String get searchQuery => _searchQuery;
+
+  /// 선택된 급수 필터 목록.
+  Set<String> get selectedSkills => _selectedSkills;
+
+  /// 현재 정보 수정 중인 선수의 식별자.
+  ObjectId? get editingPlayerId => _editingPlayerId;
 
   @override
   void dispose() {
@@ -69,43 +95,7 @@ class PlayersViewModel extends ChangeNotifier {
     }
   }
 
-  PlayersViewModel() {
-    _loadInitialData();
-  }
-
-  // 초기 데이터 로드 (필터 적용 포함)
-  void _loadInitialData() {
-    final queryBuilder = RealmQueryBuilder()
-        .addStartsWithCondition('name', _searchQuery)
-        .addInCondition('role', _selectedRoles.map((e) => e.value))
-        .addInCondition('gender', _selectedGenders.map((e) => e.value));
-
-    // 선택된 급수를 기반으로 grade 조건 구성
-    if (_selectedSkills.isNotEmpty) {
-      queryBuilder.addInCondition('grade', _selectedSkills.toList());
-    }
-
-    // 데이터 조회
-    _queryResults = _repository.getPlayers(
-      query: queryBuilder.build(),
-      args: queryBuilder.args,
-      sortField: 'name',
-      sortAscending: true,
-    );
-
-    // 페이지 데이터 구성
-    int initialCount = _queryResults.length < _pageSize
-        ? _queryResults.length
-        : _pageSize;
-    _players = _queryResults.take(initialCount).toList();
-
-    _hasMore = _players.length < _queryResults.length;
-
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  // 역할 필터 토글 (데이터 로드 지연)
+  /// 특정 역할 필터([role])의 선택 여부를 토글합니다.
   void toggleRoleFilter(PlayerRole role) {
     if (_selectedRoles.contains(role)) {
       _selectedRoles.remove(role);
@@ -115,7 +105,7 @@ class PlayersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 성별 필터 토글 (데이터 로드 지연)
+  /// 특정 성별 필터([gender])의 선택 여부를 토글합니다.
   void toggleGenderFilter(PlayerGender gender) {
     if (_selectedGenders.contains(gender)) {
       _selectedGenders.remove(gender);
@@ -125,7 +115,7 @@ class PlayersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 급수 필터 토글 (데이터 로드 지연)
+  /// 특정 급수 필터([skill])의 선택 여부를 토글합니다.
   void toggleSkillFilter(String skill) {
     if (_selectedSkills.contains(skill)) {
       _selectedSkills.remove(skill);
@@ -135,18 +125,18 @@ class PlayersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 필터 일괄 적용 메서드 (바텀 시트 닫힐 때 호출)
+  /// 설정된 필터를 적용하여 데이터를 다시 로드합니다.
   void applyFilters() {
     _loadInitialData();
   }
 
-  // 이름 검색어 설정 (검색은 즉시 적용)
+  /// 이름 검색어를 변경하고 데이터를 즉시 필터링하여 다시 로드합니다.
   void setSearchQuery(String query) {
     _searchQuery = query;
     _loadInitialData();
   }
 
-  // 추가 데이터 로드 (무한 스크롤)
+  /// 스크롤에 따라 다음 페이지의 선수 데이터를 추가로 불러옵니다.
   Future<void> loadMore() async {
     if (_isLoading || !_hasMore) return;
 
@@ -176,7 +166,7 @@ class PlayersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 플레이어 정보 수정
+  /// [player]의 상세 정보를 수정하고 UI를 갱신합니다.
   void updatePlayer({
     required Player player,
     required String name,
@@ -204,7 +194,7 @@ class PlayersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 수정 모드 토글
+  /// 특정 선수([playerId])의 수정 폼 모드를 토글합니다.
   void toggleEditMode(ObjectId? playerId) {
     if (_editingPlayerId == playerId) {
       _editingPlayerId = null;
@@ -218,7 +208,7 @@ class PlayersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 선택 모드 종료 및 초기화
+  /// 다중 선택 모드를 설정하거나 해제합니다.
   void setSelectionMode(bool enabled) {
     _isSelectionMode = enabled;
     if (!enabled) {
@@ -227,18 +217,17 @@ class PlayersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 플레이어 선택 토글
+  /// 특정 선수([playerId])의 선택 상태를 토글합니다.
   void toggleSelection(ObjectId playerId) {
     if (_selectedPlayerIds.contains(playerId)) {
       _selectedPlayerIds.remove(playerId);
-      // 모든 선택이 해제되면 선택 모드 종료 (옵션) - 기획에 따라 다름, 여기서는 유지
     } else {
       _selectedPlayerIds.add(playerId);
     }
     notifyListeners();
   }
 
-  // 전체 선택 (현재 로드된 플레이어 대상)
+  /// 현재 로드된 전체 선수를 선택하거나 선택 해제합니다.
   void selectAll() {
     if (_selectedPlayerIds.length == _players.length) {
       _selectedPlayerIds.clear();
@@ -248,7 +237,7 @@ class PlayersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 단일 플레이어 삭제
+  /// 단일 선수([player])를 DB에서 삭제하고 목록에서 제거합니다.
   void deletePlayer(Player player) {
     _repository.deletePlayer(player.id);
 
@@ -257,7 +246,7 @@ class PlayersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 다중 플레이어 삭제
+  /// 선택된 다중 선수들을 DB에서 일괄 삭제하고 선택 모드를 종료합니다.
   void deleteSelectedPlayers() {
     if (_selectedPlayerIds.isEmpty) return;
 
@@ -267,5 +256,41 @@ class PlayersViewModel extends ChangeNotifier {
 
     // 선택 모드 종료 및 초기화
     setSelectionMode(false);
+  }
+
+  // ==========================================
+  // Private Helper Methods
+  // ==========================================
+
+  /// 초기 데이터 로드 (필터 적용 포함)
+  void _loadInitialData() {
+    final queryBuilder = RealmQueryBuilder()
+        .addStartsWithCondition('name', _searchQuery)
+        .addInCondition('role', _selectedRoles.map((e) => e.value))
+        .addInCondition('gender', _selectedGenders.map((e) => e.value));
+
+    // 선택된 급수를 기반으로 grade 조건 구성
+    if (_selectedSkills.isNotEmpty) {
+      queryBuilder.addInCondition('grade', _selectedSkills.toList());
+    }
+
+    // 데이터 조회
+    _queryResults = _repository.getPlayers(
+      query: queryBuilder.build(),
+      args: queryBuilder.args,
+      sortField: 'name',
+      sortAscending: true,
+    );
+
+    // 페이지 데이터 구성
+    int initialCount = _queryResults.length < _pageSize
+        ? _queryResults.length
+        : _pageSize;
+    _players = _queryResults.take(initialCount).toList();
+
+    _hasMore = _players.length < _queryResults.length;
+
+    _isLoading = false;
+    notifyListeners();
   }
 }

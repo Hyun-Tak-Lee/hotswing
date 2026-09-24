@@ -2,6 +2,7 @@ import 'package:realm/realm.dart';
 
 part 'player.realm.dart';
 
+/// Realm 데이터베이스에 저장되는 선수 엔티티 모델 스키마.
 @RealmModel()
 class _Player {
   @PrimaryKey()

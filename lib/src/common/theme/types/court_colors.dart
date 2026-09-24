@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// 코트, 매치 배정, 대기 패널 관련 UI 요소의 테마 색상을 정의하는 [ThemeExtension].
 @immutable
 class CourtColors extends ThemeExtension<CourtColors> {
   final Color homeDivider;

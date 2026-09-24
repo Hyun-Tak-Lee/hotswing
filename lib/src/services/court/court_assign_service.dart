@@ -4,12 +4,18 @@ import 'package:realm/realm.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/models/options/option.dart';
 
+/// 코트 배정 및 플레이어 매칭 알고리즘을 수행하는 서비스.
 class CourtAssignService {
   final Random _random = Random();
   final Options _options;
 
+  /// [Options] 설정을 기반으로 [CourtAssignService] 인스턴스를 생성합니다.
   CourtAssignService(this._options);
 
+  /// 일반 경기에서 현재 코트 상태와 대기자 목록을 기반으로 추천 플레이어 목록을 반환합니다.
+  ///
+  /// 매니저 대기 옵션([Options.reserveManager])이 활성화되어 있는 경우,
+  /// 배정 후 남은 활성 매니저가 없으면 후보 1명을 대기열에 남기도록 재매칭합니다.
   List<Player> getRecommendedPlayersForCourt({
     required List<Player> unassignedPlayers,
     required List<Player> currentPlayersOnCourt,
@@ -54,6 +60,74 @@ class CourtAssignService {
 
     return results;
   }
+
+  /// 클럽전 경기에서 그룹 라벨을 기반으로 코트에 추천할 플레이어 목록을 반환합니다.
+  List<Player> getRecommendedPlayersForClubMatch({
+    required List<Player> unassignedPlayers,
+    required List<Player> currentPlayersOnCourt,
+    required Map<ObjectId, String> playerGroupLabels,
+  }) {
+    // 1. 비활성화 및 그룹이 없는 유저 필터링
+    List<Player> activePlayers = unassignedPlayers
+        .where((p) => p.activate && playerGroupLabels.containsKey(p.id))
+        .toList();
+
+    // 2. 전체 활성 유저를 대상으로 매칭 시도 및 결과 반환
+    return _matchPlayersForClub(
+      availablePlayers: activePlayers,
+      currentPlayersOnCourt: currentPlayersOnCourt,
+      playerGroupLabels: playerGroupLabels,
+    );
+  }
+
+  /// 점수가 가장 높은 최적의 팀(페어) 하나를 반환합니다. (최상위 후보군 중 랜덤 선택)
+  List<Player> getBestMatchPair({required List<Player> unassignedPlayers}) {
+    final pairs = _generateScoredPairs(unassignedPlayers);
+    if (pairs.isEmpty) return [];
+    return _selectTopCandidate<List<Player>>(pairs) ?? [];
+  }
+
+  /// 두 플레이어 간의 매칭 점수를 계산합니다. (점수가 높을수록 매칭 적합도가 높음)
+  double calculatePairScore(Player player1, Player player2) {
+    // 두 사람이 같은 그룹인지 확인
+    final bool isGroupMember = player1.groups.contains(player2.id);
+
+    // 실력 점수: 레이팅 차이가 적을수록 높은 점수 부여
+    final double rateDiff = isGroupMember
+        ? 0.0
+        : (player1.rate - player2.rate).abs().toDouble();
+    final skillScore = 1.0 - (rateDiff / 1000.0);
+
+    // 성별 점수: 같은 성별일 경우 가산점 5.0을 부여하여 동성 페어 우선 결성 추구
+    final genderScore = (isGroupMember || player1.gender == player2.gender)
+        ? 5.0
+        : 0.0;
+
+    // 대기 점수: 대기 시간이 길수록 높은 점수 부여
+    final totalWaited = player1.waited + player2.waited;
+    final waitedScore = totalWaited * 0.2;
+
+    // 플레이 점수: 경기 횟수가 많을수록 감점 처리
+    final totalPlayed =
+        player1.played + player1.lated + player2.played + player2.lated;
+    final playedScore = totalPlayed * -0.25; // 음수화하여 감점 처리
+
+    // 중복 플레이 점수: 이미 매칭되었던 페어일 경우 감점 처리
+    final gamesPlayedTogether =
+        player1.gamesPlayedWith[player2.id.hexString] ?? 0;
+    final playedWithScore = 1.0 - (gamesPlayedTogether * 0.2);
+
+    // 각 항목에 설정된 가중치를 곱하여 최종 점수 산출
+    return skillScore +
+        genderScore +
+        (waitedScore * _options.waitedWeight) +
+        (playedScore * _options.playedWeight) +
+        playedWithScore;
+  }
+
+  // ==========================================
+  // Private Helper Methods
+  // ==========================================
 
   /// 현재 코트 상태에 따른 분기로 적절한 매칭 결과를 반환하는 헬퍼 메서드
   List<Player> _matchPlayers({
@@ -230,13 +304,6 @@ class CourtAssignService {
     return [...firstTeam, ...secondTeam];
   }
 
-  /// 점수가 가장 높은 최적의 팀(페어) 하나를 반환 (최상위 2개 팀 중 랜덤 선택)
-  List<Player> getBestMatchPair({required List<Player> unassignedPlayers}) {
-    final pairs = _generateScoredPairs(unassignedPlayers);
-    if (pairs.isEmpty) return [];
-    return _selectTopCandidate<List<Player>>(pairs) ?? [];
-  }
-
   /// 특정 플레이어와 가장 매칭 점수가 높은 1명을 반환
   Player? _getBestMatchForPlayer({
     required Player targetPlayer,
@@ -259,7 +326,6 @@ class CourtAssignService {
     return _selectTopCandidate<Player>(candidates);
   }
 
-  // --- 매칭 헬퍼 메서드 추가 ---
   T? _selectTopCandidate<T>(List<_Candidate<T>> candidates) {
     if (candidates.isEmpty) return null;
 
@@ -357,44 +423,6 @@ class CourtAssignService {
     return pow(teamRateDiff / 1000.0, 2) * -1 * _options.skillWeight;
   }
 
-  /// 두 플레이어 간의 매칭 점수를 계산 (높을수록 좋음)
-  double calculatePairScore(Player player1, Player player2) {
-    // 두 사람이 같은 그룹인지 확인
-    final bool isGroupMember = player1.groups.contains(player2.id);
-
-    // 실력 점수: 레이팅 차이가 적을수록 높은 점수 부여
-    final double rateDiff = isGroupMember
-        ? 0.0
-        : (player1.rate - player2.rate).abs().toDouble();
-    final skillScore = 1.0 - (rateDiff / 1000.0);
-
-    // 성별 점수: 같은 성별일 경우 가산점 5.0을 부여하여 동성 페어 우선 결성 추구
-    final genderScore = (isGroupMember || player1.gender == player2.gender)
-        ? 5.0
-        : 0.0;
-
-    // 대기 점수: 대기 시간이 길수록 높은 점수 부여
-    final totalWaited = player1.waited + player2.waited;
-    final waitedScore = totalWaited * 0.2;
-
-    // 플레이 점수: 경기 횟수가 많을수록 감점 처리
-    final totalPlayed =
-        player1.played + player1.lated + player2.played + player2.lated;
-    final playedScore = totalPlayed * -0.25; // 음수화하여 감점 처리
-
-    // 중복 플레이 점수: 이미 매칭되었던 페어일 경우 감점 처리
-    final gamesPlayedTogether =
-        player1.gamesPlayedWith[player2.id.hexString] ?? 0;
-    final playedWithScore = 1.0 - (gamesPlayedTogether * 0.2);
-
-    // 각 항목에 설정된 가중치를 곱하여 최종 점수 산출
-    return skillScore +
-        genderScore +
-        (waitedScore * _options.waitedWeight) +
-        (playedScore * _options.playedWeight) +
-        playedWithScore;
-  }
-
   /// 플레이어 리스트에서 가능한 모든 인접 조합을 생성하고 기본 점수를 매겨 정렬함
   List<_Candidate<List<Player>>> _generateScoredPairs(List<Player> players) {
     final sortedPlayers = List<Player>.from(players)..shuffle(_random);
@@ -449,24 +477,6 @@ class CourtAssignService {
       final scoreB = (b.played + b.lated) * 1.0 - (b.waited * 0.15);
       return scoreA > scoreB ? a : b;
     });
-  }
-
-  List<Player> getRecommendedPlayersForClubMatch({
-    required List<Player> unassignedPlayers,
-    required List<Player> currentPlayersOnCourt,
-    required Map<ObjectId, String> playerGroupLabels,
-  }) {
-    // 1. 비활성화 및 그룹이 없는 유저 필터링
-    List<Player> activePlayers = unassignedPlayers
-        .where((p) => p.activate && playerGroupLabels.containsKey(p.id))
-        .toList();
-
-    // 2. 전체 활성 유저를 대상으로 매칭 시도 및 결과 반환
-    return _matchPlayersForClub(
-      availablePlayers: activePlayers,
-      currentPlayersOnCourt: currentPlayersOnCourt,
-      playerGroupLabels: playerGroupLabels,
-    );
   }
 
   List<Player> _matchPlayersForClub({

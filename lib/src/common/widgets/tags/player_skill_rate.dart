@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 플레이어의 급수(Skill Level)와 레이팅(Rate)을 시각적으로 표시하는 위젯.
 class PlayerSkillRateWidget extends StatelessWidget {
+  /// 플레이어 급수 문자열 (예: 'A', 'B', 'C').
   final String skillLevel;
+
+  /// 플레이어 레이팅 점수.
   final int rate;
 
+  /// [PlayerSkillRateWidget] 생성자.
   const PlayerSkillRateWidget({
     super.key,
     required this.skillLevel,

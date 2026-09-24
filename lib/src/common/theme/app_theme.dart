@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-class AppTheme {
+/// 애플리케이션의 라이트 및 다크 테마 데이터를 구성하고 제공하는 유틸리티 클래스.
+abstract final class AppTheme {
+  /// 전달된 [brightness]에 따라 커스텀 색상 확장이 포함된 [ThemeData]를 생성하여 반환.
   static ThemeData buildTheme(Brightness brightness) {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: const Color(0xFFB0E0E6),

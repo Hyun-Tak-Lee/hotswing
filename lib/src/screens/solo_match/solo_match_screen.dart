@@ -11,7 +11,9 @@ import 'package:hotswing/src/screens/solo_match/widgets/waiting_players_panel.da
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 개인전 매칭 및 코트 배정, 대기열 패널을 표시하는 메인 화면 위젯.
 class SoloMatchScreen extends StatefulWidget {
+  /// [SoloMatchScreen] 생성자.
   const SoloMatchScreen({super.key});
 
   @override
@@ -22,35 +24,6 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
   bool _showCourtHighlight = false;
 
   CourtViewSection selectedView = CourtViewSection.assignedView;
-
-  void _handlePlayerDrop(
-    BuildContext context,
-    PlayerDragData data,
-    Player? targetPlayer,
-    dynamic targetSectionId,
-    String targetSectionKind,
-    int targetSectionIndex,
-    int targetSubIndex,
-  ) {
-    context.read<PlayersProvider>().moveOrSwapPlayer(
-      data: data,
-      targetSectionKind: targetSectionKind,
-      targetSectionIndex: targetSectionIndex,
-      targetSubIndex: targetSubIndex,
-    );
-  }
-
-  void _onCourtPlayerDragStarted() {
-    setState(() {
-      _showCourtHighlight = true;
-    });
-  }
-
-  void _onCourtPlayerDragEnded() {
-    setState(() {
-      _showCourtHighlight = false;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,5 +120,38 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
               ],
             ),
     );
+  }
+
+  // ==========================================
+  // Private Helper Methods
+  // ==========================================
+
+  void _handlePlayerDrop(
+    BuildContext context,
+    PlayerDragData data,
+    Player? targetPlayer,
+    dynamic targetSectionId,
+    String targetSectionKind,
+    int targetSectionIndex,
+    int targetSubIndex,
+  ) {
+    context.read<PlayersProvider>().moveOrSwapPlayer(
+      data: data,
+      targetSectionKind: targetSectionKind,
+      targetSectionIndex: targetSectionIndex,
+      targetSubIndex: targetSubIndex,
+    );
+  }
+
+  void _onCourtPlayerDragStarted() {
+    setState(() {
+      _showCourtHighlight = true;
+    });
+  }
+
+  void _onCourtPlayerDragEnded() {
+    setState(() {
+      _showCourtHighlight = false;
+    });
   }
 }

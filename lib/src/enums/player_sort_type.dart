@@ -1,4 +1,4 @@
-// 정렬 기준 Enum
+/// 플레이어 정렬 기준 구분.
 enum PlayerSortType {
   name('이름순');
 

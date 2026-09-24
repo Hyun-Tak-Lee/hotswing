@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// 앱의 기본 배경, 텍스트, 카드, 내비게이션 바 등의 공통 테마 색상을 정의하는 [ThemeExtension].
 @immutable
 class BaseColors extends ThemeExtension<BaseColors> {
   final Color gradientStart;

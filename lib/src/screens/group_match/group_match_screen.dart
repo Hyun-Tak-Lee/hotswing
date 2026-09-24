@@ -11,7 +11,9 @@ import 'package:hotswing/src/screens/group_match/widgets/group_waiting_players_p
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 클럽/교류전 매칭 및 코트 배정, 그룹 대기열 패널을 표시하는 화면 위젯.
 class GroupMatchScreen extends StatefulWidget {
+  /// [GroupMatchScreen] 생성자.
   const GroupMatchScreen({super.key});
 
   @override
@@ -22,35 +24,6 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
   bool _showCourtHighlight = false;
 
   CourtViewSection selectedView = CourtViewSection.assignedView;
-
-  void _handlePlayerDrop(
-    BuildContext context,
-    PlayerDragData data,
-    Player? targetPlayer,
-    dynamic targetSectionId,
-    String targetSectionKind,
-    int targetSectionIndex,
-    int targetSubIndex,
-  ) {
-    context.read<PlayersProvider>().moveOrSwapPlayer(
-      data: data,
-      targetSectionKind: targetSectionKind,
-      targetSectionIndex: targetSectionIndex,
-      targetSubIndex: targetSubIndex,
-    );
-  }
-
-  void _onCourtPlayerDragStarted() {
-    setState(() {
-      _showCourtHighlight = true;
-    });
-  }
-
-  void _onCourtPlayerDragEnded() {
-    setState(() {
-      _showCourtHighlight = false;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -151,5 +124,38 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
               ],
             ),
     );
+  }
+
+  // ==========================================
+  // Private Helper Methods
+  // ==========================================
+
+  void _handlePlayerDrop(
+    BuildContext context,
+    PlayerDragData data,
+    Player? targetPlayer,
+    dynamic targetSectionId,
+    String targetSectionKind,
+    int targetSectionIndex,
+    int targetSubIndex,
+  ) {
+    context.read<PlayersProvider>().moveOrSwapPlayer(
+      data: data,
+      targetSectionKind: targetSectionKind,
+      targetSectionIndex: targetSectionIndex,
+      targetSubIndex: targetSubIndex,
+    );
+  }
+
+  void _onCourtPlayerDragStarted() {
+    setState(() {
+      _showCourtHighlight = true;
+    });
+  }
+
+  void _onCourtPlayerDragEnded() {
+    setState(() {
+      _showCourtHighlight = false;
+    });
   }
 }

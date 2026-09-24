@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 태블릿 및 가로 모드 화면 좌측에 표시되는 메인 내비게이션 레일 위젯.
 class MainNavigationRail extends StatelessWidget {
+  /// 현재 선택된 내비게이션 탭의 인덱스.
   final int selectedIndex;
+
+  /// 목적지 탭 선택 시 호출되는 콜백.
   final ValueChanged<int> onDestinationSelected;
 
+  /// [MainNavigationRail] 생성자.
   const MainNavigationRail({
     super.key,
     required this.selectedIndex,

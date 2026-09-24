@@ -3,11 +3,18 @@ import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 경기 코트와 대기 코트 간의 뷰 전환을 제공하는 세그먼트 셀렉터 위젯.
 class CourtViewSelector extends StatelessWidget {
+  /// 현재 선택된 코트 뷰 섹션.
   final CourtViewSection selectedView;
+
+  /// 뷰 섹션 변경 시 호출되는 콜백.
   final ValueChanged<CourtViewSection> onSelectionChanged;
+
+  /// 가로 모드 여부.
   final bool isLandscape;
 
+  /// [CourtViewSelector] 생성자.
   const CourtViewSelector({
     super.key,
     required this.selectedView,

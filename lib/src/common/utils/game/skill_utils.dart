@@ -1,3 +1,4 @@
+/// 배드민턴 실력 등급과 레이팅(점수) 간의 매핑 테이블.
 const Map<String, int> skillLevelToRate = {
   '초심': 0,
   '초심+': 500,
@@ -9,7 +10,7 @@ const Map<String, int> skillLevelToRate = {
   'S': 5000,
 };
 
-// 점수(rate)에 따른 스킬 등급(문자열)을 반환하는 함수
+/// 점수([rate])에 해당하는 실력 등급(문자열)을 계산하여 반환합니다.
 String rateToSkillLevel(int rate) {
   final entries = skillLevelToRate.entries.toList();
 

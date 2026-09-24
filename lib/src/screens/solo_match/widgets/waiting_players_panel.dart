@@ -12,8 +12,12 @@ import 'package:provider/provider.dart';
 import 'package:hotswing/src/common/constants/player_constants.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 
+/// 대기 중인 플레이어 목록 및 정렬 헤더를 표시하는 패널 위젯.
 class WaitingPlayersPanel extends StatefulWidget {
+  /// 드래그 중인 플레이어를 대기 패널로 삭제/해제할 때 표시할 오버레이 활성화 여부.
   final bool showDeleteOverlay;
+
+  /// 플레이어 드롭 시 호출되는 콜백.
   final Function(
     BuildContext context,
     PlayerDragData data,
@@ -25,6 +29,7 @@ class WaitingPlayersPanel extends StatefulWidget {
   )
   onPlayerDrop;
 
+  /// [WaitingPlayersPanel] 생성자.
   const WaitingPlayersPanel({
     super.key,
     required this.showDeleteOverlay,
@@ -51,14 +56,6 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
         );
       }
     });
-  }
-
-  void _onSortSelected(SortCriterion newValue) {
-    setState(() {
-      _sortCriterion = newValue;
-      _sortAscending = true;
-    });
-    SharedProvider().saveString(PlayerConstants.waitingSortCriterionKey, newValue.name);
   }
 
   @override
@@ -284,5 +281,13 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
           ),
       ],
     );
+  }
+
+  void _onSortSelected(SortCriterion newValue) {
+    setState(() {
+      _sortCriterion = newValue;
+      _sortAscending = true;
+    });
+    SharedProvider().saveString(PlayerConstants.waitingSortCriterionKey, newValue.name);
   }
 }

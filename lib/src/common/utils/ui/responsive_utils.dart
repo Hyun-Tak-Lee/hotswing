@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
+/// 화면 크기에 따른 모바일/태블릿 반응형 레이아웃 및 텍스트 스케일링 유틸리티.
 class ResponsiveUtils {
+  /// 태블릿을 구분하기 위한 너비 기준값(dp)입니다.
   static const double tabletThreshold = 600.0;
 
+  /// 현재 화면 너비가 태블릿 기준값보다 작은 모바일 환경인지 확인합니다.
   static bool isMobile(BuildContext context) {
     return MediaQuery.of(context).size.width < tabletThreshold;
   }
 
+  /// 현재 화면 너비가 태블릿 기준값 이상인 태블릿 환경인지 확인합니다.
   static bool isTablet(BuildContext context) {
     return MediaQuery.of(context).size.width >= tabletThreshold;
   }

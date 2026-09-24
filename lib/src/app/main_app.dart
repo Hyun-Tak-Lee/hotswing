@@ -4,7 +4,9 @@ import 'package:hotswing/src/providers/theme_provider.dart';
 import 'package:hotswing/src/screens/main/main_wrapper.dart';
 import 'package:hotswing/src/common/theme/app_theme.dart';
 
+/// 활성화가 완료된 후 실행되는 메인 애플리케이션 루트 위젯.
 class MainApp extends StatelessWidget {
+  /// [MainApp] 생성자.
   const MainApp({super.key});
 
   @override
@@ -20,4 +22,3 @@ class MainApp extends StatelessWidget {
     );
   }
 }
-

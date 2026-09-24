@@ -8,6 +8,7 @@ import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
+/// 대기 코트들의 목록과 코트 추가 영역을 반응형으로 렌더링하는 위젯.
 class StandbyCourtSectionsView extends StatelessWidget {
   final Function(
     BuildContext,
@@ -83,7 +84,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                               sectionKind: 'standby',
                               onPlayerDrop: onPlayerDrop,
                               onCourtPlayerDragStarted:
-                                  onCourtPlayerDragStarted,
+                                   onCourtPlayerDragStarted,
                               onCourtPlayerDragEnded: onCourtPlayerDragEnded,
                               onPlayerRemoved: (courtIndex, playerIndex) {
                                 final removed = playersProvider
@@ -493,7 +494,6 @@ class StandbyCourtSectionsView extends StatelessWidget {
       },
     );
   }
-
 }
 
 class _StandbyGradientButton extends StatelessWidget {

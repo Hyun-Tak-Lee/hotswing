@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// 다이얼로그 및 팝업 모달 관련 UI 요소의 테마 색상을 정의하는 [ThemeExtension].
 @immutable
 class DialogColors extends ThemeExtension<DialogColors> {
   final Color dialogTitleBgStart;

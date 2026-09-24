@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
 
+/// 대기 플레이어 패널의 상단 헤더(세로 모드) 위젯.
 class WaitingPanelHeader extends StatelessWidget {
+  /// [WaitingPanelHeader] 생성자.
   const WaitingPanelHeader({
     super.key,
     required this.isTablet,
@@ -11,9 +13,16 @@ class WaitingPanelHeader extends StatelessWidget {
     required this.onSortSelected,
   });
 
+  /// 태블릿 화면 여부.
   final bool isTablet;
+
+  /// 대기 중인 플레이어 수.
   final int count;
+
+  /// 현재 정렬 기준.
   final SortCriterion sortCriterion;
+
+  /// 정렬 기준 변경 시 호출되는 콜백.
   final ValueChanged<SortCriterion> onSortSelected;
 
   @override
@@ -117,7 +126,9 @@ class WaitingPanelHeader extends StatelessWidget {
   }
 }
 
+/// 대기 플레이어 패널의 상단 헤더(가로 모드) 위젯.
 class WaitingPanelLandscapeHeader extends StatelessWidget {
+  /// [WaitingPanelLandscapeHeader] 생성자.
   const WaitingPanelLandscapeHeader({
     super.key,
     required this.isTablet,
@@ -126,9 +137,16 @@ class WaitingPanelLandscapeHeader extends StatelessWidget {
     required this.onSortSelected,
   });
 
+  /// 태블릿 화면 여부.
   final bool isTablet;
+
+  /// 대기 중인 플레이어 수.
   final int count;
+
+  /// 현재 정렬 기준.
   final SortCriterion sortCriterion;
+
+  /// 정렬 기준 변경 시 호출되는 콜백.
   final ValueChanged<SortCriterion> onSortSelected;
 
   @override

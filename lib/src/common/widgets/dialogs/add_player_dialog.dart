@@ -76,68 +76,6 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     super.dispose();
   }
 
-  /// 이름 입력 시 자동완성을 위해 플레이어를 검색합니다.
-  ///
-  /// [textEditingValue]의 텍스트를 접두사로 사용하여 일치하는 플레이어 목록을 반환합니다.
-  Iterable<Player> _findPlayersByName(TextEditingValue textEditingValue) {
-    if (_isLoaded) {
-      setState(() {
-        _isLoaded = false;
-      });
-    }
-    if (textEditingValue.text.isEmpty) {
-      return const Iterable<Player>.empty();
-    }
-    return widget.playersProvider.findPlayersByPrefix(
-      textEditingValue.text,
-      10,
-    );
-  }
-
-  /// 자동완성에서 선택된 플레이어의 정보를 폼의 각 필드에 로드합니다.
-  void _loadPlayerAllForms(Player player) {
-    setState(() {
-      _isLoaded = true;
-      _player = player;
-      _name = player.name;
-      _rate = player.rate;
-      _rateController.text = player.rate.toString();
-      _selectedSkillLevel = player.grade;
-      _selectedGender = PlayerGender.values.cast<PlayerGender?>().firstWhere(
-        (element) => element?.value == player.gender,
-        orElse: () => null,
-      );
-      _isManager = player.role == "manager";
-    });
-  }
-
-  /// 입력된 폼 데이터를 검증하고, 유효한 경우 이전 화면으로 데이터를 반환하며 다이얼로그를 닫습니다.
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-
-      String role = "user";
-      if (widget.isGuest || (widget.player?.role == 'guest')) {
-        role = 'guest';
-      } else if (_isManager) {
-        role = "manager";
-      }
-
-      Navigator.of(context).pop({
-        'name': _name,
-        'rate': _rate,
-        'grade': _selectedSkillLevel,
-        'gender': _selectedGender?.value,
-        'role': role,
-        'played': _playCount,
-        'waited': _waitCount,
-        'groups': _groups,
-        'loaded': _isLoaded,
-        'player': _player,
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final baseColors = context.baseColors;
@@ -375,6 +313,72 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     );
   }
 
+  // ==========================================
+  // Private Helper Methods
+  // ==========================================
+
+  /// 이름 입력 시 자동완성을 위해 플레이어를 검색합니다.
+  ///
+  /// [textEditingValue]의 텍스트를 접두사로 사용하여 일치하는 플레이어 목록을 반환합니다.
+  Iterable<Player> _findPlayersByName(TextEditingValue textEditingValue) {
+    if (_isLoaded) {
+      setState(() {
+        _isLoaded = false;
+      });
+    }
+    if (textEditingValue.text.isEmpty) {
+      return const Iterable<Player>.empty();
+    }
+    return widget.playersProvider.findPlayersByPrefix(
+      textEditingValue.text,
+      10,
+    );
+  }
+
+  /// 자동완성에서 선택된 플레이어의 정보를 폼의 각 필드에 로드합니다.
+  void _loadPlayerAllForms(Player player) {
+    setState(() {
+      _isLoaded = true;
+      _player = player;
+      _name = player.name;
+      _rate = player.rate;
+      _rateController.text = player.rate.toString();
+      _selectedSkillLevel = player.grade;
+      _selectedGender = PlayerGender.values.cast<PlayerGender?>().firstWhere(
+        (element) => element?.value == player.gender,
+        orElse: () => null,
+      );
+      _isManager = player.role == "manager";
+    });
+  }
+
+  /// 입력된 폼 데이터를 검증하고, 유효한 경우 이전 화면으로 데이터를 반환하며 다이얼로그를 닫습니다.
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      String role = "user";
+      if (widget.isGuest || (widget.player?.role == 'guest')) {
+        role = 'guest';
+      } else if (_isManager) {
+        role = "manager";
+      }
+
+      Navigator.of(context).pop({
+        'name': _name,
+        'rate': _rate,
+        'grade': _selectedSkillLevel,
+        'gender': _selectedGender?.value,
+        'role': role,
+        'played': _playCount,
+        'waited': _waitCount,
+        'groups': _groups,
+        'loaded': _isLoaded,
+        'player': _player,
+      });
+    }
+  }
+
   void _onSkillChanged(String? newValue) {
     setState(() {
       _selectedSkillLevel = newValue;
@@ -393,7 +397,6 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _rateController.text = clampedRate.toString();
     });
   }
-
 }
 
 InputDecoration _playerInputDecoration(
@@ -443,7 +446,9 @@ InputDecoration _playerInputDecoration(
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(
-        color: isManager ? playerColors.roleManager : formColors.inputFocusBorder,
+        color: isManager
+            ? playerColors.roleManager
+            : formColors.inputFocusBorder,
         width: 2,
       ),
     ),
@@ -522,7 +527,9 @@ class _PlayerNameField extends StatelessWidget {
                               return ListTile(
                                 title: Text(
                                   '${option.name} ($skillLevel)',
-                                  style: TextStyle(color: baseColors.textPrimary),
+                                  style: TextStyle(
+                                    color: baseColors.textPrimary,
+                                  ),
                                 ),
                                 onTap: () => onSelected(option),
                               );
@@ -533,45 +540,47 @@ class _PlayerNameField extends StatelessWidget {
                     ),
                   );
                 },
-                fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                  return TapRegion(
-                    groupId: const ValueKey('player_name_input'),
-                    child: TextFormField(
-                      controller: controller,
-                      focusNode: focusNode,
-                      decoration: _playerInputDecoration(
-                        context,
-                        baseColors: baseColors,
-                        playerColors: playerColors,
-                        formColors: formColors,
-                        labelText: '이름',
-                        isManager: isManager,
-                        isDisabled: false,
-                        customVerticalPadding: ResponsiveUtils.isTablet(context)
-                            ? 12.0
-                            : 8.0,
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            FocusManager.instance.primaryFocus?.unfocus();
+                fieldViewBuilder:
+                    (context, controller, focusNode, onFieldSubmitted) {
+                      return TapRegion(
+                        groupId: const ValueKey('player_name_input'),
+                        child: TextFormField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          decoration: _playerInputDecoration(
+                            context,
+                            baseColors: baseColors,
+                            playerColors: playerColors,
+                            formColors: formColors,
+                            labelText: '이름',
+                            isManager: isManager,
+                            isDisabled: false,
+                            customVerticalPadding:
+                                ResponsiveUtils.isTablet(context) ? 12.0 : 8.0,
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                              },
+                              icon: const Icon(Icons.check),
+                            ),
+                          ),
+                          style: labelStyle,
+                          maxLength: 10,
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(10),
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return '이름을 입력하세요';
+                            }
+                            if (value.length > 10) return '이름은 10자 이하로 입력해주세요';
+                            return null;
                           },
-                          icon: const Icon(Icons.check),
+                          onSaved: onNameSaved,
+                          onFieldSubmitted: (_) => onFieldSubmitted(),
                         ),
-                      ),
-                      style: labelStyle,
-                      maxLength: 10,
-                      inputFormatters: [LengthLimitingTextInputFormatter(10)],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return '이름을 입력하세요';
-                        }
-                        if (value.length > 10) return '이름은 10자 이하로 입력해주세요';
-                        return null;
-                      },
-                      onSaved: onNameSaved,
-                      onFieldSubmitted: (_) => onFieldSubmitted(),
-                    ),
-                  );
-                },
+                      );
+                    },
               );
             },
           ),
@@ -632,7 +641,9 @@ class _PlayerSkillLevelField extends StatelessWidget {
                 labelText: '급수',
                 isManager: isManager,
                 isDisabled: isLoaded,
-                customVerticalPadding: ResponsiveUtils.isTablet(context) ? 6.0 : 2.0,
+                customVerticalPadding: ResponsiveUtils.isTablet(context)
+                    ? 6.0
+                    : 2.0,
               ),
               isExpanded: true,
               isDense: false,
@@ -722,7 +733,8 @@ class _PlayerRateField extends StatelessWidget {
           onPressed: isLoaded
               ? null
               : () {
-                  final int currentRate = int.tryParse(controller.text) ?? (rate ?? 0);
+                  final int currentRate =
+                      int.tryParse(controller.text) ?? (rate ?? 0);
                   int newRate = ((currentRate - 1) ~/ 50) * 50;
                   if (newRate < 0) newRate = 0;
                   onRateUpdated(newRate);
@@ -782,7 +794,8 @@ class _PlayerRateField extends StatelessWidget {
           onPressed: isLoaded
               ? null
               : () {
-                  final int currentRate = int.tryParse(controller.text) ?? (rate ?? 0);
+                  final int currentRate =
+                      int.tryParse(controller.text) ?? (rate ?? 0);
                   int newRate = (currentRate ~/ 50) * 50 + 50;
                   if (newRate > maxRate) newRate = maxRate;
                   onRateUpdated(newRate);
@@ -878,9 +891,7 @@ class _PlayerGroupField extends StatelessWidget {
         options: sortedPlayers.map((p) => p.name).toList(),
         optionsId: sortedPlayers.map((p) => p.id).toList(),
         groupsOptionId: sortedPlayers
-            .where(
-              (p) => p.groups.isNotEmpty && !currentGroups.contains(p.id),
-            )
+            .where((p) => p.groups.isNotEmpty && !currentGroups.contains(p.id))
             .map((p) => p.id)
             .toList(),
         initialValue: groups,

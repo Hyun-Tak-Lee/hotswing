@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// 폼, 입력 필드, 바텀시트 필터 관련 UI 요소의 테마 색상을 정의하는 [ThemeExtension].
 @immutable
 class FormColors extends ThemeExtension<FormColors> {
   final Color filterDivider;

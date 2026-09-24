@@ -3,8 +3,12 @@ import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:realm/realm.dart';
 
+/// Realm 데이터베이스 인스턴스를 초기화하고 스키마 마이그레이션을 관리하는 싱글톤 제공자.
 class RealmProvider {
-  late Realm _realm;
+  /// [RealmProvider]의 싱글톤 인스턴스.
+  static final RealmProvider instance = RealmProvider._();
+
+  late final Realm _realm;
 
   RealmProvider._() {
     final config = Configuration.local(
@@ -46,7 +50,6 @@ class RealmProvider {
     _realm = Realm(config);
   }
 
-  static final RealmProvider instance = RealmProvider._();
-
+  /// 활성화된 Realm 데이터베이스 인스턴스를 반환합니다.
   Realm get realm => _realm;
 }

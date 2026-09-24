@@ -5,9 +5,11 @@ import 'package:hotswing/src/models/ui/group_info.dart';
 import 'package:hotswing/src/repository/realms/players.dart';
 import 'package:realm/realm.dart';
 
+/// 선수 데이터 조작 및 비즈니스 로직(그룹 관계 분석, 정렬 등)을 전담하는 도메인 서비스.
 class PlayerService {
   final PlayerRepository _playerRepository = PlayerRepository.instance;
 
+  /// [playerId]를 포함한 [groups] 목록의 플레이어들에게 상호 그룹 참조 관계를 갱신합니다.
   void updateGroupPlayers(
     Map<ObjectId, Player> player,
     List<ObjectId> groups,
@@ -29,6 +31,7 @@ class PlayerService {
     _playerRepository.updatePlayersGroups(playerGroups);
   }
 
+  /// [playerId]를 기존 그룹 관계에서 제거하고, 나머지 그룹원들의 그룹 목록에서도 [playerId]를 제외합니다.
   void removeGroupPlayers(
     Map<ObjectId, Player> player,
     List<ObjectId> groups,
@@ -57,18 +60,22 @@ class PlayerService {
     _playerRepository.updatePlayersGroups(playerGroups);
   }
 
+  /// 단일 [player]의 동반 그룹 목록을 초기화합니다.
   void clearPlayerGroup(Player player) {
     _playerRepository.clearPlayerGroup(player);
   }
 
+  /// 데이터베이스에 저장된 모든 선수 목록을 조회합니다.
   List<Player> findAllPlayers() {
     return _playerRepository.getAllPlayers().toList();
   }
 
+  /// 이름 접두어([name])로 시작하는 선수 목록을 검색합니다.
   RealmResults<Player> findPlayersByPrefix(String name) {
     return _playerRepository.findPlayersByPrefix(name);
   }
 
+  /// 식별자 목록([ids])에 해당하는 선수 목록을 조회합니다.
   List<Player?> findPlayersByIds(List<ObjectId?> ids) {
     final List<Player> findPlayers = _playerRepository
         .findPlayersByIds(ids)
@@ -84,14 +91,17 @@ class PlayerService {
     }).toList();
   }
 
+  /// 신규 [player]를 데이터베이스에 추가합니다.
   void addPlayer(Player player) {
     _playerRepository.addPlayer(player);
   }
 
+  /// 주어진 식별자([id])의 선수를 데이터베이스에서 삭제합니다.
   void deletePlayer(ObjectId id) {
     _playerRepository.deletePlayer(id);
   }
 
+  /// [player]의 상세 정보를 갱신합니다.
   void updatePlayer(
     Player player,
     String name,
@@ -122,14 +132,17 @@ class PlayerService {
     );
   }
 
+  /// [player]의 출석 활성화 상태([activate])를 갱신합니다.
   void updateActivate(Player player, bool activate) {
     _playerRepository.updatePlayer(player: player, activate: activate);
   }
 
+  /// [player]의 동반 그룹 목록([groups])을 갱신합니다.
   void updateGroups(Player player, List<ObjectId> groups) {
     _playerRepository.updatePlayer(player: player, groups: RealmList(groups));
   }
 
+  /// [player]의 경기 및 대기 통계를 초기화합니다.
   void resetStats(Player player, {int lated = 0}) {
     _playerRepository.updatePlayer(
       player: player,
@@ -141,14 +154,17 @@ class PlayerService {
     );
   }
 
+  /// 데이터베이스의 모든 선수 데이터를 일괄 삭제합니다.
   void deleteAllPlayers() {
     _playerRepository.deleteAllPlayers();
   }
 
+  /// [player]의 대기 횟수를 1 증가시킵니다.
   void incrementWaited(Player player) {
     _playerRepository.updatePlayer(player: player, waited: player.waited + 1);
   }
 
+  /// [player]의 경기 완료 처리를 수행합니다. (플레이 수 증가, 대기 수 초기화, 플레이 시간 누적)
   void playedFinish(Player player, {int elapsedSeconds = 0}) {
     _playerRepository.updatePlayer(
       player: player,
@@ -158,6 +174,7 @@ class PlayerService {
     );
   }
 
+  /// [currentPlayer]가 코트에 함께 있었던 상대 선수들과의 경기 횟수를 누적 기록합니다.
   void addGamesPlayedWith(
     Player currentPlayer,
     List<Player?> playersInCourt,
@@ -170,6 +187,7 @@ class PlayerService {
     );
   }
 
+  /// [player]의 최근 경기 일시를 현재 시각으로 갱신합니다.
   void updateRecentMatchDate(Player player) {
     _playerRepository.updatePlayer(
       player: player,
@@ -177,6 +195,7 @@ class PlayerService {
     );
   }
 
+  /// 지정된 일수([daysThreshold]) 이상 경기에 참여하지 않은 미참석 선수를 정리합니다.
   void cleanupInactivePlayers(
     int daysThreshold,
     List<ObjectId> activePlayerIds,
@@ -184,6 +203,7 @@ class PlayerService {
     _playerRepository.cleanupInactivePlayers(daysThreshold, activePlayerIds);
   }
 
+  /// 세션에 참여하지 않은 게스트(guest) 선수를 데이터베이스에서 정리합니다.
   void cleanupGuestPlayers(List<ObjectId> activePlayerIds) {
     _playerRepository.cleanupGuestPlayers(activePlayerIds);
   }
