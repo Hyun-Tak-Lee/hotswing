@@ -82,7 +82,7 @@ class GamePlayedDialog extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _PlaySummaryItem(
-            label: '총 플레이',
+            label: '경기 횟수',
             value:
                 '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}회',
             labelColor: baseColors.textSecondary,
@@ -90,14 +90,14 @@ class GamePlayedDialog extends StatelessWidget {
           ),
           _PlaySummaryDivider(color: formColors.filterDivider),
           _PlaySummaryItem(
-            label: '누적 대기',
+            label: '대기 횟수',
             value: '${player.waited}회',
             labelColor: baseColors.textSecondary,
             valueColor: baseColors.textSecondary,
           ),
           _PlaySummaryDivider(color: formColors.filterDivider),
           _PlaySummaryItem(
-            label: '총 플레이 시간',
+            label: '경기 시간',
             value: formattedPlayTime,
             labelColor: baseColors.textSecondary,
             valueColor: playerColors.genderTag,

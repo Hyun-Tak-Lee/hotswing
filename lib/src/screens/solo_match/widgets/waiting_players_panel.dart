@@ -9,9 +9,8 @@ import 'package:hotswing/src/screens/solo_match/widgets/waiting_panel_header.dar
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:hotswing/src/common/constants/player_constants.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
-
-const String waitingSortCriterionKey = 'standby_sort';
 
 class WaitingPlayersPanel extends StatefulWidget {
   final bool showDeleteOverlay;
@@ -43,9 +42,13 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
   @override
   void initState() {
     super.initState();
-    SharedProvider().getString(waitingSortCriterionKey).then((val) {
+    SharedProvider().getString(PlayerConstants.waitingSortCriterionKey).then((val) {
       if (val != null && mounted) {
-        setState(() => _sortCriterion = val == 'name' ? SortCriterion.name : SortCriterion.played);
+        setState(
+          () => _sortCriterion = val == 'name'
+              ? SortCriterion.name
+              : SortCriterion.played,
+        );
       }
     });
   }
@@ -55,7 +58,7 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
       _sortCriterion = newValue;
       _sortAscending = true;
     });
-    SharedProvider().saveString(waitingSortCriterionKey, newValue.name);
+    SharedProvider().saveString(PlayerConstants.waitingSortCriterionKey, newValue.name);
   }
 
   @override
@@ -63,7 +66,10 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
     final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
     final playersProvider = context.watch<PlayersProvider>();
-    final playerList = List<Player>.from(playersProvider.unassignedPlayers);
+    final playerList = playersProvider.getSortedUnassignedPlayers(
+      criterion: _sortCriterion,
+      ascending: _sortAscending,
+    );
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
@@ -79,33 +85,6 @@ class _WaitingPlayersPanelState extends State<WaitingPlayersPanel> {
     final double maxPanelHeight = isTablet
         ? (screenHeight * 0.25)
         : (screenHeight * 0.22);
-
-    // 정렬 로직 적용
-    playerList.sort((a, b) {
-      int compareResult;
-      switch (_sortCriterion) {
-        case SortCriterion.played:
-          int activateCompare = (b.activate ? 1 : 0).compareTo(
-            a.activate ? 1 : 0,
-          );
-          if (activateCompare != 0) {
-            return activateCompare;
-          }
-          int playedCompare = (a.played + a.lated).compareTo(
-            b.played + b.lated,
-          );
-          if (playedCompare != 0) {
-            compareResult = playedCompare;
-          }
-          compareResult = b.waited.compareTo(a.waited);
-          break;
-        case SortCriterion.name:
-          compareResult = a.name.compareTo(b.name);
-          break;
-      }
-
-      return _sortAscending ? compareResult : -compareResult;
-    });
 
     return Stack(
       alignment: Alignment.center,

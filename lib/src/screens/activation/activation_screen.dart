@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hotswing/src/services/activation_service.dart';
+import 'package:hotswing/src/services/system/activation_service.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
 /// 활성화 화면

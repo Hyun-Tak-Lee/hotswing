@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hotswing/src/services/manager_auth_service.dart';
+import 'package:hotswing/src/services/system/manager_auth_service.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
 enum _AuthMode {

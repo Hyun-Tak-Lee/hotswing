@@ -3,14 +3,14 @@ import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
 import 'package:hotswing/src/models/ui/player_drag_data.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
-import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
-import 'package:hotswing/src/screens/solo_match/widgets/waiting_panel_header.dart';
-import 'package:hotswing/src/screens/solo_match/widgets/waiting_players_panel.dart';
+import 'package:hotswing/src/common/constants/player_constants.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
+import 'package:hotswing/src/screens/solo_match/widgets/waiting_panel_header.dart';
 
 class WaitingTabItem {
   final String label; // UI에 노출될 탭 라벨 (예: "전체", "그룹 A", "개인")
@@ -51,9 +51,13 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
   @override
   void initState() {
     super.initState();
-    SharedProvider().getString(waitingSortCriterionKey).then((val) {
+    SharedProvider().getString(PlayerConstants.waitingSortCriterionKey).then((val) {
       if (val != null && mounted) {
-        setState(() => _sortCriterion = val == 'name' ? SortCriterion.name : SortCriterion.played);
+        setState(
+          () => _sortCriterion = val == 'name'
+              ? SortCriterion.name
+              : SortCriterion.played,
+        );
       }
     });
   }
@@ -63,7 +67,7 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
       _sortCriterion = newValue;
       _sortAscending = true;
     });
-    SharedProvider().saveString(waitingSortCriterionKey, newValue.name);
+    SharedProvider().saveString(PlayerConstants.waitingSortCriterionKey, newValue.name);
   }
 
   // 각 탭에 따른 플레이어 필터링 처리
@@ -95,37 +99,12 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
     final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
     final playersProvider = context.watch<PlayersProvider>();
-    final allUnassignedPlayers = List<Player>.from(
-      playersProvider.unassignedPlayers,
+    final allUnassignedPlayers = playersProvider.getSortedUnassignedPlayers(
+      criterion: _sortCriterion,
+      ascending: _sortAscending,
     );
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
-
-    // 전체 리스트 정렬
-    allUnassignedPlayers.sort((a, b) {
-      int compareResult;
-      switch (_sortCriterion) {
-        case SortCriterion.played:
-          int activateCompare = (b.activate ? 1 : 0).compareTo(
-            a.activate ? 1 : 0,
-          );
-          if (activateCompare != 0) {
-            return activateCompare;
-          }
-          int playedCompare = (a.played + a.lated).compareTo(
-            b.played + b.lated,
-          );
-          if (playedCompare != 0) {
-            compareResult = playedCompare;
-          }
-          compareResult = b.waited.compareTo(a.waited);
-          break;
-        case SortCriterion.name:
-          compareResult = a.name.compareTo(b.name);
-          break;
-      }
-      return _sortAscending ? compareResult : -compareResult;
-    });
 
     // 1. 대기 참여자 중에서 존재하는 모든 그룹 라벨 수집
     final Set<String> activeGroups = {};

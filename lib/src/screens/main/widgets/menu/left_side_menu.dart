@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
-import 'dart:math';
 
 import '../../../../providers/players_provider.dart';
 import '../../../../common/widgets/tags/player_info_tag.dart';
@@ -85,10 +84,11 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           );
         } else {
           int latedValue = 0;
-          if (playersProvider.unassignedPlayers.isNotEmpty) {
-            latedValue = playersProvider.unassignedPlayers
-                .map((p) => p.played)
-                .reduce(max);
+          if (playersProvider.players.isNotEmpty) {
+            final playedList =
+                playersProvider.players.values.map((p) => p.played).toList()
+                  ..sort();
+            latedValue = playedList[playedList.length ~/ 3];
           }
 
           if (result['loaded'] as bool) {
@@ -216,10 +216,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
           final player = players[index - 1];
           final groupInfo = playersProvider.getGroupInfo(player.id);
           return Container(
-            margin: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 4.0,
-            ),
+            margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: player.activate == false

@@ -3,7 +3,6 @@ import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned_court.dart';
 import 'package:hotswing/src/common/widgets/courts/standby_court.dart';
 import 'package:hotswing/src/models/ui/player_drag_data.dart';
-import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
@@ -33,77 +32,12 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
     int targetSectionIndex,
     int targetSubIndex,
   ) {
-    final playersProvider = context.read<PlayersProvider>();
-    final String sourceSectionKind = data.sectionKind;
-    final int sourceSectionIndex = data.sectionIndex;
-    final int sourceSubIndex = data.subIndex;
-
-    // [1] 소스 처리 (Extraction)
-    Player? draggedPlayer;
-    if (sourceSectionKind == PlayerSectionKind.unassigned.value) {
-      draggedPlayer = data.player;
-      playersProvider.removeUnassignedPlayer(draggedPlayer);
-    } else if (sourceSectionKind == PlayerSectionKind.assigned.value) {
-      draggedPlayer = playersProvider.removeAssignedPlayer(
-        sourceSectionIndex,
-        sourceSubIndex,
-      );
-    } else if (sourceSectionKind == PlayerSectionKind.standby.value) {
-      draggedPlayer = playersProvider.removeStandbyPlayer(
-        sourceSectionIndex,
-        sourceSubIndex,
-      );
-    }
-
-    if (draggedPlayer == null) return;
-
-    // [2] 타겟 처리 (Move Only)
-    if (targetSectionKind == PlayerSectionKind.unassigned.value ||
-        targetSectionKind == PlayerSectionKind.drop.value) {
-      playersProvider.addUnassignedPlayer(draggedPlayer);
-      return;
-    }
-
-    // [3] 타겟 처리 (Exchange)
-    Player? existingTargetPlayer;
-    if (targetSectionKind == PlayerSectionKind.assigned.value) {
-      existingTargetPlayer = playersProvider.removeAssignedPlayer(
-        targetSectionIndex,
-        targetSubIndex,
-      );
-      playersProvider.addAssignedPlayer(
-        draggedPlayer,
-        targetSectionIndex,
-        targetSubIndex,
-      );
-    } else if (targetSectionKind == PlayerSectionKind.standby.value) {
-      existingTargetPlayer = playersProvider.removeStandbyPlayer(
-        targetSectionIndex,
-        targetSubIndex,
-      );
-      playersProvider.addStandbyPlayer(
-        draggedPlayer,
-        targetSectionIndex,
-        targetSubIndex,
-      );
-    }
-
-    // [4] 소스 복구 (Swap)
-    if (sourceSectionKind == PlayerSectionKind.unassigned.value) {
-      playersProvider.addUnassignedPlayer(existingTargetPlayer);
-    } else if (sourceSectionKind == PlayerSectionKind.assigned.value) {
-      playersProvider.addAssignedPlayer(
-        existingTargetPlayer,
-        sourceSectionIndex,
-        sourceSubIndex,
-      );
-    } else if (sourceSectionKind == PlayerSectionKind.standby.value) {
-      playersProvider.addStandbyPlayer(
-        existingTargetPlayer,
-        sourceSectionIndex,
-        sourceSubIndex,
-      );
-    }
+    context.read<PlayersProvider>().moveOrSwapPlayer(
+      data: data,
+      targetSectionKind: targetSectionKind,
+      targetSectionIndex: targetSectionIndex,
+      targetSubIndex: targetSubIndex,
+    );
   }
 
   void _onCourtPlayerDragStarted() {
