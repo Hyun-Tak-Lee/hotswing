@@ -47,8 +47,9 @@ class DraggablePlayerItem extends StatelessWidget {
     final playerColors = context.playerColors;
     final courtColors = context.courtColors;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
+    return RepaintBoundary(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
         final width = constraints.maxWidth;
         final height = constraints.maxHeight;
 
@@ -464,8 +465,9 @@ class DraggablePlayerItem extends StatelessWidget {
             sectionIndex: sectionIndex,
             subIndex: subIndex,
           ),
-          feedback: Material(
-            color: Colors.transparent,
+          feedback: RepaintBoundary(
+            child: Material(
+              color: Colors.transparent,
             borderRadius: BorderRadius.circular(8.0),
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -570,6 +572,7 @@ class DraggablePlayerItem extends StatelessWidget {
               ),
             ),
           ),
+          ),
           // 드래그 중에는 순수 UI만 표시 (탭 기능 없음)
           childWhenDragging: Opacity(opacity: 0.5, child: playerItemDisplay),
           onDragStarted: () {
@@ -591,8 +594,9 @@ class DraggablePlayerItem extends StatelessWidget {
           child: interactivePlayerContent,
         );
       },
-    );
-  }
+    ),
+  );
+}
 }
 
 /// 플레이어를 배치할 수 있는 슬롯 영역을 제공하고, 드롭 타겟 역할을 수행하는 위젯.

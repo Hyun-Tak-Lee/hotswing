@@ -82,64 +82,66 @@ class CourtCard extends StatelessWidget {
       ],
     );
 
-    return Container(
-      margin: EdgeInsets.symmetric(
-        vertical: isTablet ? 3.0 : 5.0,
-        horizontal: 5.0,
-      ),
-      padding: EdgeInsets.symmetric(
-        vertical: isTablet ? 3.0 : 5.0,
-        horizontal: 5.0,
-      ),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [courtColors.courtCardBgStart, courtColors.courtCardBgEnd],
+    return RepaintBoundary(
+      child: Container(
+        margin: EdgeInsets.symmetric(
+          vertical: isTablet ? 3.0 : 5.0,
+          horizontal: 5.0,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(12),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+        padding: EdgeInsets.symmetric(
+          vertical: isTablet ? 3.0 : 5.0,
+          horizontal: 5.0,
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [courtColors.courtCardBgStart, courtColors.courtCardBgEnd],
           ),
-        ],
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          // 헤더: 코트 이름 + 액션 버튼들
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.center,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '${sectionIndex + 1} 코트',
-                    style: TextStyle(
-                      fontSize: isTablet ? 32.0 : 20.0,
-                      fontWeight: FontWeight.bold,
-                      color: courtColors.courtCardText,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(12),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            // 헤더: 코트 이름 + 액션 버튼들
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${sectionIndex + 1} 코트',
+                      style: TextStyle(
+                        fontSize: isTablet ? 32.0 : 20.0,
+                        fontWeight: FontWeight.bold,
+                        color: courtColors.courtCardText,
+                      ),
                     ),
-                  ),
-                  SizedBox(width: isTablet ? 8.0 : 4.0),
-                  for (int i = 0; i < headerActions.length; i++) ...[
-                    headerActions[i],
-                    if (i < headerActions.length - 1)
-                      SizedBox(width: isTablet ? 8.0 : 4.0),
+                    SizedBox(width: isTablet ? 8.0 : 4.0),
+                    for (int i = 0; i < headerActions.length; i++) ...[
+                      headerActions[i],
+                      if (i < headerActions.length - 1)
+                        SizedBox(width: isTablet ? 8.0 : 4.0),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 4.0),
-          // 코트 내부: 4개의 PlayerDropZone
-          Expanded(child: playerGrid),
-        ],
+            const SizedBox(height: 4.0),
+            // 코트 내부: 4개의 PlayerDropZone
+            Expanded(child: playerGrid),
+          ],
+        ),
       ),
     );
   }

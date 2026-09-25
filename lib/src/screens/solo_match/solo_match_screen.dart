@@ -21,9 +21,15 @@ class SoloMatchScreen extends StatefulWidget {
 }
 
 class _SoloMatchScreenState extends State<SoloMatchScreen> {
-  bool _showCourtHighlight = false;
+  final ValueNotifier<bool> _showCourtHighlight = ValueNotifier<bool>(false);
 
   CourtViewSection selectedView = CourtViewSection.assignedView;
+
+  @override
+  void dispose() {
+    _showCourtHighlight.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,9 +95,14 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
             ],
           );
 
-    final waitingPlayersPanelWidget = WaitingPlayersPanel(
-      showDeleteOverlay: _showCourtHighlight,
-      onPlayerDrop: _handlePlayerDrop,
+    final waitingPlayersPanelWidget = ValueListenableBuilder<bool>(
+      valueListenable: _showCourtHighlight,
+      builder: (context, showHighlight, _) {
+        return WaitingPlayersPanel(
+          showDeleteOverlay: showHighlight,
+          onPlayerDrop: _handlePlayerDrop,
+        );
+      },
     );
 
     return Container(
@@ -105,18 +116,30 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Expanded(flex: 2, child: courtSectionWidget),
+                Expanded(
+                  flex: 2,
+                  child: RepaintBoundary(child: courtSectionWidget),
+                ),
                 Divider(height: 1.0, color: courtColors.homeDivider),
-                Expanded(flex: 1, child: waitingPlayersPanelWidget),
+                Expanded(
+                  flex: 1,
+                  child: RepaintBoundary(child: waitingPlayersPanelWidget),
+                ),
               ],
             )
           : Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Expanded(flex: 2, child: courtSectionWidget),
+                Expanded(
+                  flex: 2,
+                  child: RepaintBoundary(child: courtSectionWidget),
+                ),
                 VerticalDivider(width: 1.0, color: courtColors.homeDivider),
-                Expanded(flex: 1, child: waitingPlayersPanelWidget),
+                Expanded(
+                  flex: 1,
+                  child: RepaintBoundary(child: waitingPlayersPanelWidget),
+                ),
               ],
             ),
     );
@@ -144,14 +167,10 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
   }
 
   void _onCourtPlayerDragStarted() {
-    setState(() {
-      _showCourtHighlight = true;
-    });
+    _showCourtHighlight.value = true;
   }
 
   void _onCourtPlayerDragEnded() {
-    setState(() {
-      _showCourtHighlight = false;
-    });
+    _showCourtHighlight.value = false;
   }
 }
