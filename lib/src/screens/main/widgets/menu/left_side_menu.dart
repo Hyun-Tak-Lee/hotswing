@@ -36,198 +36,61 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
     final playersProvider = context.watch<PlayersProvider>();
     final players = playersProvider.getPlayers();
 
+    final isMobile = widget.isMobileSize || ResponsiveUtils.isMobile(context);
     final isTablet = ResponsiveUtils.isTablet(context);
-    final textScale = ResponsiveUtils.getTextScale(context);
-    final iconAndFontSize = isTablet ? 32.0 : 24.0;
-    final baseFontSize = (isTablet ? 18.0 : 14.0) * textScale;
-    final titleFontSize = baseFontSize + 2;
-    final baseColors = context.baseColors;
-    final playerColors = context.playerColors;
+    final drawerWidth = isMobile
+        ? MediaQuery.of(context).size.width * 0.85
+        : MediaQuery.of(context).size.width * 0.75;
 
     return Drawer(
-      width: MediaQuery.of(context).size.width * 0.75,
+      width: drawerWidth,
       child: ListView.builder(
         padding: EdgeInsets.zero,
         itemCount: players.length + 1,
         itemBuilder: (context, index) {
           if (index == 0) {
-            return SizedBox(
-              height: isTablet ? 180 : 120,
-              child: DrawerHeader(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [baseColors.gradientStart, baseColors.gradientEnd],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '참여자 (${players.length}명)',
-                      style: TextStyle(
-                        fontSize: iconAndFontSize,
-                        color: baseColors.textPrimary,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.delete_sweep),
-                          iconSize: iconAndFontSize,
-                          onPressed: () {
-                            _showClearAllPlayersConfirmationDialog(
-                              playersProvider,
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          tooltip: '게스트 추가',
-                          icon: const Icon(Icons.person_pin),
-                          iconSize: iconAndFontSize,
-                          onPressed: () {
-                            _showAddPlayerDialog(playersProvider, true);
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          tooltip: '일반 참여자 추가',
-                          icon: const Icon(Icons.person_add),
-                          iconSize: iconAndFontSize,
-                          onPressed: () {
-                            _showAddPlayerDialog(playersProvider, false);
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+            return _LeftSideMenuHeader(
+              playerCount: players.length,
+              isMobile: isMobile,
+              isTablet: isTablet,
+              onClearAll: () =>
+                  _showClearAllPlayersConfirmationDialog(playersProvider),
+              onAddGuest: () => _showAddPlayerDialog(playersProvider, true),
+              onAddRegular: () => _showAddPlayerDialog(playersProvider, false),
             );
           }
 
           final player = players[index - 1];
           final groupInfo = playersProvider.getGroupInfo(player.id);
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: player.activate == false
-                    ? [
-                        playerColors.playerItemInactive,
-                        playerColors.playerItemInactive,
-                      ]
-                    : [
-                        playerColors.playerItemActiveStart,
-                        playerColors.playerItemActiveEnd,
-                      ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+          return _PlayerListItemTile(
+            player: player,
+            groupInfo: groupInfo,
+            isMobile: isMobile,
+            isTablet: isTablet,
+            roleLabel: _getRoleLabel(player.role),
+            roleColor: _getRoleColor(context, player.role),
+            genderLabel: _getGenderLabel(player.gender),
+            onToggleActivate: () => playersProvider.toggleIsActivate(player),
+            onEdit: () => _showAddPlayerDialog(
+              playersProvider,
+              false,
+              existingPlayer: player,
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 12.0,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          player.name,
-                          style: TextStyle(
-                            fontSize: titleFontSize,
-                            fontWeight: FontWeight.bold,
-                            color: baseColors.textPrimary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 4,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            PlayerInfoTag(
-                              text: _getRoleLabel(player.role),
-                              color: _getRoleColor(context, player.role),
-                            ),
-                            PlayerInfoTag(
-                              text: _getGenderLabel(player.gender),
-                              color: Colors.indigoAccent,
-                            ),
-                            PlayerSkillRateWidget(
-                              skillLevel: player.grade,
-                              rate: player.rate,
-                            ),
-                            if (groupInfo != null)
-                              PlayerInfoTag(
-                                text: '그룹 ${groupInfo.label}',
-                                color: groupInfo.color,
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.block),
-                        iconSize: iconAndFontSize,
-                        onPressed: () {
-                          playersProvider.toggleIsActivate(player);
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        iconSize: iconAndFontSize,
-                        onPressed: () {
-                          _showAddPlayerDialog(
-                            playersProvider,
-                            false,
-                            existingPlayer: player,
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        iconSize: iconAndFontSize,
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext dialogContext) {
-                              return ConfirmationDialog(
-                                message: '"${player.name}" 님을 삭제하시겠습니까?',
-                                onConfirm: () {
-                                  playersProvider.removePlayer(player.id);
-                                },
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            onDelete: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext dialogContext) {
+                  return ConfirmationDialog(
+                    message: '"${player.name}" 님을 참여 명단에서 제외하시겠습니까?',
+                    confirmText: '제외',
+                    isDestructive: true,
+                    onConfirm: () {
+                      playersProvider.removePlayer(player.id);
+                    },
+                  );
+                },
+              );
+            },
           );
         },
       ),
@@ -325,7 +188,6 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
     }
   }
 
-  // 모든 플레이어를 삭제하기 전에 확인 대화 상자를 표시하는 함수
   Future<void> _showClearAllPlayersConfirmationDialog(
     PlayersProvider playersProvider,
   ) async {
@@ -333,12 +195,253 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
       context: context,
       builder: (BuildContext dialogContext) {
         return ConfirmationDialog(
-          message: '모든 참여자를 삭제하시겠습니까?',
+          message: '모든 참여자를 명단에서 제외하시겠습니까?',
+          confirmText: '전체 제외',
+          isDestructive: true,
           onConfirm: () {
             playersProvider.clearPlayers();
           },
         );
       },
+    );
+  }
+}
+
+/// 좌측 서랍 헤더 위젯.
+class _LeftSideMenuHeader extends StatelessWidget {
+  const _LeftSideMenuHeader({
+    required this.playerCount,
+    required this.isMobile,
+    required this.isTablet,
+    required this.onClearAll,
+    required this.onAddGuest,
+    required this.onAddRegular,
+  });
+
+  final int playerCount;
+  final bool isMobile;
+  final bool isTablet;
+  final VoidCallback onClearAll;
+  final VoidCallback onAddGuest;
+  final VoidCallback onAddRegular;
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final double headerHeight = isTablet ? 160.0 : 110.0;
+    final double titleFontSize = isTablet ? 22.0 : 17.0;
+    final double iconSize = isTablet ? 26.0 : 20.0;
+    final EdgeInsets buttonPadding = EdgeInsets.all(isMobile ? 5.0 : 8.0);
+
+    return SizedBox(
+      height: headerHeight,
+      child: DrawerHeader(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [baseColors.gradientStart, baseColors.gradientEnd],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '참여자 ($playerCount명)',
+              style: TextStyle(
+                fontSize: titleFontSize,
+                fontWeight: FontWeight.bold,
+                color: baseColors.textPrimary,
+              ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  tooltip: '전체 참여자 제외',
+                  icon: const Icon(Icons.delete_sweep),
+                  iconSize: iconSize,
+                  padding: buttonPadding,
+                  constraints: const BoxConstraints(),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onClearAll,
+                ),
+                SizedBox(width: isMobile ? 4 : 8),
+                IconButton(
+                  tooltip: '게스트 추가',
+                  icon: const Icon(Icons.person_pin),
+                  iconSize: iconSize,
+                  padding: buttonPadding,
+                  constraints: const BoxConstraints(),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onAddGuest,
+                ),
+                SizedBox(width: isMobile ? 4 : 8),
+                IconButton(
+                  tooltip: '일반 참여자 추가',
+                  icon: const Icon(Icons.person_add),
+                  iconSize: iconSize,
+                  padding: buttonPadding,
+                  constraints: const BoxConstraints(),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onAddRegular,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 참여자 목록의 단일 항목 카드 위젯.
+class _PlayerListItemTile extends StatelessWidget {
+  const _PlayerListItemTile({
+    required this.player,
+    required this.groupInfo,
+    required this.isMobile,
+    required this.isTablet,
+    required this.roleLabel,
+    required this.roleColor,
+    required this.genderLabel,
+    required this.onToggleActivate,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final Player player;
+  final dynamic groupInfo;
+  final bool isMobile;
+  final bool isTablet;
+  final String roleLabel;
+  final Color roleColor;
+  final String genderLabel;
+  final VoidCallback onToggleActivate;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final playerColors = context.playerColors;
+    final double nameFontSize = isTablet ? 18.0 : 15.0;
+    final double iconSize = isTablet ? 24.0 : 19.0;
+    final EdgeInsets buttonPadding = EdgeInsets.all(isMobile ? 4.0 : 6.0);
+
+    return Container(
+      margin: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12.0 : 16.0,
+        vertical: 4.0,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: player.activate == false
+              ? [
+                  playerColors.playerItemInactive,
+                  playerColors.playerItemInactive,
+                ]
+              : [
+                  playerColors.playerItemActiveStart,
+                  playerColors.playerItemActiveEnd,
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 12.0 : 16.0,
+          vertical: isMobile ? 10.0 : 12.0,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    player.name,
+                    style: TextStyle(
+                      fontSize: nameFontSize,
+                      fontWeight: FontWeight.bold,
+                      color: baseColors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 5),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      PlayerInfoTag(text: roleLabel, color: roleColor),
+                      PlayerInfoTag(
+                        text: genderLabel,
+                        color: Colors.indigoAccent,
+                      ),
+                      if (groupInfo != null)
+                        PlayerInfoTag(
+                          text: '그룹 ${groupInfo.label}',
+                          color: groupInfo.color,
+                        ),
+                      PlayerSkillRateWidget(
+                        skillLevel: player.grade,
+                        rate: player.rate,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 4),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  tooltip: player.activate ? '비활성화' : '활성화',
+                  icon: Icon(
+                    player.activate ? Icons.block : Icons.check_circle_outline,
+                  ),
+                  iconSize: iconSize,
+                  padding: buttonPadding,
+                  constraints: const BoxConstraints(),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onToggleActivate,
+                ),
+                IconButton(
+                  tooltip: '수정',
+                  icon: const Icon(Icons.edit_outlined),
+                  iconSize: iconSize,
+                  padding: buttonPadding,
+                  constraints: const BoxConstraints(),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onEdit,
+                ),
+                IconButton(
+                  tooltip: '제외',
+                  icon: const Icon(Icons.delete_outline),
+                  iconSize: iconSize,
+                  padding: buttonPadding,
+                  constraints: const BoxConstraints(),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onDelete,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
