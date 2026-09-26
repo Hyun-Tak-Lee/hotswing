@@ -26,8 +26,6 @@ class _MainWrapperState extends State<MainWrapper> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
 
-  Key _playersScreenKey = UniqueKey();
-
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtils.isTablet(context);
@@ -106,7 +104,6 @@ class _MainWrapperState extends State<MainWrapper> {
                   clipBehavior: Clip.antiAlias, // 둥근 모서리에 맞춰 내용 자르기
                   child: _MainTabStack(
                     selectedIndex: _selectedIndex,
-                    playersScreenKey: _playersScreenKey,
                   ),
                 ),
               ),
@@ -159,7 +156,6 @@ class _MainWrapperState extends State<MainWrapper> {
           clipBehavior: Clip.antiAlias,
           child: _MainTabStack(
             selectedIndex: _selectedIndex,
-            playersScreenKey: _playersScreenKey,
           ),
         ),
         bottomNavigationBar: MainNavigationBar(
@@ -198,7 +194,6 @@ class _MainWrapperState extends State<MainWrapper> {
       if (isAuthenticated != true) {
         return;
       }
-      _playersScreenKey = UniqueKey();
     }
     setState(() {
       _selectedIndex = index;
@@ -245,22 +240,18 @@ class _MainWrapperState extends State<MainWrapper> {
 class _MainTabStack extends StatelessWidget {
   const _MainTabStack({
     required this.selectedIndex,
-    required this.playersScreenKey,
   });
 
   final int selectedIndex;
-  final Key playersScreenKey;
 
   @override
   Widget build(BuildContext context) {
-    return IndexedStack(
-      index: selectedIndex,
-      children: [
-        const SoloMatchScreen(),
-        const GroupMatchScreen(),
-        PlayersScreen(key: playersScreenKey),
-        const SettingsScreen(),
-      ],
-    );
+    return switch (selectedIndex) {
+      0 => const SoloMatchScreen(),
+      1 => const GroupMatchScreen(),
+      2 => const PlayersScreen(),
+      3 => const SettingsScreen(),
+      _ => const SoloMatchScreen(),
+    };
   }
 }
