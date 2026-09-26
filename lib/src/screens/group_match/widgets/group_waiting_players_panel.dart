@@ -57,31 +57,35 @@ class GroupWaitingPlayersPanel extends StatefulWidget {
 }
 
 class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
-  SortCriterion _sortCriterion = SortCriterion.played;
-  bool _sortAscending = true;
+  SortCriterion? _sortCriterion;
+  final bool _sortAscending = true;
 
   @override
   void initState() {
     super.initState();
     SharedProvider().getString(PlayerConstants.waitingSortCriterionKey).then((val) {
-      if (val != null && mounted) {
-        setState(
-          () => _sortCriterion = val == 'name'
+      if (mounted) {
+        setState(() {
+          _sortCriterion = val == 'name'
               ? SortCriterion.name
-              : SortCriterion.played,
-        );
+              : SortCriterion.played;
+        });
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_sortCriterion == null) {
+      return const SizedBox.shrink();
+    }
+    final sortCriterion = _sortCriterion!;
     final baseColors = context.baseColors;
     final courtColors = context.courtColors;
     final isTablet = ResponsiveUtils.isTablet(context);
     final playersProvider = context.watch<PlayersProvider>();
     final allUnassignedPlayers = playersProvider.getSortedUnassignedPlayers(
-      criterion: _sortCriterion,
+      criterion: sortCriterion,
       ascending: _sortAscending,
     );
     final isLandscape =
@@ -272,7 +276,7 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                         WaitingPanelLandscapeHeader(
                           isTablet: isTablet,
                           count: allUnassignedPlayers.length,
-                          sortCriterion: _sortCriterion,
+                          sortCriterion: sortCriterion,
                           onSortSelected: _onSortSelected,
                         ),
                       ],
@@ -282,7 +286,7 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                         WaitingPanelHeader(
                           isTablet: isTablet,
                           count: allUnassignedPlayers.length,
-                          sortCriterion: _sortCriterion,
+                          sortCriterion: sortCriterion,
                           onSortSelected: _onSortSelected,
                         ),
                         SizedBox(height: isTablet ? 8.0 : 4.0),
@@ -490,10 +494,11 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
   }
 
   void _onSortSelected(SortCriterion newValue) {
-    setState(() {
-      _sortCriterion = newValue;
-      _sortAscending = true;
-    });
+    if (_sortCriterion != newValue) {
+      setState(() {
+        _sortCriterion = newValue;
+      });
+    }
     SharedProvider().saveString(PlayerConstants.waitingSortCriterionKey, newValue.name);
   }
 
