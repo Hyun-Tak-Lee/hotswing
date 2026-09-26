@@ -201,7 +201,11 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       onPlayerSelected: _loadPlayerAllForms,
                       onNameSaved: (value) => _name = value,
                     ),
-                    SizedBox(height: fieldSpacing),
+                    Divider(
+                      height: isTablet ? 18 : 14,
+                      thickness: 0.6,
+                      color: formColors.filterDivider,
+                    ),
                     _PlayerSkillLevelField(
                       baseColors: baseColors,
                       playerColors: playerColors,
@@ -222,7 +226,11 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       },
                       onRateSaved: (value) => _rate = value,
                     ),
-                    SizedBox(height: fieldSpacing),
+                    Divider(
+                      height: isTablet ? 18 : 14,
+                      thickness: 0.6,
+                      color: formColors.filterDivider,
+                    ),
                     _PlayerGenderField(
                       baseColors: baseColors,
                       playerColors: playerColors,
@@ -239,7 +247,11 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       },
                       onSaved: (value) => _selectedGender = value,
                     ),
-                    SizedBox(height: fieldSpacing),
+                    Divider(
+                      height: isTablet ? 18 : 14,
+                      thickness: 0.6,
+                      color: formColors.filterDivider,
+                    ),
                     _PlayerGroupField(
                       players: widget.playersProvider.players.values.toList(),
                       currentGroups: widget.player?.groups ?? const [],
@@ -252,7 +264,11 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       },
                     ),
                     if (isEditMode) ...[
-                      SizedBox(height: fieldSpacing),
+                      Divider(
+                        height: isTablet ? 18 : 14,
+                        thickness: 0.6,
+                        color: formColors.filterDivider,
+                      ),
                       _PlayerStatsRow(
                         baseColors: baseColors,
                         playerColors: playerColors,
@@ -625,59 +641,149 @@ class _PlayerSkillLevelField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final levels = skillLevelToRate.keys.toList();
+    final isTablet = ResponsiveUtils.isTablet(context);
+
     return Opacity(
       opacity: isLoaded ? 0.5 : 1.0,
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 2,
-            child: DropdownButtonFormField<String>(
-              decoration: _playerInputDecoration(
-                context,
-                baseColors: baseColors,
-                playerColors: playerColors,
-                formColors: formColors,
-                labelText: '급수',
-                isManager: isManager,
-                isDisabled: isLoaded,
-                customVerticalPadding: ResponsiveUtils.isTablet(context)
-                    ? 6.0
-                    : 2.0,
-              ),
-              isExpanded: true,
-              isDense: false,
-              key: ValueKey('skill_$selectedSkillLevel'),
-              initialValue: selectedSkillLevel,
-              items: skillLevelToRate.keys.map((String level) {
-                return DropdownMenuItem<String>(
-                  value: level,
-                  child: Text(level, style: labelStyle),
-                );
-              }).toList(),
-              onChanged: isLoaded ? null : onChanged,
-              validator: (value) => value == null ? '급수를 선택하세요.' : null,
-            ),
+          FormField<String>(
+            initialValue: selectedSkillLevel,
+            validator: (value) =>
+                selectedSkillLevel == null ? '급수를 선택하세요.' : null,
+            builder: (FormFieldState<String> state) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: [
+                        for (int i = 0; i < levels.length; i++) ...[
+                          if (i > 0) const SizedBox(width: 8),
+                          _DialogSkillChipButton(
+                            level: levels[i],
+                            isSelected: selectedSkillLevel == levels[i],
+                            hasError: state.hasError,
+                            isDisabled: isLoaded,
+                            onSelected: (selected) {
+                              onChanged(selected);
+                              state.didChange(selected);
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (state.hasError) ...[
+                    const SizedBox(height: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Text(
+                        state.errorText!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            flex: 3,
-            child: _PlayerRateField(
-              baseColors: baseColors,
-              playerColors: playerColors,
-              formColors: formColors,
-              labelStyle: labelStyle,
-              isLoaded: isLoaded,
-              isManager: isManager,
-              controller: rateController,
-              rate: rate,
-              maxRate: maxRate,
-              onRateUpdated: onRateUpdated,
-              onRateEdited: onRateEdited,
-              onRateSaved: onRateSaved,
-            ),
+          Divider(
+            height: isTablet ? 16 : 12,
+            thickness: 0.6,
+            color: formColors.filterDivider,
+          ),
+          _PlayerRateField(
+            baseColors: baseColors,
+            playerColors: playerColors,
+            formColors: formColors,
+            labelStyle: labelStyle,
+            isLoaded: isLoaded,
+            isManager: isManager,
+            controller: rateController,
+            rate: rate,
+            maxRate: maxRate,
+            onRateUpdated: onRateUpdated,
+            onRateEdited: onRateEdited,
+            onRateSaved: onRateSaved,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DialogSkillChipButton extends StatelessWidget {
+  const _DialogSkillChipButton({
+    required this.level,
+    required this.isSelected,
+    required this.hasError,
+    required this.isDisabled,
+    required this.onSelected,
+  });
+
+  final String level;
+  final bool isSelected;
+  final bool hasError;
+  final bool isDisabled;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final formColors = context.formColors;
+    final playerColors = context.playerColors;
+    final isTablet = ResponsiveUtils.isTablet(context);
+
+    return InkWell(
+      onTap: isDisabled ? null : () => onSelected(level),
+      borderRadius: BorderRadius.circular(isTablet ? 12 : 10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        constraints: BoxConstraints(
+          minWidth: isTablet ? 54 : 44,
+          minHeight: isTablet ? 48 : 42,
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: isTablet ? 18 : 14,
+          vertical: isTablet ? 12 : 10,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? formColors.skillChipActiveBg
+              : playerColors.chipBg,
+          borderRadius: BorderRadius.circular(isTablet ? 12 : 10),
+          border: Border.all(
+            color: isSelected
+                ? formColors.skillChipActiveBg
+                : (hasError
+                    ? Theme.of(context).colorScheme.error
+                    : formColors.inputBorder),
+            width: 1.0,
+          ),
+        ),
+        child: Center(
+          widthFactor: 1.0,
+          heightFactor: 1.0,
+          child: Text(
+            level,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: isTablet ? 16 : 14,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              color: isSelected
+                  ? formColors.skillChipActiveText
+                  : baseColors.textPrimary,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -833,32 +939,85 @@ class _PlayerGenderField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = ResponsiveUtils.isTablet(context);
+
     return Opacity(
       opacity: isLoaded ? 0.5 : 1.0,
-      child: DropdownButtonFormField<PlayerGender>(
-        key: ValueKey('gender_$selectedGender'),
-        isExpanded: true,
-        isDense: false,
-        decoration: _playerInputDecoration(
-          context,
-          baseColors: baseColors,
-          playerColors: playerColors,
-          formColors: formColors,
-          labelText: '성별',
-          isManager: isManager,
-          isDisabled: isLoaded,
-          customVerticalPadding: ResponsiveUtils.isTablet(context) ? 6.0 : 2.0,
-        ),
+      child: FormField<PlayerGender>(
         initialValue: selectedGender,
-        items: genders.map((PlayerGender gender) {
-          return DropdownMenuItem<PlayerGender>(
-            value: gender,
-            child: Text(gender.label, style: labelStyle),
+        validator: (value) => selectedGender == null ? '성별을 선택하세요.' : null,
+        onSaved: (value) => onSaved(selectedGender),
+        builder: (FormFieldState<PlayerGender> state) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  for (int i = 0; i < genders.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 10),
+                    Expanded(
+                      child: InkWell(
+                        onTap: isLoaded
+                            ? null
+                            : () {
+                                onChanged(genders[i]);
+                                state.didChange(genders[i]);
+                              },
+                        borderRadius: BorderRadius.circular(10),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: EdgeInsets.symmetric(
+                            vertical: isTablet ? 14 : 11,
+                          ),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: selectedGender == genders[i]
+                                ? formColors.genderActiveBg
+                                : formColors.genderInactiveBg,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: selectedGender == genders[i]
+                                  ? formColors.genderActiveBorder
+                                  : (state.hasError
+                                        ? Theme.of(context).colorScheme.error
+                                        : formColors.inputBorder),
+                              width: selectedGender == genders[i] ? 1.5 : 1.0,
+                            ),
+                          ),
+                          child: Text(
+                            genders[i].label,
+                            style: TextStyle(
+                              fontSize: isTablet ? 16 : 14,
+                              fontWeight: selectedGender == genders[i]
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: selectedGender == genders[i]
+                                  ? formColors.genderActiveText
+                                  : formColors.genderInactiveText,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              if (state.hasError) ...[
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Text(
+                    state.errorText!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           );
-        }).toList(),
-        onChanged: isLoaded ? null : onChanged,
-        validator: (value) => value == null ? '성별을 선택하세요.' : null,
-        onSaved: onSaved,
+        },
       ),
     );
   }

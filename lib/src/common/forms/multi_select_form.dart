@@ -43,23 +43,20 @@ class MultiSelectForm extends StatefulWidget {
 
 class _MultiSelectFormState extends State<MultiSelectForm> {
   late List<ObjectId> _selectedOptions;
-
-  final LayerLink _layerLink = LayerLink();
-  OverlayEntry? _overlayEntry;
   bool _isMenuOpen = false;
 
   double get _labelFontSize {
     double screenWidth = MediaQuery.of(context).size.width;
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
-    return isMobileSize ? 20 : 32;
+    return isMobileSize ? 15 : 18;
   }
 
   double get _chipFontSize {
     double screenWidth = MediaQuery.of(context).size.width;
     const double tabletThreshold = 600.0;
     final isMobileSize = screenWidth < tabletThreshold;
-    return isMobileSize ? 8 : 16;
+    return isMobileSize ? 12 : 14;
   }
 
   @override
@@ -69,36 +66,83 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
   }
 
   @override
-  void dispose() {
-    _closeMenu();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final baseColors = context.baseColors;
+    final formColors = context.formColors;
+
     return Card(
       margin: EdgeInsets.zero,
-      elevation: 1.0,
+      elevation: 0.5,
       color: baseColors.cardBg,
-      child: CompositedTransformTarget(
-        link: _layerLink,
-        child: ListTile(
-          onTap: () => _toggleMenu(baseColors),
-          title: _SelectedOptionsTitle(
-            title: widget.title,
-            selectedOptions: _selectedOptions,
-            options: widget.options,
-            optionsId: widget.optionsId,
-            labelFontSize: _labelFontSize,
-            chipFontSize: _chipFontSize,
-            onDeleted: (selectedId) => _onOptionChanged(selectedId, false),
-          ),
-          trailing: Icon(
-            _isMenuOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-            color: baseColors.textSecondary,
-          ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: _isMenuOpen ? baseColors.primaryAccent : formColors.inputBorder,
+          width: 1.0,
         ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            onTap: () {
+              setState(() {
+                _isMenuOpen = !_isMenuOpen;
+              });
+            },
+            title: _SelectedOptionsTitle(
+              title: widget.title,
+              selectedOptions: _selectedOptions,
+              options: widget.options,
+              optionsId: widget.optionsId,
+              labelFontSize: _labelFontSize,
+              chipFontSize: _chipFontSize,
+              onDeleted: (selectedId) => _onOptionChanged(selectedId, false),
+            ),
+            trailing: Icon(
+              _isMenuOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+              color: baseColors.textSecondary,
+            ),
+          ),
+          if (_isMenuOpen) ...[
+            Divider(height: 1, thickness: 1, color: formColors.filterDivider),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 220),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: widget.options.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final option = widget.options[index];
+                  final optionId = widget.optionsId[index];
+                  final isCurrentPlayer = optionId == widget.currentId;
+                  final isSelected = _selectedOptions.contains(optionId);
+                  final isGrouped = widget.groupsOptionId.contains(optionId);
+                  final isEnabled = isSelected || !(isGrouped || isCurrentPlayer);
+
+                  return CheckboxListTile(
+                    title: Text(
+                      option,
+                      style: TextStyle(
+                        fontSize: _labelFontSize,
+                        color: isEnabled
+                            ? baseColors.textPrimary
+                            : baseColors.textSecondary.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    value: isSelected,
+                    activeColor: baseColors.primaryAccent,
+                    checkColor: baseColors.sliderIndicatorText,
+                    onChanged: (bool? selected) {
+                      _onOptionChanged(optionId, selected);
+                    },
+                    enabled: isEnabled,
+                  );
+                },
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -113,104 +157,7 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
         _selectedOptions.remove(option);
       });
     }
-    _overlayEntry?.markNeedsBuild();
     widget.onSelectionChanged(_selectedOptions);
-  }
-
-  void _toggleMenu(BaseColors baseColors) {
-    if (_isMenuOpen) {
-      _closeMenu();
-    } else {
-      _openMenu(baseColors);
-    }
-  }
-
-  void _openMenu(BaseColors baseColors) {
-    _overlayEntry = _createOverlayEntry(baseColors);
-    Overlay.of(context).insert(_overlayEntry!);
-    setState(() {
-      _isMenuOpen = true;
-    });
-  }
-
-  void _closeMenu() {
-    if (!_isMenuOpen) return;
-
-    _overlayEntry?.remove();
-    _overlayEntry = null;
-    setState(() {
-      _isMenuOpen = false;
-    });
-  }
-
-  OverlayEntry _createOverlayEntry(BaseColors baseColors) {
-    final renderBox = context.findRenderObject() as RenderBox;
-    final size = renderBox.size;
-
-    return OverlayEntry(
-      builder: (context) => Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: _closeMenu,
-              child: Container(color: Colors.transparent),
-            ),
-          ),
-          CompositedTransformFollower(
-            link: _layerLink,
-            showWhenUnlinked: false,
-            offset: Offset(0, size.height),
-            child: Material(
-              elevation: 4.0,
-              color: baseColors.cardBg,
-              child: SizedBox(
-                width: size.width,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 250),
-                  child: ListView.builder(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    itemCount: widget.options.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final option = widget.options[index];
-                      final optionId = widget.optionsId[index];
-                      final isCurrentPlayer = optionId == widget.currentId;
-                      final isSelected = _selectedOptions.contains(optionId);
-                      final isGrouped = widget.groupsOptionId.contains(
-                        optionId,
-                      );
-                      final isEnabled =
-                          isSelected || !(isGrouped || isCurrentPlayer);
-
-                      return CheckboxListTile(
-                        title: Text(
-                          option,
-                          style: TextStyle(
-                            fontSize: _labelFontSize,
-                            color: isEnabled
-                                ? baseColors.textPrimary
-                                : baseColors.textSecondary.withValues(
-                                    alpha: 0.5,
-                                  ),
-                          ),
-                        ),
-                        value: isSelected,
-                        activeColor: baseColors.primaryAccent,
-                        checkColor: baseColors.sliderIndicatorText,
-                        onChanged: (bool? selected) {
-                          _onOptionChanged(optionId, selected);
-                        },
-                        enabled: isEnabled,
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

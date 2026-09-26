@@ -80,17 +80,17 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
               isGuest: widget.player.role == 'guest',
               onToggleManager: () => setState(() => _isManager = !_isManager),
             ),
-            Divider(height: 28, thickness: 0.8, color: formColors.filterDivider),
+            Divider(height: 18, thickness: 0.6, color: formColors.filterDivider),
             _PlayerGenderSegment(
               currentGender: _currentGender,
               onSelected: (label) => setState(() => _currentGender = label),
             ),
-            Divider(height: 28, thickness: 0.8, color: formColors.filterDivider),
+            Divider(height: 18, thickness: 0.6, color: formColors.filterDivider),
             _PlayerSkillChipList(
               currentSkillLevel: _currentSkillLevel,
               onSelected: _selectSkill,
             ),
-            Divider(height: 28, thickness: 0.8, color: formColors.filterDivider),
+            Divider(height: 18, thickness: 0.6, color: formColors.filterDivider),
             _PlayerRateStepper(
               currentRate: _currentRate,
               onDecrease: () => _updateRate(_currentRate - 50),

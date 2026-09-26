@@ -40,12 +40,7 @@ class PlayerSkillRateWidget extends StatelessWidget {
             fontWeight: FontWeight.w900,
           ),
         ),
-        Container(
-          height: 12,
-          width: 1.5,
-          color: Colors.grey.shade400,
-          margin: const EdgeInsets.symmetric(horizontal: 6),
-        ),
+        const SizedBox(width: 4),
         Text(
           rate.toString(),
           style: TextStyle(
