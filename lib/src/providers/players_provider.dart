@@ -197,7 +197,7 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// [playerId] 선수의 정보와 동반 그룹 관계를 갱신합니다.
+  /// [playerId] 선수의 프로필 정보와 동반 그룹 관계를 갱신합니다.
   void updatePlayer({
     required ObjectId playerId,
     required String newName,
@@ -213,25 +213,30 @@ class PlayersProvider with ChangeNotifier {
     if (!_players.containsKey(playerId)) return;
     Player playerToUpdate = _players[playerId]!;
 
-    // 기존 그룹 플레이어들의 그룹 제거
-    if (playerToUpdate.groups.isNotEmpty) {
-      // 새 그룹에 포함되지 않는 기존 멤버들은 그룹에서 분리하므로 그룹을 비워줍니다.
-      for (final oldMemberId in playerToUpdate.groups) {
-        if (!newGroups.contains(oldMemberId)) {
-          final Player? oldMember = _players[oldMemberId];
-          if (oldMember != null) {
-            _playerService.clearPlayerGroup(oldMember);
+    // 1. 그룹 구성원 변경 여부 확인 (그룹 변경이 없으면 불필요한 해제를 건너뛰어 관계 보존)
+    final oldGroups = List<ObjectId>.from(playerToUpdate.groups);
+    final bool isGroupChanged =
+        oldGroups.length != newGroups.length ||
+        !oldGroups.every(newGroups.contains);
+
+    if (isGroupChanged) {
+      if (oldGroups.isNotEmpty) {
+        // 새 그룹에서 제외된 기존 멤버들의 그룹 초기화
+        for (final oldMemberId in oldGroups) {
+          if (!newGroups.contains(oldMemberId)) {
+            final Player? oldMember = _players[oldMemberId];
+            if (oldMember != null) {
+              _playerService.clearPlayerGroup(oldMember);
+            }
           }
         }
-      }
 
-      _playerService.removeGroupPlayers(
-        _players,
-        playerToUpdate.groups,
-        playerId,
-      );
+        // 기존 그룹원들과의 상호 그룹 연결 해제
+        _playerService.removeGroupPlayers(_players, oldGroups, playerId);
+      }
     }
 
+    // 2. 선수 기본 프로필 정보 업데이트
     _playerService.updatePlayer(
       playerToUpdate,
       newName,
@@ -243,15 +248,17 @@ class PlayersProvider with ChangeNotifier {
       newWaited,
       playerToUpdate.lated,
       playerToUpdate.playTime,
-      newGroups,
+      isGroupChanged ? newGroups : oldGroups,
       null,
     );
 
-    // 자신 이외의 플레이어들도 그룹 생성
-    if (newGroups.isNotEmpty) {
+    // 3. 새 그룹원들과의 상호 그룹 연결 갱신 (그룹이 변경된 경우에만 실행)
+    if (isGroupChanged && newGroups.isNotEmpty) {
       _playerService.updateGroupPlayers(_players, newGroups, playerId);
     }
 
+    // 4. 캐시 무효화 및 세션 저장
+    _cachedGroupInfo = null;
     _saveLoadedPlayers();
     notifyListeners();
   }
@@ -676,6 +683,7 @@ class PlayersProvider with ChangeNotifier {
       _customGroupNames[groupKey] = newName.trim();
     }
 
+    _cachedGroupInfo = null;
     _saveLoadedPlayers();
     notifyListeners();
   }

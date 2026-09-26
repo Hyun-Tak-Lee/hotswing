@@ -23,7 +23,6 @@ class PlayerSkillRateWidget extends StatelessWidget {
     final textScale = ResponsiveUtils.getTextScale(context);
     final playerColors = context.playerColors;
 
-    final double labelFontSize = (isTablet ? 12.0 : 10.0) * textScale;
     final double valueFontSize = (isTablet ? 16.0 : 14.0) * textScale;
     final double rateFontSize = (isTablet ? 13.0 : 11.0) * textScale;
 

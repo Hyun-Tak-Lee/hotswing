@@ -65,7 +65,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _isManager = widget.player!.role == "manager";
       _playCount = widget.player!.played;
       _waitCount = widget.player!.waited;
-      _groups = widget.player!.groups;
+      _groups = List<ObjectId>.from(widget.player!.groups);
     }
     _rateController = TextEditingController(text: _rate?.toString() ?? '');
   }
@@ -93,7 +93,6 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
 
         final textTheme = Theme.of(context).textTheme;
         final double dialogWidth = isTablet ? 500.0 : mediaWidth * 0.9;
-        final double fieldSpacing = isTablet ? 24.0 : 16.0;
 
         // 반응형 스타일 정의
         final titleStyle = ResponsiveUtils.getResponsiveStyle(
@@ -365,6 +364,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         orElse: () => null,
       );
       _isManager = player.role == "manager";
+      _groups = List<ObjectId>.from(player.groups);
     });
   }
 
