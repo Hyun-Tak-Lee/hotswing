@@ -106,6 +106,20 @@ class CourtSlotService {
     return true;
   }
 
+  /// [standbyPlayers] 내에 완전히 비어 있는 코트가 없으면 상시 1개의 여유 대기 코트를 추가합니다.
+  ///
+  /// 코트가 새로 추가되었으면 `true`를 반환합니다.
+  bool ensureSpareStandbyCourt(List<List<Player?>> standbyPlayers) {
+    final bool hasEmptyCourt = standbyPlayers.any(
+      (court) => court.every((player) => player == null),
+    );
+    if (!hasEmptyCourt) {
+      standbyPlayers.add(List.filled(CourtConstants.capacity, null));
+      return true;
+    }
+    return false;
+  }
+
   /// [courts] 내의 두 코트([indexA], [indexB])의 위치를 맞교환합니다.
   ///
   /// 어느 한쪽이라도 인덱스 범위를 벗어나면 `false`를 반환합니다.

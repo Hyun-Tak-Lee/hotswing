@@ -41,6 +41,7 @@ class PlayersProvider with ChangeNotifier {
   PlayersProvider() {
     _options = OptionsRepository.instance.getOptions();
     _courtService = CourtAssignService(_options);
+    _ensureSpareStandbyCourt();
     initialized();
     notifyListeners();
   }
@@ -401,6 +402,7 @@ class PlayersProvider with ChangeNotifier {
     )) {
       return;
     }
+    _ensureSpareStandbyCourt();
     _saveLoadedPlayers();
     notifyListeners();
   }
@@ -440,6 +442,7 @@ class PlayersProvider with ChangeNotifier {
       _updateCourtStartTime(courtIndex);
     }
 
+    _ensureSpareStandbyCourt();
     _saveLoadedPlayers();
     notifyListeners();
   }
@@ -451,10 +454,10 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// [index]번째 대기 코트를 삭제하고, 포함되어 있던 선수들을 미배정 대기열로 복구합니다.
-  void removeStandByPlayers(int index) {
-    final removedList = _standbyPlayers.removeAt(index);
-    _unassignedPlayers.addAll(removedList.whereType<Player>());
+  /// [court] 대기 코트를 삭제하고, 포함되어 있던 선수들을 미배정 대기열로 복구합니다.
+  void removeStandByPlayers(List<Player?> court) {
+    if (!_standbyPlayers.remove(court)) return;
+    _unassignedPlayers.addAll(court.whereType<Player>());
 
     _saveLoadedPlayers();
     notifyListeners();
@@ -475,6 +478,7 @@ class PlayersProvider with ChangeNotifier {
     );
     if (!success) return false;
 
+    _ensureSpareStandbyCourt();
     _updateCourtStartTime(assignedIndex);
     _saveLoadedPlayers();
     notifyListeners();
@@ -645,6 +649,7 @@ class PlayersProvider with ChangeNotifier {
       playersToAdd: playersToAdd,
     );
 
+    _ensureSpareStandbyCourt();
     _saveLoadedPlayers();
     notifyListeners();
   }
@@ -712,6 +717,7 @@ class PlayersProvider with ChangeNotifier {
         standbyIds.map((ids) => _playerService.findPlayersByIds(ids)),
       );
     }
+    _ensureSpareStandbyCourt();
 
     final startTimes = await _sessionService.loadCourtStartTimes();
     _courtStartTimes.clear();
@@ -772,5 +778,9 @@ class PlayersProvider with ChangeNotifier {
       _assignedPlayers[courtIndex],
       _courtStartTimes[courtIndex],
     );
+  }
+
+  bool _ensureSpareStandbyCourt() {
+    return _courtSlotService.ensureSpareStandbyCourt(_standbyPlayers);
   }
 }
