@@ -171,6 +171,7 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
   }
 
   void _onCourtPlayerDragEnded() {
+    if (!mounted) return;
     _showCourtHighlight.value = false;
   }
 }

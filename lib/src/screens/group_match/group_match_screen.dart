@@ -175,6 +175,7 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
   }
 
   void _onCourtPlayerDragEnded() {
+    if (!mounted) return;
     _showCourtHighlight.value = false;
   }
 }
