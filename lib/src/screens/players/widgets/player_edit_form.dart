@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/screens/players/widgets/provider/players_view_model.dart';
 import 'package:hotswing/src/common/utils/game/skill_utils.dart';
+import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
 /// 플레이어 정보를 수정할 수 있는 인라인 폼 위젯.
@@ -79,23 +80,23 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
               isGuest: widget.player.role == 'guest',
               onToggleManager: () => setState(() => _isManager = !_isManager),
             ),
-            const SizedBox(height: 24),
+            Divider(height: 28, thickness: 0.8, color: formColors.filterDivider),
             _PlayerGenderSegment(
               currentGender: _currentGender,
               onSelected: (label) => setState(() => _currentGender = label),
             ),
-            const SizedBox(height: 24),
+            Divider(height: 28, thickness: 0.8, color: formColors.filterDivider),
             _PlayerSkillChipList(
               currentSkillLevel: _currentSkillLevel,
               onSelected: _selectSkill,
             ),
-            const SizedBox(height: 24),
+            Divider(height: 28, thickness: 0.8, color: formColors.filterDivider),
             _PlayerRateStepper(
               currentRate: _currentRate,
               onDecrease: () => _updateRate(_currentRate - 50),
               onIncrease: () => _updateRate(_currentRate + 50),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             _PlayerEditFooter(onCancel: widget.onCancel, onSubmit: _submit),
           ],
         ),
@@ -281,34 +282,18 @@ class _PlayerGenderSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Text(
-          "성별 선택",
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: context.formColors.stepperLabelText,
-          ),
+        _PlayerGenderButton(
+          label: "남",
+          isSelected: currentGender == "남",
+          onSelected: onSelected,
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            _PlayerGenderButton(
-              label: "남",
-              icon: Icons.male,
-              isSelected: currentGender == "남",
-              onSelected: onSelected,
-            ),
-            const SizedBox(width: 12),
-            _PlayerGenderButton(
-              label: "여",
-              icon: Icons.female,
-              isSelected: currentGender == "여",
-              onSelected: onSelected,
-            ),
-          ],
+        const SizedBox(width: 10),
+        _PlayerGenderButton(
+          label: "여",
+          isSelected: currentGender == "여",
+          onSelected: onSelected,
         ),
       ],
     );
@@ -318,61 +303,48 @@ class _PlayerGenderSegment extends StatelessWidget {
 class _PlayerGenderButton extends StatelessWidget {
   const _PlayerGenderButton({
     required this.label,
-    required this.icon,
     required this.isSelected,
     required this.onSelected,
   });
 
   final String label;
-  final IconData icon;
   final bool isSelected;
   final ValueChanged<String> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    final baseColors = context.baseColors;
     final formColors = context.formColors;
+    final isTablet = ResponsiveUtils.isTablet(context);
 
     return Expanded(
       child: InkWell(
         onTap: () => onSelected(label),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          duration: const Duration(milliseconds: 150),
+          padding: EdgeInsets.symmetric(vertical: isTablet ? 14 : 11),
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isSelected
                 ? formColors.genderActiveBg
                 : formColors.genderInactiveBg,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(isTablet ? 12 : 10),
             border: Border.all(
               color: isSelected
                   ? formColors.genderActiveBorder
                   : Colors.transparent,
-              width: 2,
+              width: 1.5,
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: isSelected
-                    ? baseColors.primaryAccent
-                    : formColors.genderInactiveText,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: isSelected
-                      ? formColors.genderActiveText
-                      : formColors.genderInactiveText,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: isTablet ? 16 : 14,
+              color: isSelected
+                  ? formColors.genderActiveText
+                  : formColors.genderInactiveText,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
@@ -391,53 +363,85 @@ class _PlayerSkillChipList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseColors = context.baseColors;
-    final playerColors = context.playerColors;
-    final formColors = context.formColors;
+    final levels = skillLevelToRate.keys.toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "급수",
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: formColors.stepperLabelText,
-          ),
-        ),
-        const SizedBox(height: 12),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: skillLevelToRate.keys.map((level) {
-              final bool isSelected = currentSkillLevel == level;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: FilterChip(
-                  label: Text(level),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) onSelected(level);
-                  },
-                  backgroundColor: playerColors.chipBg,
-                  selectedColor: formColors.skillChipActiveBg,
-                  checkmarkColor: formColors.skillChipCheckmark,
-                  labelStyle: TextStyle(
-                    color: isSelected
-                        ? formColors.skillChipActiveText
-                        : baseColors.textPrimary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: levels.map((level) {
+        return _PlayerSkillChipButton(
+          level: level,
+          isSelected: currentSkillLevel == level,
+          onSelected: onSelected,
+        );
+      }).toList(),
     );
   }
 }
+
+class _PlayerSkillChipButton extends StatelessWidget {
+  const _PlayerSkillChipButton({
+    required this.level,
+    required this.isSelected,
+    required this.onSelected,
+  });
+
+  final String level;
+  final bool isSelected;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final formColors = context.formColors;
+    final playerColors = context.playerColors;
+    final isTablet = ResponsiveUtils.isTablet(context);
+
+    return InkWell(
+      onTap: () => onSelected(level),
+      borderRadius: BorderRadius.circular(isTablet ? 12 : 10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        constraints: BoxConstraints(
+          minWidth: isTablet ? 54 : 44,
+          minHeight: isTablet ? 48 : 42,
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: isTablet ? 18 : 14,
+          vertical: isTablet ? 12 : 10,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? formColors.skillChipActiveBg
+              : playerColors.chipBg,
+          borderRadius: BorderRadius.circular(isTablet ? 12 : 10),
+          border: Border.all(
+            color: isSelected
+                ? formColors.skillChipActiveBg
+                : formColors.inputBorder,
+            width: 1.0,
+          ),
+        ),
+        child: Center(
+          widthFactor: 1.0,
+          heightFactor: 1.0,
+          child: Text(
+            level,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: isTablet ? 16 : 14,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              color: isSelected
+                  ? formColors.skillChipActiveText
+                  : baseColors.textPrimary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 class _PlayerRateStepper extends StatelessWidget {
   const _PlayerRateStepper({
@@ -467,7 +471,7 @@ class _PlayerRateStepper extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "레이팅 점수",
+                "레이팅",
                 style: TextStyle(fontSize: 12, color: formColors.stepperLabelText),
               ),
               Text(

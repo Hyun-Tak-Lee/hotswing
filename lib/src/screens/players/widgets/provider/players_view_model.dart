@@ -125,6 +125,14 @@ class PlayersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 모든 필터(역할, 성별, 급수)를 일괄 해제합니다.
+  void clearAllFilters() {
+    _selectedRoles.clear();
+    _selectedGenders.clear();
+    _selectedSkills.clear();
+    notifyListeners();
+  }
+
   /// 설정된 필터를 적용하여 데이터를 다시 로드합니다.
   void applyFilters() {
     _loadInitialData();

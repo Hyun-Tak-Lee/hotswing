@@ -52,7 +52,7 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24.0)),
       ),
       padding: const EdgeInsets.only(
-        top: 24.0,
+        top: 12.0,
         left: 24.0,
         right: 24.0,
         bottom: 32.0,
@@ -63,36 +63,57 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Filter Types (Tabs) - 스크롤 가능하도록 SingleChildScrollView 사용
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _FilterTab(
-                    title: '역할',
-                    fontSize: tabFontSize,
-                    isSelected: _selectedTabIndex == 0,
-                    onTap: () => setState(() => _selectedTabIndex = 0),
-                  ),
-                  const SizedBox(width: 24),
-                  _FilterTab(
-                    title: '성별',
-                    fontSize: tabFontSize,
-                    isSelected: _selectedTabIndex == 1,
-                    onTap: () => setState(() => _selectedTabIndex = 1),
-                  ),
-                  const SizedBox(width: 24),
-                  _FilterTab(
-                    title: '급수',
-                    fontSize: tabFontSize,
-                    isSelected: _selectedTabIndex == 2,
-                    onTap: () => setState(() => _selectedTabIndex = 2),
-                  ),
-                ],
+            // 바텀시트 상단 드래그 핸들 (시각적 균형감 확보)
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: formColors.filterDivider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-
             const SizedBox(height: 16),
+
+            // Filter Types (Tabs) & Top Actions
+            Row(
+              children: [
+                _FilterTab(
+                  title: '역할',
+                  fontSize: tabFontSize,
+                  isSelected: _selectedTabIndex == 0,
+                  selectedCount: viewModel.selectedRoles.length,
+                  onTap: () => setState(() => _selectedTabIndex = 0),
+                ),
+                const SizedBox(width: 16),
+                _FilterTab(
+                  title: '성별',
+                  fontSize: tabFontSize,
+                  isSelected: _selectedTabIndex == 1,
+                  selectedCount: viewModel.selectedGenders.length,
+                  onTap: () => setState(() => _selectedTabIndex = 1),
+                ),
+                const SizedBox(width: 16),
+                _FilterTab(
+                  title: '급수',
+                  fontSize: tabFontSize,
+                  isSelected: _selectedTabIndex == 2,
+                  selectedCount: viewModel.selectedSkills.length,
+                  onTap: () => setState(() => _selectedTabIndex = 2),
+                ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 11),
+                  child: _FilterTopActions(
+                    onClear: viewModel.clearAllFilters,
+                    onApply: () => Navigator.of(context).pop(),
+                    fontSize: isTablet ? 14.0 : 12.5,
+                  ),
+                ),
+              ],
+            ),
+
             Divider(
               height: 1,
               thickness: 1,
@@ -132,7 +153,6 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
       ),
     );
   }
-
 }
 
 class _FilterTab extends StatelessWidget {
@@ -141,34 +161,56 @@ class _FilterTab extends StatelessWidget {
     required this.fontSize,
     required this.isSelected,
     required this.onTap,
+    this.selectedCount = 0,
   });
 
   final String title;
   final double fontSize;
   final bool isSelected;
   final VoidCallback onTap;
+  final int selectedCount;
 
   @override
   Widget build(BuildContext context) {
     final formColors = context.formColors;
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: fontSize,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected
-                  ? formColors.filterTabActiveText
-                  : formColors.filterTabInactiveText,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected
+                      ? formColors.filterTabActiveText
+                      : formColors.filterTabInactiveText,
+                ),
+              ),
+              if (selectedCount > 0) ...[
+                const SizedBox(width: 3),
+                Text(
+                  '($selectedCount)',
+                  style: TextStyle(
+                    fontSize: fontSize * 0.85,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected
+                        ? formColors.filterTabIndicator
+                        : formColors.filterTabInactiveText,
+                  ),
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: 8),
           Container(
             height: 3,
-            width: 40,
+            width: selectedCount > 0 ? 44 : 32,
             decoration: BoxDecoration(
               color: isSelected
                   ? formColors.filterTabIndicator
@@ -231,6 +273,66 @@ class _FilterOptions<T> extends StatelessWidget {
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+class _FilterTopActions extends StatelessWidget {
+  const _FilterTopActions({
+    required this.onClear,
+    required this.onApply,
+    required this.fontSize,
+  });
+
+  final VoidCallback onClear;
+  final VoidCallback onApply;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final formColors = context.formColors;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 일괄 해제
+        InkWell(
+          onTap: onClear,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Text(
+              '일괄 해제',
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w600,
+                color: formColors.filterTabInactiveText,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        // 적용
+        InkWell(
+          onTap: onApply,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: formColors.filterChipActiveBg,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              '적용',
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.bold,
+                color: formColors.filterChipActiveText,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
