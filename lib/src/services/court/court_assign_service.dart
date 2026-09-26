@@ -14,8 +14,8 @@ class CourtAssignService {
 
   /// 일반 경기에서 현재 코트 상태와 대기자 목록을 기반으로 추천 플레이어 목록을 반환합니다.
   ///
-  /// 매니저 대기 옵션([Options.reserveManager])이 활성화되어 있는 경우,
-  /// 배정 후 남은 활성 매니저가 없으면 후보 1명을 대기열에 남기도록 재매칭합니다.
+  /// 운영진 대기 옵션([Options.reserveManager])이 활성화되어 있는 경우,
+  /// 배정 후 남은 활성 운영진이 없으면 후보 1명을 대기열에 남기도록 재매칭합니다.
   List<Player> getRecommendedPlayersForCourt({
     required List<Player> unassignedPlayers,
     required List<Player> currentPlayersOnCourt,

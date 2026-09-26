@@ -1,6 +1,6 @@
-/// 플레이어의 역할 구분 (매니저, 회원, 게스트).
+/// 플레이어의 역할 구분 (운영진, 회원, 게스트).
 enum PlayerRole {
-  manager("manager", "매니저"),
+  manager("manager", "운영진"),
   user("user", "회원"),
   guest("guest", "게스트");
 

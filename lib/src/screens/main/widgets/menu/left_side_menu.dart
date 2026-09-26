@@ -69,7 +69,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
             isTablet: isTablet,
             roleLabel: _getRoleLabel(player.role),
             roleColor: _getRoleColor(context, player.role),
-            genderLabel: _getGenderLabel(player.gender),
+            genderLabel: _getGenderLabel(player.gender, isMobile: isMobile),
             onToggleActivate: () => playersProvider.toggleIsActivate(player),
             onEdit: () => _showAddPlayerDialog(
               playersProvider,
@@ -105,7 +105,12 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
     }
   }
 
-  String _getGenderLabel(String genderValue) {
+  String _getGenderLabel(String genderValue, {bool isMobile = false}) {
+    if (isMobile) {
+      if (genderValue.startsWith('남')) return '남';
+      if (genderValue.startsWith('여')) return '여';
+      return genderValue;
+    }
     if (genderValue == '남') return '남성';
     if (genderValue == '여') return '여성';
     return genderValue;
@@ -392,13 +397,23 @@ class _PlayerListItemTile extends StatelessWidget {
                       ),
                       if (groupInfo != null)
                         PlayerInfoTag(
-                          text: '그룹 ${groupInfo.label}',
+                          text: groupInfo.label,
                           color: groupInfo.color,
                         ),
-                      PlayerSkillRateWidget(
-                        skillLevel: player.grade,
-                        rate: player.rate,
-                      ),
+                      if (isTablet)
+                        PlayerSkillRateWidget(
+                          skillLevel: player.grade,
+                          rate: player.rate,
+                        )
+                      else
+                        Text(
+                          player.grade,
+                          style: TextStyle(
+                            fontSize: 14.0,
+                            color: playerColors.rateWidgetSkill,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
                     ],
                   ),
                 ],

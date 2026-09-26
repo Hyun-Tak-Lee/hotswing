@@ -132,77 +132,6 @@ class DraggablePlayerItem extends StatelessWidget {
                     MainAxisAlignment.center, // 세로 공간이 넉넉할 때 가운데를 기점으로 정렬
                 mainAxisSize: MainAxisSize.max, // 높이를 가득 채우므로 max로 변경
                 children: [
-                  if (groupInfo != null)
-                    Container(
-                      margin: EdgeInsets.only(
-                        bottom: spacing,
-                        left: 2.0,
-                        right: 2.0,
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        vertical: (nameFontSize * 0.15).clamp(1.0, 4.0),
-                      ),
-                      decoration: BoxDecoration(
-                        color: groupInfo.color.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6.0),
-                        border: Border.all(
-                          color: groupInfo.color.withValues(alpha: 0.3),
-                          width: 0.8,
-                        ),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          if (showRemoveButton)
-                            SizedBox(width: removeBtnSize), // 좌우 균형을 위한 빈 공간
-
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4.0,
-                              ),
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  groupInfo.label,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: (nameFontSize - 6.0).clamp(
-                                      10.0,
-                                      16.0,
-                                    ),
-                                    fontWeight: FontWeight.bold,
-                                    color: groupInfo.color,
-                                    height: 1.1,
-                                    decoration: TextDecoration.none,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          if (showRemoveButton)
-                            GestureDetector(
-                              onTap: () {
-                                if (onPlayerRemoved != null) {
-                                  onPlayerRemoved!();
-                                }
-                              },
-                              child: Container(
-                                width: removeBtnSize,
-                                alignment: Alignment.center,
-                                child: Icon(
-                                  Icons.close,
-                                  size: removeIconSize,
-                                  color: groupInfo.color.withValues(alpha: 0.8),
-                                ),
-                              ),
-                            )
-                          else
-                            const SizedBox(),
-                        ],
-                      ),
-                    ),
                   Center(
                     child: Container(
                       padding: EdgeInsets.symmetric(
@@ -241,6 +170,20 @@ class DraggablePlayerItem extends StatelessWidget {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
+                                if (groupInfo != null) ...[
+                                  const SizedBox(width: 4.0),
+                                  Text(
+                                    '(${groupInfo.label})',
+                                    style: TextStyle(
+                                      fontSize: (nameFontSize - 2.0).clamp(
+                                        10.0,
+                                        22.0,
+                                      ),
+                                      fontWeight: FontWeight.bold,
+                                      color: groupInfo.color,
+                                    ),
+                                  ),
+                                ],
                                 const SizedBox(width: 6.0),
                                 Text(
                                   player.gender,
@@ -386,7 +329,7 @@ class DraggablePlayerItem extends StatelessWidget {
                 ],
               ),
             ),
-            if (groupInfo == null && showRemoveButton)
+            if (showRemoveButton)
               Positioned(
                 top: verticalPadding,
                 right: 2.0,
