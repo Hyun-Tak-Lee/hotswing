@@ -50,435 +50,278 @@ class DraggablePlayerItem extends StatelessWidget {
     return RepaintBoundary(
       child: LayoutBuilder(
         builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final height = constraints.maxHeight;
+          final width = constraints.maxWidth;
+          final height = constraints.maxHeight;
 
-        // infinite/0 이하 높이와 너비에 대한 안전 장치
-        final double availHeight = (height.isInfinite || height <= 0)
-            ? (isTablet ? 160.0 : 140.0)
-            : height;
-        final double availWidth = (width.isInfinite || width <= 0)
-            ? (isTablet ? 200.0 : 150.0)
-            : width;
+          final bool isCourtPanel =
+              sectionKind == 'assigned' || sectionKind == 'standby';
 
-        // 사이즈 비례 폰트 계산
-        // 세로 높이 기준 비율 설정
-        double nameFontSize = availHeight * 0.15;
-        double skillFontSize = availHeight * 0.12;
-        double detailFontSize = availHeight * 0.11;
+          // infinite/0 이하 높이와 너비에 대한 안전 장치
+          final double availHeight = (height.isInfinite || height <= 0)
+              ? (isTablet ? 160.0 : 140.0)
+              : height;
+          final double availWidth = (width.isInfinite || width <= 0)
+              ? (isTablet ? 200.0 : 150.0)
+              : width;
 
-        // 가로 너비 기준 상한선 적용 (너무 크면 가로가 넘치므로)
-        final double maxNameByWidth = availWidth * 0.13;
-        if (nameFontSize > maxNameByWidth) {
-          nameFontSize = maxNameByWidth;
-          skillFontSize = nameFontSize * 0.8;
-          detailFontSize = nameFontSize * 0.75;
-        }
+          // 사이즈 비례 폰트 계산
+          double nameFontSize;
+          double skillFontSize;
+          double detailFontSize = 0.0;
 
-        // clamp 적용하여 모바일/태블릿 적정 범위 보장
-        nameFontSize = nameFontSize.clamp(12.0, isTablet ? 25.0 : 20.0);
-        skillFontSize = skillFontSize.clamp(10.0, isTablet ? 18.0 : 16.0);
-        detailFontSize = detailFontSize.clamp(9.0, 16.0);
+          if (isCourtPanel) {
+            nameFontSize = isTablet ? availHeight * 0.26 : availHeight * 0.22;
+            skillFontSize = isTablet ? availHeight * 0.19 : availHeight * 0.17;
 
-        final double removeBtnSize = (nameFontSize * 1.3).clamp(
-          16.0,
-          isTablet ? 28.0 : 24.0,
-        );
-        final double removeIconSize = (removeBtnSize * 0.7).clamp(
-          11.0,
-          isTablet ? 18.0 : 16.0,
-        );
+            final double maxNameByWidth = isTablet
+                ? availWidth * 0.22
+                : availWidth * 0.16;
+            if (nameFontSize > maxNameByWidth) {
+              nameFontSize = maxNameByWidth;
+              skillFontSize = nameFontSize * 0.85;
+            }
 
-        final String skillLevelDisplay = player.grade;
-        final textColor = courtColors.playerItemTextPrimary;
-        final detailTextColor = courtColors.playerItemTextSecondary;
+            nameFontSize = nameFontSize.clamp(13.0, isTablet ? 32.0 : 19.0);
+            skillFontSize = skillFontSize.clamp(11.0, isTablet ? 22.0 : 15.0);
+          } else {
+            nameFontSize = isTablet
+                ? (availHeight * 0.20).clamp(13.0, 27.0)
+                : (availHeight * 0.17).clamp(13.0, 18.0);
+            skillFontSize = isTablet
+                ? (nameFontSize * 0.85).clamp(11.0, 22.0)
+                : (nameFontSize * 0.82).clamp(11.0, 14.5);
+            detailFontSize = isTablet
+                ? (availHeight * 0.135).clamp(11.0, 19.0)
+                : (availHeight * 0.095).clamp(9.0, 11.5);
 
-        // 시간 표시 포맷팅 (MM:SS)
-        final String minutesStr = (player.playTime ~/ 60).toString().padLeft(
-          2,
-          '0',
-        );
-        final String secondsStr = (player.playTime % 60).toString().padLeft(
-          2,
-          '0',
-        );
-        final String timeDisplay = '$minutesStr:$secondsStr';
+            final double maxNameByWidth = isTablet
+                ? availWidth * 0.20
+                : availWidth * 0.14;
+            if (nameFontSize > maxNameByWidth) {
+              nameFontSize = maxNameByWidth.clamp(12.0, isTablet ? 27.0 : 18.0);
+              skillFontSize = isTablet
+                  ? (nameFontSize * 0.85).clamp(10.0, 22.0)
+                  : (nameFontSize * 0.82).clamp(10.0, 14.5);
+              detailFontSize = isTablet
+                  ? (nameFontSize * 0.70).clamp(10.0, 19.0)
+                  : (nameFontSize * 0.65).clamp(8.5, 11.5);
+            }
+          }
 
-        // 가로 너비 제약으로 인해 글자 크기(nameFontSize)가 줄어들 경우를 고려하여,
-        // 간격과 여백을 최종 글자 크기에 비례하도록 동기화합니다.
-        final double spacing = (nameFontSize * 0.35).clamp(1.5, 12.0);
-        final double verticalPadding = (nameFontSize * 0.25).clamp(0.0, 8.0);
+          // X 삭제 버튼 터치 타겟(36~42px) 및 시각적 아이콘 크기(16.5~20px) 넉넉하게 확보
+          final double removeBtnTouchSize = isTablet ? 42.0 : 36.0;
+          final double removeIconSize = isTablet ? 20.0 : 16.5;
 
-        // 순수 UI 표현을 위한 위젯
-        Widget playerItemDisplay = Stack(
-          children: [
-            Container(
-              height: availHeight, // 부모 드롭존의 높이를 가득 채우도록 함
-              padding: EdgeInsets.symmetric(
-                vertical: verticalPadding,
-                horizontal: 2.0,
-              ),
-              margin: const EdgeInsets.symmetric(
-                vertical: 0.0,
-                horizontal: 0.0,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisAlignment:
-                    MainAxisAlignment.center, // 세로 공간이 넉넉할 때 가운데를 기점으로 정렬
-                mainAxisSize: MainAxisSize.max, // 높이를 가득 채우므로 max로 변경
-                children: [
-                  Center(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 8.0,
-                        vertical: availHeight < 120.0 ? 0.0 : 2.0,
-                      ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (player.role == "manager") ...[
-                              Icon(
-                                Icons.star_rounded,
-                                size: (nameFontSize * 1.2).clamp(
-                                  14.0,
-                                  isTablet ? 28.0 : 20.0,
-                                ),
-                                color: playerColors.roleManager,
-                              ),
-                              const SizedBox(width: 4.0),
-                            ],
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  player.name,
-                                  style: TextStyle(
-                                    fontSize: nameFontSize,
-                                    fontWeight: FontWeight.bold,
-                                    color: textColor,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                if (groupInfo != null) ...[
-                                  const SizedBox(width: 4.0),
-                                  Text(
-                                    '(${groupInfo.label})',
-                                    style: TextStyle(
-                                      fontSize: (nameFontSize - 2.0).clamp(
-                                        10.0,
-                                        22.0,
-                                      ),
-                                      fontWeight: FontWeight.bold,
-                                      color: groupInfo.color,
-                                    ),
-                                  ),
-                                ],
-                                const SizedBox(width: 6.0),
-                                Text(
-                                  player.gender,
-                                  style: TextStyle(
-                                    fontSize: (nameFontSize - 2.0).clamp(
-                                      10.0,
-                                      23.0,
-                                    ),
-                                    fontWeight: FontWeight.bold,
-                                    color: courtColors.playerItemGenderText,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: spacing),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Text(
-                              skillLevelDisplay,
-                              style: TextStyle(
-                                fontSize: skillFontSize + 4,
-                                color: courtColors.playerItemGenderText,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            Container(
-                              height: 12,
-                              width: 1.5,
-                              color: courtColors.playerItemDivider,
-                              margin: const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                            Text(
-                              'Rate ',
-                              style: TextStyle(
-                                fontSize: (detailFontSize - 2).clamp(8.0, 14.0),
-                                color: courtColors.playerItemRateLabel,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              '${player.rate}',
-                              style: TextStyle(
-                                fontSize: detailFontSize,
-                                color: detailTextColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: spacing),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.play_circle_outline_rounded,
-                              size: (detailFontSize - 2.0).clamp(8.0, 14.0),
-                              color: detailTextColor,
-                            ),
-                            const SizedBox(width: 3.0),
-                            Text(
-                              '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}',
-                              style: TextStyle(
-                                fontSize: (detailFontSize - 1.0).clamp(
-                                  8.0,
-                                  15.0,
-                                ),
-                                color: detailTextColor,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Container(
-                              height: 10.0,
-                              width: 1.2,
-                              color: courtColors.playerItemDivider,
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 8.0,
-                              ),
-                            ),
-                            Icon(
-                              Icons.hourglass_empty_rounded,
-                              size: (detailFontSize - 2.0).clamp(8.0, 14.0),
-                              color: detailTextColor,
-                            ),
-                            const SizedBox(width: 3.0),
-                            Text(
-                              '${player.waited}',
-                              style: TextStyle(
-                                fontSize: (detailFontSize - 1.0).clamp(
-                                  8.0,
-                                  15.0,
-                                ),
-                                color: detailTextColor,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Container(
-                              height: 10.0,
-                              width: 1.2,
-                              color: Colors.grey.shade300,
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 8.0,
-                              ),
-                            ),
-                            Icon(
-                              Icons.timer_outlined,
-                              size: (detailFontSize - 2.0).clamp(8.0, 14.0),
-                              color: detailTextColor,
-                            ),
-                            const SizedBox(width: 3.0),
-                            Text(
-                              timeDisplay,
-                              style: TextStyle(
-                                fontSize: (detailFontSize - 1.0).clamp(
-                                  8.0,
-                                  15.0,
-                                ),
-                                color: detailTextColor,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            if (showRemoveButton)
-              Positioned(
-                top: verticalPadding,
-                right: 2.0,
-                child: GestureDetector(
-                  onTap: () {
-                    if (onPlayerRemoved != null) {
-                      onPlayerRemoved!();
-                    }
-                  },
-                  child: Container(
-                    width: removeBtnSize,
-                    height: removeBtnSize,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.close,
-                      size: removeIconSize,
-                      color: courtColors.dropZoneCloseIcon,
-                    ),
-                  ),
+          // 시간 표시 포맷팅 (MM:SS)
+          final String minutesStr = (player.playTime ~/ 60).toString().padLeft(
+            2,
+            '0',
+          );
+          final String secondsStr = (player.playTime % 60).toString().padLeft(
+            2,
+            '0',
+          );
+          final String timeDisplay = '$minutesStr:$secondsStr';
+
+          // 가로 너비 제약으로 인해 글자 크기(nameFontSize)가 줄어들 경우를 고려하여,
+          // 간격과 여백을 최종 글자 크기에 비례하도록 동기화합니다.
+          final double spacing = (nameFontSize * 0.35).clamp(1.5, 12.0);
+          final double verticalPadding = (nameFontSize * 0.25).clamp(0.0, 8.0);
+
+          // 순수 UI 표현을 위한 위젯
+          Widget playerItemDisplay = Stack(
+            children: [
+              Container(
+                height: availHeight, // 부모 드롭존의 높이를 가득 채우도록 함
+                padding: EdgeInsets.symmetric(
+                  vertical: verticalPadding,
+                  horizontal: 2.0,
                 ),
-              ),
-          ],
-        );
-
-        // 탭 기능을 추가하기 위해 GestureDetector로 감싼 위젯
-        Widget interactivePlayerContent = GestureDetector(
-          onTap: () {
-            final playersProvider = context.read<PlayersProvider>();
-            final Map<String, int> newGamesPlayedWithMap = player
-                .gamesPlayedWith
-                .map((key, value) {
-                  final newKey =
-                      playersProvider
-                          .getPlayerById(ObjectId.fromHexString(key))
-                          ?.name ??
-                      "";
-                  return MapEntry(newKey, value);
-                });
-
-            final List<String> allPlayerNames = playersProvider.players.values
-                .map((p) => p.name)
-                .toList();
-            final Set<String> playedWithPlayerNames = newGamesPlayedWithMap.keys
-                .toSet();
-            final List<String> notPlayedWithNames = allPlayerNames
-                .where(
-                  (name) =>
-                      !playedWithPlayerNames.contains(name) &&
-                      name != player.name,
-                )
-                .toList();
-
-            showDialog(
-              context: context,
-              builder: (BuildContext dialogContext) {
-                return GamePlayedDialog(
-                  gamesPlayedWithMap: newGamesPlayedWithMap,
-                  player: player,
-                  notPlayedWithNames: notPlayedWithNames,
-                );
-              },
-            );
-          },
-          child: playerItemDisplay,
-        );
-
-        if (!isDragEnabled) {
-          return interactivePlayerContent;
-        }
-
-        return LongPressDraggable<PlayerDragData>(
-          data: PlayerDragData(
-            player: player,
-            sourceSectionId: sourceSectionId,
-            sectionKind: sectionKind,
-            sectionIndex: sectionIndex,
-            subIndex: subIndex,
-          ),
-          feedback: RepaintBoundary(
-            child: Material(
-              color: Colors.transparent,
-            borderRadius: BorderRadius.circular(8.0),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.7,
-              ),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 8.0,
-                  horizontal: 12.0,
+                margin: const EdgeInsets.symmetric(
+                  vertical: 0.0,
+                  horizontal: 0.0,
                 ),
                 decoration: BoxDecoration(
-                  color: baseColors.cardBg,
-                  borderRadius: BorderRadius.circular(12.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: baseColors.cardShadow,
-                      blurRadius: 15.0,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (groupInfo != null)
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 6.0),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 2.0,
-                          horizontal: 8.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: groupInfo.color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(6.0),
-                          border: Border.all(
-                            color: groupInfo.color.withValues(alpha: 0.3),
-                            width: 0.8,
-                          ),
-                        ),
-                        child: Text(
-                          groupInfo.label,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: (nameFontSize - 7.0).clamp(8.0, 18.0),
-                            fontWeight: FontWeight.bold,
-                            color: groupInfo.color,
-                            height: 1.0,
-                            decoration: TextDecoration.none,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                child: isCourtPanel
+                    ? _SimplifiedPlayerContent(
+                        player: player,
+                        groupInfo: groupInfo,
+                        nameFontSize: nameFontSize,
+                        skillFontSize: skillFontSize,
+                        spacing: spacing,
+                        availHeight: availHeight,
+                        hasRemoveButton: showRemoveButton,
+                        removeBtnSize: removeBtnTouchSize,
+                        isTablet: isTablet,
+                      )
+                    : _DetailedPlayerContent(
+                        player: player,
+                        groupInfo: groupInfo,
+                        nameFontSize: nameFontSize,
+                        skillFontSize: skillFontSize,
+                        detailFontSize: detailFontSize,
+                        spacing: spacing,
+                        availHeight: availHeight,
+                        timeDisplay: timeDisplay,
+                        hasRemoveButton: showRemoveButton,
+                        removeBtnSize: removeBtnTouchSize,
+                        isTablet: isTablet,
                       ),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (player.role == "manager") ...[
-                            Icon(
-                              Icons.star_rounded,
-                              size: isTablet ? 18.0 : 14.0,
-                              color: playerColors.roleManager,
+              ),
+              if (showRemoveButton)
+                Positioned(
+                  top: 0.0,
+                  right: 0.0,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      if (onPlayerRemoved != null) {
+                        onPlayerRemoved!();
+                      }
+                    },
+                    child: Container(
+                      width: removeBtnTouchSize,
+                      height: removeBtnTouchSize,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.close,
+                        size: removeIconSize,
+                        color: courtColors.dropZoneCloseIcon,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+
+          // 탭 기능을 추가하기 위해 GestureDetector로 감싼 위젯
+          Widget interactivePlayerContent = GestureDetector(
+            onTap: () {
+              final playersProvider = context.read<PlayersProvider>();
+              final Map<String, int> newGamesPlayedWithMap = player
+                  .gamesPlayedWith
+                  .map((key, value) {
+                    final newKey =
+                        playersProvider
+                            .getPlayerById(ObjectId.fromHexString(key))
+                            ?.name ??
+                        "";
+                    return MapEntry(newKey, value);
+                  });
+
+              final List<String> allPlayerNames = playersProvider.players.values
+                  .map((p) => p.name)
+                  .toList();
+              final Set<String> playedWithPlayerNames = newGamesPlayedWithMap
+                  .keys
+                  .toSet();
+              final List<String> notPlayedWithNames = allPlayerNames
+                  .where(
+                    (name) =>
+                        !playedWithPlayerNames.contains(name) &&
+                        name != player.name,
+                  )
+                  .toList();
+
+              showDialog(
+                context: context,
+                builder: (BuildContext dialogContext) {
+                  return GamePlayedDialog(
+                    gamesPlayedWithMap: newGamesPlayedWithMap,
+                    player: player,
+                    notPlayedWithNames: notPlayedWithNames,
+                  );
+                },
+              );
+            },
+            child: playerItemDisplay,
+          );
+
+          if (!isDragEnabled) {
+            return interactivePlayerContent;
+          }
+
+          return LongPressDraggable<PlayerDragData>(
+            data: PlayerDragData(
+              player: player,
+              sourceSectionId: sourceSectionId,
+              sectionKind: sectionKind,
+              sectionIndex: sectionIndex,
+              subIndex: subIndex,
+            ),
+            feedback: RepaintBoundary(
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(8.0),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.7,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 12.0,
+                    ),
+                    decoration: BoxDecoration(
+                      color: baseColors.cardBg,
+                      borderRadius: BorderRadius.circular(12.0),
+                      border: player.role == "manager"
+                          ? Border.all(
+                              color: playerColors.roleManager.withValues(
+                                alpha: 0.75,
+                              ),
+                              width: 1.6,
+                            )
+                          : null,
+                      boxShadow: [
+                        BoxShadow(
+                          color: player.role == "manager"
+                              ? playerColors.roleManager.withValues(alpha: 0.12)
+                              : baseColors.cardShadow,
+                          blurRadius: 15.0,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (groupInfo != null)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 6.0),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 2.0,
+                              horizontal: 8.0,
                             ),
-                            const SizedBox(width: 4.0),
-                          ],
-                          Row(
+                            decoration: BoxDecoration(
+                              color: groupInfo.color.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6.0),
+                              border: Border.all(
+                                color: groupInfo.color.withValues(alpha: 0.3),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Text(
+                              groupInfo.label,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: (nameFontSize - 7.0).clamp(8.0, 18.0),
+                                fontWeight: FontWeight.bold,
+                                color: groupInfo.color,
+                                height: 1.0,
+                                decoration: TextDecoration.none,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -507,39 +350,37 @@ class DraggablePlayerItem extends StatelessWidget {
                               ),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-          ),
-          // 드래그 중에는 순수 UI만 표시 (탭 기능 없음)
-          childWhenDragging: Opacity(opacity: 0.5, child: playerItemDisplay),
-          onDragStarted: () {
-            if (sectionIndex != -1 && onDragStarted != null) {
-              onDragStarted!();
-            }
-          },
-          onDraggableCanceled: (velocity, offset) {
-            if (sectionIndex != -1 && onDragEnded != null) {
-              onDragEnded!();
-            }
-          },
-          onDragCompleted: () {
-            if (sectionIndex != -1 && onDragEnded != null) {
-              onDragEnded!();
-            }
-          },
-          // 실제 드래그 대상이 되는 자식 위젯 (탭 기능 포함)
-          child: interactivePlayerContent,
-        );
-      },
-    ),
-  );
-}
+            // 드래그 중에는 순수 UI만 표시 (탭 기능 없음)
+            childWhenDragging: Opacity(opacity: 0.5, child: playerItemDisplay),
+            onDragStarted: () {
+              if (sectionIndex != -1 && onDragStarted != null) {
+                onDragStarted!();
+              }
+            },
+            onDraggableCanceled: (velocity, offset) {
+              if (sectionIndex != -1 && onDragEnded != null) {
+                onDragEnded!();
+              }
+            },
+            onDragCompleted: () {
+              if (sectionIndex != -1 && onDragEnded != null) {
+                onDragEnded!();
+              }
+            },
+            // 실제 드래그 대상이 되는 자식 위젯 (탭 기능 포함)
+            child: interactivePlayerContent,
+          );
+        },
+      ),
+    );
+  }
 }
 
 /// 플레이어를 배치할 수 있는 슬롯 영역을 제공하고, 드롭 타겟 역할을 수행하는 위젯.
@@ -582,6 +423,7 @@ class PlayerDropZone extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final courtColors = context.courtColors;
+    final playerColors = context.playerColors;
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
     final isTablet = ResponsiveUtils.isTablet(context);
@@ -612,6 +454,7 @@ class PlayerDropZone extends StatelessWidget {
       },
       builder: (context, candidateData, rejectedData) {
         bool isHovering = candidateData.isNotEmpty && isDropEnabled;
+        final bool isManager = player != null && player!.role == "manager";
 
         Color determinedDefaultBgColor = player == null
             ? courtColors.dropZoneEmptyBg
@@ -621,9 +464,14 @@ class PlayerDropZone extends StatelessWidget {
         Color hoveringBgColor = player == null
             ? courtColors.dropZoneHoverBg
             : courtColors.dropZoneActiveBg;
+
+        // 다른 요소를 가리지 않는 은은하고 세련된 매니저 옐로우/골드 테두리
         Color borderColor = player == null
             ? courtColors.dropZoneBorder
-            : Colors.transparent;
+            : (isManager
+                  ? playerColors.roleManager.withValues(alpha: 0.75)
+                  : Colors.transparent);
+        double borderWidth = isManager ? 1.6 : 1.5;
 
         return LayoutBuilder(
           builder: (context, zoneConstraints) {
@@ -633,12 +481,14 @@ class PlayerDropZone extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isHovering ? hoveringBgColor : determinedDefaultBgColor,
                 borderRadius: BorderRadius.circular(16.0),
-                border: Border.all(color: borderColor, width: 1.5),
+                border: Border.all(color: borderColor, width: borderWidth),
                 boxShadow: player != null && player!.activate
                     ? [
                         BoxShadow(
-                          color: Colors.black.withAlpha(12),
-                          blurRadius: 12.0,
+                          color: isManager
+                              ? playerColors.roleManager.withValues(alpha: 0.12)
+                              : Colors.black.withAlpha(12),
+                          blurRadius: isManager ? 14.0 : 12.0,
                           offset: const Offset(0, 4),
                         ),
                       ]
@@ -677,6 +527,287 @@ class PlayerDropZone extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+/// 코트 패널 내에서 선수 정보를 간소화(이름, 그룹, 급수, 성별)하여 표시하는 위젯.
+class _SimplifiedPlayerContent extends StatelessWidget {
+  final Player player;
+  final GroupInfo? groupInfo;
+  final double nameFontSize;
+  final double skillFontSize;
+  final double spacing;
+  final double availHeight;
+  final bool hasRemoveButton;
+  final double removeBtnSize;
+  final bool isTablet;
+
+  const _SimplifiedPlayerContent({
+    required this.player,
+    required this.groupInfo,
+    required this.nameFontSize,
+    required this.skillFontSize,
+    required this.spacing,
+    required this.availHeight,
+    required this.hasRemoveButton,
+    required this.removeBtnSize,
+    required this.isTablet,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final courtColors = context.courtColors;
+
+    // 우측 삭제(X) 버튼 침범을 방지하면서도 텍스트 크기와 정중앙 정렬을 보호하기 위해 여백 제한
+    final double horizontalPadding = hasRemoveButton
+        ? (isTablet ? 14.0 : 10.0)
+        : (isTablet ? 8.0 : 6.0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        // 1행: 이름
+        Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: availHeight < 100.0 ? 0.0 : 1.0,
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                player.name,
+                style: TextStyle(
+                  fontSize: nameFontSize,
+                  fontWeight: FontWeight.bold,
+                  color: courtColors.playerItemTextPrimary,
+                  height: 1.1,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: (spacing * 0.6).clamp(3.0, 8.0)),
+        // 2행: 성별 급수 + 그룹 (급수 뒤에 그룹 배치)
+        Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text.rich(
+                TextSpan(
+                  style: TextStyle(
+                    fontSize: skillFontSize,
+                    fontWeight: FontWeight.bold,
+                    height: 1.1,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: '${player.gender}  ${player.grade}',
+                      style: TextStyle(color: courtColors.playerItemGenderText),
+                    ),
+                    if (groupInfo != null) ...[
+                      const TextSpan(text: '   '),
+                      TextSpan(
+                        text: groupInfo!.label,
+                        style: TextStyle(color: groupInfo!.color),
+                      ),
+                    ],
+                  ],
+                ),
+                maxLines: 1,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 대기 패널 내에서 선수 정보를 표시하는 위젯 (그룹 -> 이름 -> 성별 급수 -> 플레이 정보).
+class _DetailedPlayerContent extends StatelessWidget {
+  final Player player;
+  final GroupInfo? groupInfo;
+  final double nameFontSize;
+  final double skillFontSize;
+  final double detailFontSize;
+  final double spacing;
+  final double availHeight;
+  final String timeDisplay;
+  final bool hasRemoveButton;
+  final double removeBtnSize;
+  final bool isTablet;
+
+  const _DetailedPlayerContent({
+    required this.player,
+    required this.groupInfo,
+    required this.nameFontSize,
+    required this.skillFontSize,
+    required this.detailFontSize,
+    required this.spacing,
+    required this.availHeight,
+    required this.timeDisplay,
+    required this.hasRemoveButton,
+    required this.removeBtnSize,
+    required this.isTablet,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final courtColors = context.courtColors;
+    final textColor = courtColors.playerItemTextPrimary;
+    final detailTextColor = courtColors.playerItemTextSecondary;
+    final skillLevelDisplay = player.grade;
+
+    // 우측 삭제(X) 버튼 침범을 방지하면서도 텍스트 크기와 정중앙 정렬을 보호하기 위해 여백 제한
+    final double horizontalPadding = hasRemoveButton
+        ? (isTablet ? 14.0 : 10.0)
+        : (isTablet ? 8.0 : 6.0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 상단/중앙 메인 정보: 이름 1행 + 성별급수/그룹 2행 (유연한 텍스트 크기)
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1행: 이름 (단독, 최대 크기 지정)
+              Center(
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                    vertical: availHeight < 120.0 ? 0.0 : 1.0,
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      player.name,
+                      style: TextStyle(
+                        fontSize: nameFontSize,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                        height: 1.1,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: (spacing * 0.5).clamp(3.0, 7.0)),
+              // 2행: 성별 급수 + 그룹 (급수 뒤에 그룹 배치)
+              Center(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text.rich(
+                      TextSpan(
+                        style: TextStyle(
+                          fontSize: skillFontSize,
+                          fontWeight: FontWeight.bold,
+                          height: 1.1,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: '${player.gender}  $skillLevelDisplay',
+                            style: TextStyle(
+                              color: courtColors.playerItemGenderText,
+                            ),
+                          ),
+                          if (groupInfo != null) ...[
+                            const TextSpan(text: '   '),
+                            TextSpan(
+                              text: groupInfo!.label,
+                              style: TextStyle(color: groupInfo!.color),
+                            ),
+                          ],
+                        ],
+                      ),
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // 4. 최하단 부가 정보: 플레이 정보 (구분선 없이 아이콘과 여백으로 구분)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 2.0, left: 4.0, right: 4.0),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.play_circle_outline_rounded,
+                  size: (detailFontSize - 1.0).clamp(
+                    8.0,
+                    isTablet ? 19.0 : 13.0,
+                  ),
+                  color: detailTextColor,
+                ),
+                SizedBox(width: isTablet ? 3.5 : 2.5),
+                Text(
+                  '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}',
+                  style: TextStyle(
+                    fontSize: detailFontSize,
+                    color: detailTextColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(width: isTablet ? 12.0 : 8.0),
+                Icon(
+                  Icons.hourglass_empty_rounded,
+                  size: (detailFontSize - 1.0).clamp(
+                    8.0,
+                    isTablet ? 19.0 : 13.0,
+                  ),
+                  color: detailTextColor,
+                ),
+                SizedBox(width: isTablet ? 3.5 : 2.5),
+                Text(
+                  '${player.waited}',
+                  style: TextStyle(
+                    fontSize: detailFontSize,
+                    color: detailTextColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(width: isTablet ? 12.0 : 8.0),
+                Icon(
+                  Icons.timer_outlined,
+                  size: (detailFontSize - 1.0).clamp(
+                    8.0,
+                    isTablet ? 19.0 : 13.0,
+                  ),
+                  color: detailTextColor,
+                ),
+                SizedBox(width: isTablet ? 3.5 : 2.5),
+                Text(
+                  timeDisplay,
+                  style: TextStyle(
+                    fontSize: detailFontSize,
+                    color: detailTextColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
