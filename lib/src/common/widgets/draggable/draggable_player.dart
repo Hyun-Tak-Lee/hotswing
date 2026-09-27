@@ -86,25 +86,25 @@ class DraggablePlayerItem extends StatelessWidget {
           } else {
             nameFontSize = isTablet
                 ? (availHeight * 0.20).clamp(13.0, 27.0)
-                : (availHeight * 0.17).clamp(13.0, 18.0);
+                : (availHeight * 0.19).clamp(14.0, 21.0);
             skillFontSize = isTablet
                 ? (nameFontSize * 0.85).clamp(11.0, 22.0)
-                : (nameFontSize * 0.82).clamp(11.0, 14.5);
+                : (nameFontSize * 0.85).clamp(12.0, 16.5);
             detailFontSize = isTablet
                 ? (availHeight * 0.135).clamp(11.0, 19.0)
-                : (availHeight * 0.095).clamp(9.0, 11.5);
+                : (availHeight * 0.115).clamp(10.5, 13.5);
 
             final double maxNameByWidth = isTablet
                 ? availWidth * 0.20
-                : availWidth * 0.14;
+                : availWidth * 0.17;
             if (nameFontSize > maxNameByWidth) {
-              nameFontSize = maxNameByWidth.clamp(12.0, isTablet ? 27.0 : 18.0);
+              nameFontSize = maxNameByWidth.clamp(12.0, isTablet ? 27.0 : 21.0);
               skillFontSize = isTablet
                   ? (nameFontSize * 0.85).clamp(10.0, 22.0)
-                  : (nameFontSize * 0.82).clamp(10.0, 14.5);
+                  : (nameFontSize * 0.85).clamp(11.0, 16.5);
               detailFontSize = isTablet
                   ? (nameFontSize * 0.70).clamp(10.0, 19.0)
-                  : (nameFontSize * 0.65).clamp(8.5, 11.5);
+                  : (nameFontSize * 0.65).clamp(9.5, 13.5);
             }
           }
 
@@ -112,16 +112,24 @@ class DraggablePlayerItem extends StatelessWidget {
           final double removeBtnTouchSize = isTablet ? 42.0 : 36.0;
           final double removeIconSize = isTablet ? 20.0 : 16.5;
 
-          // 시간 표시 포맷팅 (MM:SS)
-          final String minutesStr = (player.playTime ~/ 60).toString().padLeft(
-            2,
-            '0',
-          );
-          final String secondsStr = (player.playTime % 60).toString().padLeft(
-            2,
-            '0',
-          );
-          final String timeDisplay = '$minutesStr:$secondsStr';
+          // 시간 표시 포맷팅 (60분 이상: Xh Ym, 60분 미만: MM:SS)
+          final int totalSeconds = player.playTime;
+          final String timeDisplay;
+          if (totalSeconds >= 3600) {
+            final int hours = totalSeconds ~/ 3600;
+            final int minutes = (totalSeconds % 3600) ~/ 60;
+            timeDisplay = '${hours}h ${minutes}m';
+          } else {
+            final String minutesStr = (totalSeconds ~/ 60).toString().padLeft(
+              2,
+              '0',
+            );
+            final String secondsStr = (totalSeconds % 60).toString().padLeft(
+              2,
+              '0',
+            );
+            timeDisplay = '$minutesStr:$secondsStr';
+          }
 
           // 가로 너비 제약으로 인해 글자 크기(nameFontSize)가 줄어들 경우를 고려하여,
           // 간격과 여백을 최종 글자 크기에 비례하도록 동기화합니다.
@@ -741,70 +749,117 @@ class _DetailedPlayerContent extends StatelessWidget {
             ],
           ),
         ),
-        // 4. 최하단 부가 정보: 플레이 정보 (구분선 없이 아이콘과 여백으로 구분)
+        // 4. 최하단 부가 정보: 플레이 정보 (공간 부족 시 2줄로 자동 변환)
         Padding(
           padding: const EdgeInsets.only(bottom: 2.0, left: 4.0, right: 4.0),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.play_circle_outline_rounded,
-                  size: (detailFontSize - 1.0).clamp(
-                    8.0,
-                    isTablet ? 19.0 : 13.0,
-                  ),
-                  color: detailTextColor,
-                ),
-                SizedBox(width: isTablet ? 3.5 : 2.5),
-                Text(
-                  '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}',
-                  style: TextStyle(
-                    fontSize: detailFontSize,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double iconSize = (detailFontSize - 1.0).clamp(
+                8.0,
+                isTablet ? 19.0 : 13.0,
+              );
+              final double itemGap = isTablet ? 12.0 : 8.0;
+              final double iconTextGap = isTablet ? 3.5 : 2.5;
+              final TextStyle textStyle = TextStyle(
+                fontSize: detailFontSize,
+                color: detailTextColor,
+                fontWeight: FontWeight.w600,
+              );
+
+              final String playedText =
+                  '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}';
+              final String waitedText = '${player.waited}';
+
+              // 1줄 배치 시 필요한 대략적인 최소 가로 너비 추정
+              final int totalChars =
+                  playedText.length + waitedText.length + timeDisplay.length;
+              final double estimatedCharWidth = detailFontSize * 0.62;
+              final double neededWidth =
+                  (iconSize * 3) +
+                  (iconTextGap * 3) +
+                  (itemGap * 2) +
+                  (totalChars * estimatedCharWidth);
+
+              final bool shouldUseTwoRows =
+                  constraints.maxWidth.isFinite &&
+                  constraints.maxWidth < neededWidth;
+
+              final Widget gameItem = Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.play_circle_outline_rounded,
+                    size: iconSize,
                     color: detailTextColor,
-                    fontWeight: FontWeight.w600,
                   ),
-                ),
-                SizedBox(width: isTablet ? 12.0 : 8.0),
-                Icon(
-                  Icons.hourglass_empty_rounded,
-                  size: (detailFontSize - 1.0).clamp(
-                    8.0,
-                    isTablet ? 19.0 : 13.0,
-                  ),
-                  color: detailTextColor,
-                ),
-                SizedBox(width: isTablet ? 3.5 : 2.5),
-                Text(
-                  '${player.waited}',
-                  style: TextStyle(
-                    fontSize: detailFontSize,
+                  SizedBox(width: iconTextGap),
+                  Text(playedText, style: textStyle),
+                ],
+              );
+
+              final Widget waitItem = Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.hourglass_empty_rounded,
+                    size: iconSize,
                     color: detailTextColor,
-                    fontWeight: FontWeight.w600,
                   ),
-                ),
-                SizedBox(width: isTablet ? 12.0 : 8.0),
-                Icon(
-                  Icons.timer_outlined,
-                  size: (detailFontSize - 1.0).clamp(
-                    8.0,
-                    isTablet ? 19.0 : 13.0,
-                  ),
-                  color: detailTextColor,
-                ),
-                SizedBox(width: isTablet ? 3.5 : 2.5),
-                Text(
-                  timeDisplay,
-                  style: TextStyle(
-                    fontSize: detailFontSize,
+                  SizedBox(width: iconTextGap),
+                  Text(waitedText, style: textStyle),
+                ],
+              );
+
+              final Widget timeItem = Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.timer_outlined,
+                    size: iconSize,
                     color: detailTextColor,
-                    fontWeight: FontWeight.w600,
                   ),
+                  SizedBox(width: iconTextGap),
+                  Text(timeDisplay, style: textStyle),
+                ],
+              );
+
+              if (shouldUseTwoRows) {
+                return FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          gameItem,
+                          SizedBox(width: itemGap),
+                          waitItem,
+                        ],
+                      ),
+                      const SizedBox(height: 1.5),
+                      timeItem,
+                    ],
+                  ),
+                );
+              }
+
+              return FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    gameItem,
+                    SizedBox(width: itemGap),
+                    waitItem,
+                    SizedBox(width: itemGap),
+                    timeItem,
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ],

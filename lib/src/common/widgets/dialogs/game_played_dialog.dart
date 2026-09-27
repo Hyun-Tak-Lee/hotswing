@@ -72,9 +72,18 @@ class GamePlayedDialog extends StatelessWidget {
         return a.key.compareTo(b.key);
       });
 
-    // 상세 시간 포맷팅
-    final String formattedPlayTime =
-        '${player.playTime ~/ 60}분 ${player.playTime % 60}초';
+    // 상세 시간 포맷팅 (1시간 이상 시 시간 단위 추가)
+    final int totalPlaySeconds = player.playTime;
+    final String formattedPlayTime;
+    if (totalPlaySeconds >= 3600) {
+      final int hours = totalPlaySeconds ~/ 3600;
+      final int minutes = (totalPlaySeconds % 3600) ~/ 60;
+      final int seconds = totalPlaySeconds % 60;
+      formattedPlayTime = '$hours시간 $minutes분 $seconds초';
+    } else {
+      formattedPlayTime =
+          '${totalPlaySeconds ~/ 60}분 ${totalPlaySeconds % 60}초';
+    }
 
     // 종합 대시보드 요약 카드 위젯 정의
     final playerSummaryCard = Container(
