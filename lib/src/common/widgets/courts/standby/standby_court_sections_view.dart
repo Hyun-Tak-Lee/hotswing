@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
+import 'package:hotswing/src/common/widgets/courts/standby/animated_court_entry.dart';
+import 'package:hotswing/src/common/widgets/courts/standby/standby_gradient_button.dart';
 
 /// 대기 코트들의 목록과 코트 추가 영역을 반응형으로 렌더링하는 위젯.
 class StandbyCourtSectionsView extends StatelessWidget {
@@ -75,7 +77,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                           int sectionIndex = entry.key;
                           List<Player?> item = entry.value;
 
-                          return _AnimatedCourtEntry(
+                          return AnimatedCourtEntry(
                             key: ObjectKey(item),
                             axis: Axis.horizontal,
                             onRemove: () =>
@@ -107,7 +109,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                   },
                                   headerActions: [
                                     // 새로고침 버튼
-                                    _StandbyGradientButton(
+                                    StandbyGradientButton(
                                       width: isTablet ? 50.0 : 40.0,
                                       height: isTablet ? 45.0 : 30.0,
                                       colors: [
@@ -131,7 +133,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                       ),
                                     ),
                                     // 자동 매칭 버튼
-                                    _StandbyGradientButton(
+                                    StandbyGradientButton(
                                       width: isTablet ? 120.0 : 80.0,
                                       height: isTablet ? 45.0 : 30.0,
                                       colors: [
@@ -155,7 +157,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                       ),
                                     ),
                                     // 코트 삭제 버튼
-                                    _StandbyGradientButton(
+                                    StandbyGradientButton(
                                       width: isTablet ? 50.0 : 40.0,
                                       height: isTablet ? 45.0 : 30.0,
                                       colors: [
@@ -235,7 +237,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                             .toList();
                                       },
                                       child: IgnorePointer(
-                                        child: _StandbyGradientButton(
+                                        child: StandbyGradientButton(
                                           width: isTablet ? 50.0 : 40.0,
                                           height: isTablet ? 45.0 : 30.0,
                                           colors: [
@@ -308,7 +310,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                           int sectionIndex = entry.key;
                           List<Player?> item = entry.value;
 
-                          return _AnimatedCourtEntry(
+                          return AnimatedCourtEntry(
                             key: ObjectKey(item),
                             axis: Axis.vertical,
                             onRemove: () =>
@@ -340,7 +342,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                   },
                                   headerActions: [
                                     // 새로고침 버튼
-                                    _StandbyGradientButton(
+                                    StandbyGradientButton(
                                       width: isTablet ? 50.0 : 40.0,
                                       height: isTablet ? 45.0 : 30.0,
                                       colors: [
@@ -364,7 +366,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                       ),
                                     ),
                                     // 자동 매칭 버튼
-                                    _StandbyGradientButton(
+                                    StandbyGradientButton(
                                       width: isTablet ? 120.0 : 80.0,
                                       height: isTablet ? 45.0 : 30.0,
                                       colors: [
@@ -388,7 +390,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                       ),
                                     ),
                                     // 코트 삭제 버튼
-                                    _StandbyGradientButton(
+                                    StandbyGradientButton(
                                       width: isTablet ? 50.0 : 40.0,
                                       height: isTablet ? 45.0 : 30.0,
                                       colors: [
@@ -468,7 +470,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                             .toList();
                                       },
                                       child: IgnorePointer(
-                                        child: _StandbyGradientButton(
+                                        child: StandbyGradientButton(
                                           width: isTablet ? 50.0 : 40.0,
                                           height: isTablet ? 45.0 : 30.0,
                                           colors: [
@@ -538,126 +540,6 @@ class StandbyCourtSectionsView extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _StandbyGradientButton extends StatelessWidget {
-  const _StandbyGradientButton({
-    required this.width,
-    required this.height,
-    required this.colors,
-    required this.onTap,
-    required this.child,
-  });
-
-  final double width;
-  final double height;
-  final List<Color> colors;
-  final VoidCallback onTap;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: colors,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colors.last.withAlpha(80),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(15.0),
-          onTap: onTap,
-          child: Center(child: child),
-        ),
-      ),
-    );
-  }
-}
-
-/// 코트 카드 추가 및 삭제 시 자연스러운 크기 확장/축소(SizeTransition) 및 페이드 애니메이션을 제공하는 래퍼 위젯.
-class _AnimatedCourtEntry extends StatefulWidget {
-  final Axis axis;
-  final VoidCallback onRemove;
-  final Widget Function(BuildContext context, VoidCallback startRemove) builder;
-
-  const _AnimatedCourtEntry({
-    super.key,
-    required this.builder,
-    required this.onRemove,
-    this.axis = Axis.vertical,
-  });
-
-  @override
-  State<_AnimatedCourtEntry> createState() => _AnimatedCourtEntryState();
-}
-
-class _AnimatedCourtEntryState extends State<_AnimatedCourtEntry>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 300),
-  );
-  late final Animation<double> _fadeAnimation = CurvedAnimation(
-    parent: _controller,
-    curve: const Interval(0.15, 1.0, curve: Curves.easeIn),
-  );
-  late final Animation<double> _sizeAnimation = CurvedAnimation(
-    parent: _controller,
-    curve: Curves.easeOutCubic,
-  );
-  bool _isRemoving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _startRemove() {
-    if (_isRemoving) return;
-    _isRemoving = true;
-    _controller.reverse().then((_) {
-      if (mounted) {
-        widget.onRemove();
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: ClipRect(
-        child: SizeTransition(
-          sizeFactor: _sizeAnimation,
-          axis: widget.axis,
-          axisAlignment: -1.0,
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: widget.builder(context, _startRemove),
-          ),
-        ),
-      ),
     );
   }
 }

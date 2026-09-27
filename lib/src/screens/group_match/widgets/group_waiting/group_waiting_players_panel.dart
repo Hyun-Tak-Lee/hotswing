@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
-import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
+import 'package:hotswing/src/common/widgets/draggable/player_drop_zone.dart';
 import 'package:hotswing/src/models/ui/player_drag_data.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/models/players/player.dart';
@@ -10,23 +10,11 @@ import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
 import 'package:hotswing/src/common/constants/player_constants.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
-import 'package:hotswing/src/screens/solo_match/widgets/waiting_panel_header.dart';
+import 'package:hotswing/src/common/widgets/waiting/waiting_panel_header.dart';
+import 'package:hotswing/src/common/widgets/waiting/waiting_panel_landscape_header.dart';
 import 'package:hotswing/src/screens/group_match/widgets/edit_group_name_dialog.dart';
-
-/// 대기 패널의 탭(전체, 그룹, 개인) 항목 데이터 모델.
-class WaitingTabItem {
-  /// UI에 노출될 탭 라벨 (예: "전체", "그룹 A", "개인").
-  final String label;
-
-  /// 탭 유형 ('all', 'group', 'individual').
-  final String type;
-
-  /// 그룹 유형일 때 필터링에 매핑할 실제 그룹 라벨 (예: "A").
-  final String? groupLabel;
-
-  /// [WaitingTabItem] 생성자.
-  WaitingTabItem({required this.label, required this.type, this.groupLabel});
-}
+import 'package:hotswing/src/screens/group_match/widgets/group_waiting/group_waiting_tab_bar.dart';
+import 'package:hotswing/src/screens/group_match/widgets/group_waiting/waiting_tab_item.dart';
 
 /// 단체전 화면에서 대기 중인 플레이어 목록 및 그룹별 탭을 표시하는 패널 위젯.
 class GroupWaitingPlayersPanel extends StatefulWidget {
@@ -145,7 +133,7 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                               ),
                               child: Column(
                                 children: [
-                                  _GroupWaitingTabBar(
+                                  GroupWaitingTabBar(
                                     tabItems: tabItems,
                                     allUnassignedPlayers: allUnassignedPlayers,
                                     isTablet: isTablet,
@@ -269,7 +257,7 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                               ),
                               child: Column(
                                 children: [
-                                  _GroupWaitingTabBar(
+                                  GroupWaitingTabBar(
                                     tabItems: tabItems,
                                     allUnassignedPlayers: allUnassignedPlayers,
                                     isTablet: isTablet,
@@ -456,109 +444,3 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
   }
 }
 
-/// 교류전 대기 패널의 탭 목록을 표시하고, 선택된 그룹 탭에만 수정 아이콘을 제공하는 위젯.
-class _GroupWaitingTabBar extends StatelessWidget {
-  final List<WaitingTabItem> tabItems;
-  final List<Player> allUnassignedPlayers;
-  final bool isTablet;
-  final void Function(WaitingTabItem tabItem) onEditGroupName;
-
-  const _GroupWaitingTabBar({
-    required this.tabItems,
-    required this.allUnassignedPlayers,
-    required this.isTablet,
-    required this.onEditGroupName,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final tabController = DefaultTabController.of(context);
-    final baseColors = context.baseColors;
-    final playersProvider = context.watch<PlayersProvider>();
-
-    return AnimatedBuilder(
-      animation: tabController,
-      builder: (context, _) {
-        final selectedIndex = tabController.index;
-        return TabBar(
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
-          labelColor: baseColors.primaryAccent,
-          unselectedLabelColor: baseColors.textSecondary,
-          indicatorColor: baseColors.primaryAccent,
-          indicatorSize: TabBarIndicatorSize.label,
-          dividerColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          tabs: List.generate(tabItems.length, (index) {
-            final tabItem = tabItems[index];
-            final filteredCount = _filterPlayers(
-              tabItem,
-              allUnassignedPlayers,
-              playersProvider,
-            ).length;
-            final isSelected = index == selectedIndex;
-            final isEditableGroup = tabItem.type == 'group';
-
-            return Tab(
-              child: GestureDetector(
-                onLongPress: isEditableGroup
-                    ? () => onEditGroupName(tabItem)
-                    : null,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${tabItem.label} ($filteredCount)',
-                      style: TextStyle(
-                        fontSize: isTablet ? 15.0 : 13.0,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.w500,
-                      ),
-                    ),
-                    if (isSelected && isEditableGroup) ...[
-                      const SizedBox(width: 3.0),
-                      GestureDetector(
-                        onTap: () => onEditGroupName(tabItem),
-                        behavior: HitTestBehavior.opaque,
-                        child: Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: Icon(
-                            Icons.edit_outlined,
-                            size: isTablet ? 14.0 : 12.0,
-                            color: baseColors.primaryAccent,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            );
-          }),
-        );
-      },
-    );
-  }
-
-  List<Player> _filterPlayers(
-    WaitingTabItem tabItem,
-    List<Player> players,
-    PlayersProvider provider,
-  ) {
-    switch (tabItem.type) {
-      case 'all':
-        return players;
-      case 'individual':
-        return players
-            .where((p) => provider.getGroupInfo(p.id) == null)
-            .toList();
-      case 'group':
-        return players.where((p) {
-          final info = provider.getGroupInfo(p.id);
-          return info != null && info.label == tabItem.groupLabel;
-        }).toList();
-      default:
-        return players;
-    }
-  }
-}

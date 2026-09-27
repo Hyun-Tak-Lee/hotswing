@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
-import 'package:hotswing/src/common/widgets/courts/assigned_court.dart';
-import 'package:hotswing/src/common/widgets/courts/standby_court.dart';
+import 'package:hotswing/src/common/widgets/courts/assigned/court_sections_view.dart';
+import 'package:hotswing/src/common/widgets/courts/standby/standby_court_sections_view.dart';
 import 'package:hotswing/src/models/ui/player_drag_data.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/screens/solo_match/widgets/court_view_selector.dart';
-import 'package:hotswing/src/screens/group_match/widgets/group_waiting_players_panel.dart';
+import 'package:hotswing/src/screens/group_match/widgets/group_waiting/group_waiting_players_panel.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 

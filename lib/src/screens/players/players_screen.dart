@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/screens/players/widgets/provider/players_view_model.dart';
 import 'package:hotswing/src/screens/players/widgets/player_list_tile.dart';
-import 'package:hotswing/src/screens/players/widgets/players_filter_bottom_sheet.dart';
+import 'package:hotswing/src/screens/players/widgets/players_filter/players_filter_bottom_sheet.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/common/widgets/dialogs/confirmation_dialog.dart';
-import 'package:hotswing/src/screens/players/widgets/player_edit_form.dart';
+import 'package:hotswing/src/screens/players/widgets/player_edit/player_edit_form.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 

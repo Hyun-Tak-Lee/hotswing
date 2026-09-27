@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
-import 'package:hotswing/src/common/widgets/draggable/draggable_player.dart';
+import 'package:hotswing/src/common/widgets/draggable/player_drop_zone.dart';
 import 'package:hotswing/src/models/ui/player_drag_data.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
-import 'package:hotswing/src/screens/solo_match/widgets/waiting_panel_header.dart';
+import 'package:hotswing/src/common/widgets/waiting/waiting_panel_header.dart';
+import 'package:hotswing/src/common/widgets/waiting/waiting_panel_landscape_header.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:provider/provider.dart';

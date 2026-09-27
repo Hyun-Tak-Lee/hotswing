@@ -9,7 +9,7 @@ import 'package:hotswing/src/common/widgets/dialogs/manager_auth_overlay.dart';
 import 'package:hotswing/src/screens/settings/settings_screen.dart';
 import 'package:hotswing/src/screens/main/widgets/navigation/main_navigation_bar.dart';
 import 'package:hotswing/src/screens/main/widgets/navigation/main_navigation_rail.dart';
-import 'package:hotswing/src/screens/main/widgets/menu/left_side_menu.dart';
+import 'package:hotswing/src/screens/main/widgets/menu/left_side/left_side_menu.dart';
 import 'package:hotswing/src/screens/main/widgets/menu/right_side_menu.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
