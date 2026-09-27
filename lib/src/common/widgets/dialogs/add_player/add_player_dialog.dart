@@ -103,7 +103,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         final titleStyle = ResponsiveUtils.getResponsiveStyle(
           context,
           textTheme.headlineSmall,
-        )?.copyWith(fontWeight: FontWeight.bold);
+        )?.copyWith(fontWeight: FontWeight.bold, color: baseColors.textPrimary);
         final buttonStyle = ResponsiveUtils.getResponsiveStyle(
           context,
           textTheme.titleMedium,
