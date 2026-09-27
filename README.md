@@ -17,13 +17,19 @@ SECRET_KEY=''
 
 ## Release 배포
 
-### Keystore
+### 서명 설정 (Keystore)
 
-key 파일을 아래 경로에 저장하세요.
+Android 릴리즈 빌드를 위해 `android/key.properties` 파일을 생성하고 서명 정보를 입력합니다. (`key.properties`와 키 파일은 gitignore 대상입니다.)
 
+```properties
+storePassword=<저장소 비밀번호>
+keyPassword=<키 비밀번호>
+keyAlias=<키 별칭>
+storeFile=<키 파일 경로>
 ```
-C:\Users\12gus\hotswing_key\hotswing.keystore
-```
+
+- `storeFile`은 절대 경로 또는 프로젝트 기준 상대 경로를 지원합니다. (경로 구분자는 `/` 권장)
+- Play Store 업로드 키 관련 설명은 [docs/playstore_signing.md](docs/playstore_signing.md)를 참고하세요.
 
 ### APK 빌드
 
@@ -31,11 +37,7 @@ C:\Users\12gus\hotswing_key\hotswing.keystore
 flutter build apk --release
 ```
 
-산출물:
-
-```
-/build/app/outputs/flutter-apk/app-release.apk
-```
+산출물: `build/app/outputs/flutter-apk/app-release.apk`
 
 ### App Bundle 빌드 (Play Store)
 
@@ -43,11 +45,7 @@ flutter build apk --release
 flutter build appbundle --release
 ```
 
-산출물:
-
-```
-/build/app/outputs/bundle/release/app-release.aab
-```
+산출물: `build/app/outputs/bundle/release/app-release.aab`
 
 ---
 
@@ -59,7 +57,7 @@ dart run build_runner clean
 
 ---
 
-## 성능 프로파일링 (CPU / 메모리 모니터링)
+## 성능 프로파일링
 
 실제 기기에서 성능 및 CPU/메모리 사용량을 측정할 때 사용합니다.
 
@@ -67,36 +65,8 @@ dart run build_runner clean
 flutter run --profile
 ```
 
-- 실행 후 터미널에 출력되는 **Flutter DevTools** URL을 브라우저에서 열어 CPU Profiler 및 Performance/Memory 탭에서 실시간 리소스 사용량을 모니터링할 수 있습니다.
-- DevTools 바로 실행:
-  ```bash
-  dart devtools
-  ```
+실행 후 출력되는 Flutter DevTools URL을 브라우저에서 열거나, 아래 명령어로 별도 실행할 수 있습니다.
 
----
-
-## 구글 플레이스토어 앱 등록 키
-
-구글 플레이스토어에 앱을 배포하려면 디지털 서명이 필요합니다. Play 앱 서명(Play App Signing)을 사용할 때 주로 다루는 키는 아래 두 가지입니다.
-
-### 1. 업로드 키 (Upload Key)
-
-| 항목      | 내용                                                                                   |
-| --------- | -------------------------------------------------------------------------------------- |
-| 보유 주체 | 앱 개발자                                                                              |
-| 기술 형식 | Java Keystore (`.jks` 또는 `.keystore`), 로컬 저장 (RSA 2048비트 이상)                 |
-| 용도      | `.aab`를 Play Console에 업로드하기 전 서명. Google이 업로드 주체를 인증하는 데 사용    |
-| 관리·보안 | 개발자가 안전하게 보관. 분실·유출 시 Google 고객센터를 통해 새 업로드 키로 재설정 가능 |
-
-### 2. 앱 서명 키 (App Signing Key)
-
-| 항목      | 내용                                                                                                        |
-| --------- | ----------------------------------------------------------------------------------------------------------- |
-| 보유 주체 | Google Play (Play 앱 서명 사용 시)                                                                          |
-| 기술 형식 | 공개 인증서 (`.der` / `.pem`)와 연결, Google KMS로 보호 (RSA 4096비트)                                      |
-| 용도      | 사용자 기기에 설치되는 최종 APK에 서명                                                                      |
-| 관리·보안 | 과거에는 개발자가 직접 관리(분실 시 업데이트 불가). 현재는 Play 앱 서명 등록 시 Google이 안전하게 보관·관리 |
-
-### 요약
-
-개발자는 **업로드 키**로 앱 번들에 서명한 뒤 콘솔에 업로드하면 됩니다. 이후 사용자 기기에 배포될 앱의 생성·서명은 **앱 서명 키**를 통해 Google Play가 처리합니다.
+```bash
+dart devtools
+```
