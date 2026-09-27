@@ -76,15 +76,21 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
       color: baseColors.cardBg,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: _isMenuOpen ? baseColors.primaryAccent : formColors.inputBorder,
-          width: 1.0,
-        ),
+        side: BorderSide(color: formColors.inputBorder, width: 1.0),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            contentPadding: const EdgeInsets.only(
+              left: 22.0,
+              right: 12.0,
+              top: 2.0,
+              bottom: 2.0,
+            ),
+            minVerticalPadding: 0,
             onTap: () {
               setState(() {
                 _isMenuOpen = !_isMenuOpen;
@@ -107,9 +113,9 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
           if (_isMenuOpen) ...[
             Divider(height: 1, thickness: 1, color: formColors.filterDivider),
             ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 220),
+              constraints: const BoxConstraints(maxHeight: 200),
               child: ListView.builder(
-                padding: EdgeInsets.zero,
+                padding: const EdgeInsets.symmetric(vertical: 2.0),
                 shrinkWrap: true,
                 itemCount: widget.options.length,
                 itemBuilder: (BuildContext context, int index) {
@@ -118,9 +124,18 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
                   final isCurrentPlayer = optionId == widget.currentId;
                   final isSelected = _selectedOptions.contains(optionId);
                   final isGrouped = widget.groupsOptionId.contains(optionId);
-                  final isEnabled = isSelected || !(isGrouped || isCurrentPlayer);
+                  final isEnabled =
+                      isSelected || !(isGrouped || isCurrentPlayer);
 
                   return CheckboxListTile(
+                    dense: true,
+                    visualDensity: VisualDensity.compact,
+                    contentPadding: const EdgeInsets.only(
+                      left: 22.0,
+                      right: 10.0,
+                      top: 0.0,
+                      bottom: 0.0,
+                    ),
                     title: Text(
                       option,
                       style: TextStyle(
@@ -207,13 +222,20 @@ class _SelectedOptionsTitle extends StatelessWidget {
       if (index != -1) {
         selectedChips.add(
           Chip(
-            label: Text(options[index], style: TextStyle(fontSize: chipFontSize)),
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
+            labelPadding: const EdgeInsets.symmetric(horizontal: 2.0),
+            label: Text(
+              options[index],
+              style: TextStyle(fontSize: chipFontSize),
+            ),
             onDeleted: () => onDeleted(selectedId),
           ),
         );
       }
     }
 
-    return Wrap(spacing: 6.0, runSpacing: 6.0, children: selectedChips);
+    return Wrap(spacing: 4.0, runSpacing: 4.0, children: selectedChips);
   }
 }

@@ -1044,7 +1044,7 @@ class _PlayerGroupField extends StatelessWidget {
       ..sort((a, b) => a.name.compareTo(b.name));
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 60.0),
+      constraints: const BoxConstraints(minHeight: 46.0),
       child: MultiSelectForm(
         title: '그룹 플레이어',
         options: sortedPlayers.map((p) => p.name).toList(),

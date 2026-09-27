@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/common/widgets/dialogs/confirmation_dialog.dart';
+import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
 /// 메인 화면 우측 서랍(Drawer) 옵션 메뉴 위젯.
@@ -14,23 +15,23 @@ class RightSideMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconAndFontSize = isMobileSize ? 24.0 : 32.0;
+    final isMobile = isMobileSize || ResponsiveUtils.isMobile(context);
+    final isTablet = ResponsiveUtils.isTablet(context);
+
+    final drawerWidth = isMobile
+        ? MediaQuery.of(context).size.width * 0.75
+        : MediaQuery.of(context).size.width * 0.55;
 
     return Drawer(
-      width: isMobileSize
-          ? MediaQuery.of(context).size.width * 0.75
-          : MediaQuery.of(context).size.width * 0.60,
+      width: drawerWidth,
       child: ListView.builder(
         padding: EdgeInsets.zero,
-        itemCount: 2, // 0: Header, 1: 플레이 횟수 초기화 (향후 옵션 확장 용이)
+        itemCount: 2, // 0: Header, 1: 플레이 횟수 초기화
         itemBuilder: (context, index) {
           if (index == 0) {
-            return RightSideMenuHeader(
-              isMobileSize: isMobileSize,
-              iconAndFontSize: iconAndFontSize,
-            );
+            return RightSideMenuHeader(isMobile: isMobile, isTablet: isTablet);
           }
-          return ResetPlayerStatsTile(iconAndFontSize: iconAndFontSize);
+          return ResetPlayerStatsTile(isMobile: isMobile, isTablet: isTablet);
         },
       ),
     );
@@ -42,22 +43,25 @@ class RightSideMenuHeader extends StatelessWidget {
   /// [RightSideMenuHeader] 생성자.
   const RightSideMenuHeader({
     super.key,
-    required this.isMobileSize,
-    required this.iconAndFontSize,
+    required this.isMobile,
+    required this.isTablet,
   });
 
   /// 모바일 화면 크기 여부.
-  final bool isMobileSize;
+  final bool isMobile;
 
-  /// 아이콘 및 폰트 크기.
-  final double iconAndFontSize;
+  /// 태블릿 화면 크기 여부.
+  final bool isTablet;
 
   @override
   Widget build(BuildContext context) {
     final baseColors = context.baseColors;
+    final double headerHeight = isTablet ? 160.0 : 110.0;
+    final double titleFontSize = isTablet ? 22.0 : 17.0;
+    final double iconSize = isTablet ? 26.0 : 20.0;
 
     return SizedBox(
-      height: isMobileSize ? 120 : 180,
+      height: headerHeight,
       child: DrawerHeader(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -67,12 +71,18 @@ class RightSideMenuHeader extends StatelessWidget {
           ),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
           children: [
+            Icon(
+              Icons.tune_rounded,
+              size: iconSize,
+              color: baseColors.textPrimary,
+            ),
+            const SizedBox(width: 8.0),
             Text(
               '옵션',
               style: TextStyle(
-                fontSize: iconAndFontSize,
+                fontSize: titleFontSize,
+                fontWeight: FontWeight.bold,
                 color: baseColors.textPrimary,
               ),
             ),
@@ -86,20 +96,52 @@ class RightSideMenuHeader extends StatelessWidget {
 /// 플레이어들의 경기 참여 기록(플레이 횟수)을 초기화할 수 있는 메뉴 타일 위젯.
 class ResetPlayerStatsTile extends StatelessWidget {
   /// [ResetPlayerStatsTile] 생성자.
-  const ResetPlayerStatsTile({super.key, required this.iconAndFontSize});
+  const ResetPlayerStatsTile({
+    super.key,
+    required this.isMobile,
+    required this.isTablet,
+  });
 
-  /// 아이콘 및 폰트 크기.
-  final double iconAndFontSize;
+  /// 모바일 화면 크기 여부.
+  final bool isMobile;
+
+  /// 태블릿 화면 크기 여부.
+  final bool isTablet;
 
   @override
   Widget build(BuildContext context) {
+    final baseColors = context.baseColors;
+    final formColors = context.formColors;
     final playersProvider = context.read<PlayersProvider>();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    final double titleFontSize = isTablet ? 17.0 : 15.0;
+    final double subtitleFontSize = isTablet ? 13.0 : 12.0;
+    final double iconSize = isTablet ? 24.0 : 20.0;
+
+    return Container(
+      margin: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12.0 : 16.0,
+        vertical: 6.0,
+      ),
+      decoration: BoxDecoration(
+        color: baseColors.cardBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: formColors.inputBorder.withValues(alpha: 0.5),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          borderRadius: BorderRadius.circular(12),
           onTap: () {
             showDialog(
               context: context,
@@ -124,32 +166,26 @@ class ResetPlayerStatsTile extends StatelessWidget {
               },
             );
           },
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.orange.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.orange.withValues(alpha: 0.2),
-                width: 1,
-              ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 14.0 : 16.0,
+              vertical: isMobile ? 12.0 : 14.0,
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.15),
+                    color: Colors.orange.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.history_edu_rounded,
-                    size: iconAndFontSize,
-                    color: Colors.orange.shade800,
+                    size: iconSize,
+                    color: Colors.orange.shade700,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,18 +193,17 @@ class ResetPlayerStatsTile extends StatelessWidget {
                       Text(
                         '플레이 횟수 초기화',
                         style: TextStyle(
-                          fontSize: iconAndFontSize * 0.75,
-                          color: Colors.orange.shade900,
+                          fontSize: titleFontSize,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: -0.5,
+                          color: baseColors.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Text(
                         '참가 인원의 기록을 0으로 설정합니다',
                         style: TextStyle(
-                          fontSize: iconAndFontSize * 0.5,
-                          color: Colors.orange.shade700.withValues(alpha: 0.8),
+                          fontSize: subtitleFontSize,
+                          color: baseColors.textSecondary,
                         ),
                       ),
                     ],
@@ -176,8 +211,8 @@ class ResetPlayerStatsTile extends StatelessWidget {
                 ),
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: Colors.orange.withValues(alpha: 0.5),
-                  size: iconAndFontSize * 0.8,
+                  color: baseColors.textSecondary.withValues(alpha: 0.5),
+                  size: iconSize,
                 ),
               ],
             ),

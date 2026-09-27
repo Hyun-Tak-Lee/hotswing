@@ -330,7 +330,7 @@ class _PlayerListItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final baseColors = context.baseColors;
     final playerColors = context.playerColors;
-    final double nameFontSize = isTablet ? 18.0 : 15.0;
+    final double nameFontSize = isTablet ? 21.0 : 17.5;
     final double iconSize = isTablet ? 24.0 : 19.0;
     final EdgeInsets buttonPadding = EdgeInsets.all(isMobile ? 4.0 : 6.0);
 
