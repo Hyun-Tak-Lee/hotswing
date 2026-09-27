@@ -46,6 +46,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   String? _selectedSkillLevel;
   int? _playCount;
   int? _waitCount;
+  int? _lateCount;
   List<ObjectId> _groups = [];
 
   final List<PlayerGender> _genders = PlayerGender.values;
@@ -65,6 +66,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _isManager = widget.player!.role == "manager";
       _playCount = widget.player!.played;
       _waitCount = widget.player!.waited;
+      _lateCount = widget.player!.lated;
       _groups = List<ObjectId>.from(widget.player!.groups);
     }
     _rateController = TextEditingController(text: _rate?.toString() ?? '');
@@ -276,8 +278,10 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                         isManager: _isManager,
                         playCount: _playCount,
                         waitCount: _waitCount,
+                        lateCount: _lateCount,
                         onPlayCountSaved: (value) => _playCount = value,
                         onWaitCountSaved: (value) => _waitCount = value,
+                        onLateCountSaved: (value) => _lateCount = value,
                       ),
                     ],
                   ],
@@ -386,8 +390,9 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         'grade': _selectedSkillLevel,
         'gender': _selectedGender?.value,
         'role': role,
-        'played': _playCount,
-        'waited': _waitCount,
+        'played': _playCount ?? 0,
+        'waited': _waitCount ?? 0,
+        'lated': _lateCount ?? 0,
         'groups': _groups,
         'loaded': _isLoaded,
         'player': _player,
@@ -423,6 +428,7 @@ InputDecoration _playerInputDecoration(
   required String labelText,
   required bool isManager,
   double? customVerticalPadding,
+  double? customHorizontalPadding,
   Widget? suffixIcon,
   bool isDisabled = false,
 }) {
@@ -469,7 +475,7 @@ InputDecoration _playerInputDecoration(
       ),
     ),
     contentPadding: EdgeInsets.symmetric(
-      horizontal: 16,
+      horizontal: customHorizontalPadding ?? 16,
       vertical:
           customVerticalPadding ??
           (ResponsiveUtils.isTablet(context) ? 16.0 : 12.0),
@@ -764,8 +770,8 @@ class _DialogSkillChipButton extends StatelessWidget {
             color: isSelected
                 ? formColors.skillChipActiveBg
                 : (hasError
-                    ? Theme.of(context).colorScheme.error
-                    : formColors.inputBorder),
+                      ? Theme.of(context).colorScheme.error
+                      : formColors.inputBorder),
             width: 1.0,
           ),
         ),
@@ -1070,8 +1076,10 @@ class _PlayerStatsRow extends StatelessWidget {
     required this.isManager,
     required this.playCount,
     required this.waitCount,
+    required this.lateCount,
     required this.onPlayCountSaved,
     required this.onWaitCountSaved,
+    required this.onLateCountSaved,
   });
 
   final BaseColors baseColors;
@@ -1081,11 +1089,17 @@ class _PlayerStatsRow extends StatelessWidget {
   final bool isManager;
   final int? playCount;
   final int? waitCount;
+  final int? lateCount;
   final ValueChanged<int?> onPlayCountSaved;
   final ValueChanged<int?> onWaitCountSaved;
+  final ValueChanged<int?> onLateCountSaved;
 
   @override
   Widget build(BuildContext context) {
+    final bool isTablet = ResponsiveUtils.isTablet(context);
+    final double spacing = isTablet ? 12 : 8;
+    final double horizontalPadding = isTablet ? 16 : 8;
+
     return Row(
       children: [
         Expanded(
@@ -1099,18 +1113,24 @@ class _PlayerStatsRow extends StatelessWidget {
               labelText: '플레이 횟수',
               isManager: isManager,
               isDisabled: false,
+              customHorizontalPadding: horizontalPadding,
             ),
             style: labelStyle,
             keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              const _LeadingZeroInputFormatter(),
+              LengthLimitingTextInputFormatter(2),
+            ],
             validator: (value) {
               if (value == null || value.isEmpty) return '입력 필요';
               return null;
             },
-            onSaved: (value) => onPlayCountSaved(int.tryParse(value ?? '0')),
+            onSaved: (value) =>
+                onPlayCountSaved(int.tryParse(value ?? '0') ?? 0),
           ),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: spacing),
         Expanded(
           child: TextFormField(
             initialValue: waitCount?.toString(),
@@ -1122,18 +1142,79 @@ class _PlayerStatsRow extends StatelessWidget {
               labelText: '대기 횟수',
               isManager: isManager,
               isDisabled: false,
+              customHorizontalPadding: horizontalPadding,
             ),
             style: labelStyle,
             keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              const _LeadingZeroInputFormatter(),
+              LengthLimitingTextInputFormatter(2),
+            ],
             validator: (value) {
               if (value == null || value.isEmpty) return '입력 필요';
               return null;
             },
-            onSaved: (value) => onWaitCountSaved(int.tryParse(value ?? '0')),
+            onSaved: (value) =>
+                onWaitCountSaved(int.tryParse(value ?? '0') ?? 0),
+          ),
+        ),
+        SizedBox(width: spacing),
+        Expanded(
+          child: TextFormField(
+            initialValue: lateCount?.toString(),
+            decoration: _playerInputDecoration(
+              context,
+              baseColors: baseColors,
+              playerColors: playerColors,
+              formColors: formColors,
+              labelText: '지각 횟수',
+              isManager: isManager,
+              isDisabled: false,
+              customHorizontalPadding: horizontalPadding,
+            ),
+            style: labelStyle,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              const _LeadingZeroInputFormatter(),
+              LengthLimitingTextInputFormatter(2),
+            ],
+            validator: (value) {
+              if (value == null || value.isEmpty) return '입력 필요';
+              return null;
+            },
+            onSaved: (value) =>
+                onLateCountSaved(int.tryParse(value ?? '0') ?? 0),
           ),
         ),
       ],
     );
+  }
+}
+
+/// 숫자 입력 시 선행 '0'을 자동으로 제거하여 (예: '0' 상태에서 '9' 입력 시 '09'가 아닌 '9'가 됨)
+/// 원활한 두 자리 숫자 입력을 돕는 포맷터입니다.
+class _LeadingZeroInputFormatter extends TextInputFormatter {
+  const _LeadingZeroInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+    if (text.isEmpty) return newValue;
+
+    // '0'으로 시작하고 길이가 2자 이상인 경우 선행 '0' 제거
+    if (text.length > 1 && text.startsWith('0')) {
+      final stripped = text.replaceFirst(RegExp(r'^0+'), '');
+      final result = stripped.isEmpty ? '0' : stripped;
+      return TextEditingValue(
+        text: result,
+        selection: TextSelection.collapsed(offset: result.length),
+      );
+    }
+    return newValue;
   }
 }

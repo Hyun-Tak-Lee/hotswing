@@ -207,6 +207,7 @@ class PlayersProvider with ChangeNotifier {
     required String newRole,
     required int newPlayed,
     required int newWaited,
+    required int newLated,
     required List<ObjectId> newGroups,
   }) {
     if (newName.length > 10) return;
@@ -246,7 +247,7 @@ class PlayersProvider with ChangeNotifier {
       newGender,
       newPlayed,
       newWaited,
-      playerToUpdate.lated,
+      newLated,
       playerToUpdate.playTime,
       isGroupChanged ? newGroups : oldGroups,
       null,

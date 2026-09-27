@@ -151,10 +151,11 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
             newRate: result['rate'] as int,
             newGrade: result['grade'] as String,
             newGender: result['gender'] as String,
-            newRole: result['role'] as String,
-            newPlayed: result['played'] as int,
-            newWaited: result['waited'] as int,
-            newGroups: result['groups'] as List<ObjectId>,
+            newRole: (result['role'] as String?) ?? 'user',
+            newPlayed: (result['played'] as int?) ?? 0,
+            newWaited: (result['waited'] as int?) ?? 0,
+            newLated: (result['lated'] as int?) ?? 0,
+            newGroups: (result['groups'] as List<ObjectId>?) ?? [],
           );
         } else {
           int latedValue = 0;
