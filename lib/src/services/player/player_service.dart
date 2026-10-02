@@ -187,6 +187,19 @@ class PlayerService {
     );
   }
 
+  /// 경기 종료 시 대기 선수들과 코트 참여 선수들의 경기 상태를 단일 트랜잭션으로 일괄 갱신합니다.
+  void finishMatchBatch({
+    required List<Player> unassignedPlayers,
+    required List<Player> courtPlayers,
+    required int elapsedSeconds,
+  }) {
+    _playerRepository.batchFinishMatch(
+      unassignedPlayers: unassignedPlayers,
+      courtPlayers: courtPlayers,
+      elapsedSeconds: elapsedSeconds,
+    );
+  }
+
   /// [player]의 최근 경기 일시를 현재 시각으로 갱신합니다.
   void updateRecentMatchDate(Player player) {
     _playerRepository.updatePlayer(

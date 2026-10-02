@@ -272,4 +272,42 @@ class CourtSlotService {
 
     return affectedAssignedCourtIndices;
   }
+
+  /// [assignedCourts]의 [courtIndex]번째 코트의 경기를 종료하고, 슬롯을 비운 뒤 선수들을 [unassignedPlayers] 대기열로 복귀시킵니다.
+  ///
+  /// 퇴장한 선수 목록과 누적 경기 시간(초)을 레코드로 반환하며, 유효하지 않거나 선수가 없으면 `null`을 반환합니다.
+  ({List<Player> courtPlayers, int elapsedSeconds})? finishCourtMatch({
+    required List<List<Player?>> assignedCourts,
+    required List<DateTime?> courtStartTimes,
+    required int courtIndex,
+  }) {
+    if (courtIndex < 0 || courtIndex >= assignedCourts.length) return null;
+
+    final court = assignedCourts[courtIndex];
+
+    // 1. 단일 루프로 선수 추출 및 슬롯 비우기 동시 처리
+    final courtPlayers = <Player>[];
+    for (int i = 0; i < court.length; i++) {
+      final player = court[i];
+      if (player != null) {
+        courtPlayers.add(player);
+        court[i] = null;
+      }
+    }
+
+    // 빈 코트면 즉시 종료
+    if (courtPlayers.isEmpty) return null;
+
+    // 2. 경과 시간 계산 및 시작 시간 초기화
+    int elapsedSeconds = 0;
+    if (courtIndex < courtStartTimes.length) {
+      final startTime = courtStartTimes[courtIndex];
+      if (startTime != null) {
+        elapsedSeconds = DateTime.now().difference(startTime).inSeconds;
+      }
+      courtStartTimes[courtIndex] = null;
+    }
+
+    return (courtPlayers: courtPlayers, elapsedSeconds: elapsedSeconds);
+  }
 }

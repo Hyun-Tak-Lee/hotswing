@@ -511,8 +511,7 @@ class PlayersProvider with ChangeNotifier {
       return;
     }
 
-    final courtPlayers = _assignedPlayers[sectionIndex];
-    if (!courtPlayers.any((p) => p != null)) {
+    if (!_assignedPlayers[sectionIndex].any((p) => p != null)) {
       return;
     }
 
@@ -520,12 +519,21 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      incrementWaitedTimeForAllUnassignedPlayers();
-      movePlayersFromCourtToUnassigned(
-        sectionIndex: sectionIndex,
-        targetCourtKind: PlayerSectionKind.assigned.value,
-        played: 1,
+      final matchResult = _courtSlotService.finishCourtMatch(
+        assignedCourts: _assignedPlayers,
+        courtStartTimes: _courtStartTimes,
+        courtIndex: sectionIndex,
       );
+
+      if (matchResult != null) {
+        _playerService.finishMatchBatch(
+          unassignedPlayers: _unassignedPlayers,
+          courtPlayers: matchResult.courtPlayers,
+          elapsedSeconds: matchResult.elapsedSeconds,
+        );
+        _unassignedPlayers.addAll(matchResult.courtPlayers);
+        _saveLoadedPlayers();
+      }
     } finally {
       _finishingCourtIndices.remove(sectionIndex);
       notifyListeners();

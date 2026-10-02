@@ -170,6 +170,39 @@ class PlayerRepository {
     }
   }
 
+  /// 경기 종료 시 대기 선수들의 대기 횟수 및 코트 참여 선수들의 경기 기록을 단일 트랜잭션으로 일괄 갱신합니다.
+  void batchFinishMatch({
+    required List<Player> unassignedPlayers,
+    required List<Player> courtPlayers,
+    required int elapsedSeconds,
+  }) {
+    try {
+      _realm.write(() {
+        for (final player in unassignedPlayers) {
+          player.waited += 1;
+        }
+
+        for (final player in courtPlayers) {
+          player.played += 1;
+          player.waited = 0;
+          player.playTime += elapsedSeconds;
+
+          for (final other in courtPlayers) {
+            if (other.id != player.id) {
+              final otherId = other.id.hexString;
+              final currentGames = player.gamesPlayedWith[otherId] ?? 0;
+              player.gamesPlayedWith[otherId] = currentGames + 1;
+            }
+          }
+        }
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+  }
+
   /// [player]의 동반 그룹 목록을 비웁니다.
   void clearPlayerGroup(Player player) {
     try {
