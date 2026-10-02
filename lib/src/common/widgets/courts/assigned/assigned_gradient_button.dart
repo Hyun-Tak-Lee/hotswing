@@ -8,6 +8,7 @@ class AssignedGradientButton extends StatelessWidget {
     required this.colors,
     required this.onTap,
     required this.child,
+    this.isLoading = false,
   });
 
   final double width;
@@ -15,6 +16,7 @@ class AssignedGradientButton extends StatelessWidget {
   final List<Color> colors;
   final VoidCallback onTap;
   final Widget child;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +42,19 @@ class AssignedGradientButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(15.0),
-          onTap: onTap,
-          child: Center(child: child),
+          onTap: isLoading ? null : onTap,
+          child: Center(
+            child: isLoading
+                ? const SizedBox(
+                    width: 16.0,
+                    height: 16.0,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.0,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : child,
+          ),
         ),
       ),
     );

@@ -72,6 +72,9 @@ class CourtSectionsView extends StatelessWidget {
                         List<Player?> item = entry.value;
                         final playerCount = item.where((p) => p != null).length;
                         bool isGameStarted = (playerCount == 4);
+                        final isFinishing = playersProvider.isCourtFinishing(
+                          sectionIndex,
+                        );
 
                         return SizedBox(
                           width: courtWidth,
@@ -133,16 +136,12 @@ class CourtSectionsView extends StatelessWidget {
                                     courtColors.btnFinishStart,
                                     courtColors.btnFinishEnd,
                                   ],
-                                  onTap: () {
-                                    playersProvider
-                                        .incrementWaitedTimeForAllUnassignedPlayers();
-                                    playersProvider
-                                        .movePlayersFromCourtToUnassigned(
-                                          sectionIndex: sectionIndex,
-                                          targetCourtKind:
-                                              PlayerSectionKind.assigned.value,
-                                        );
-                                  },
+                                  isLoading: isFinishing,
+                                  onTap: () => context
+                                      .read<PlayersProvider>()
+                                      .finishCourtMatch(
+                                        sectionIndex: sectionIndex,
+                                      ),
                                   child: Text(
                                     '경기 종료',
                                     style: TextStyle(
@@ -229,6 +228,9 @@ class CourtSectionsView extends StatelessWidget {
                         List<Player?> item = entry.value;
                         final playerCount = item.where((p) => p != null).length;
                         bool isGameStarted = (playerCount == 4);
+                        final isFinishing = playersProvider.isCourtFinishing(
+                          sectionIndex,
+                        );
 
                         return SizedBox(
                           width: courtWidth,
@@ -290,16 +292,12 @@ class CourtSectionsView extends StatelessWidget {
                                     courtColors.btnFinishStart,
                                     courtColors.btnFinishEnd,
                                   ],
-                                  onTap: () {
-                                    playersProvider
-                                        .incrementWaitedTimeForAllUnassignedPlayers();
-                                    playersProvider
-                                        .movePlayersFromCourtToUnassigned(
-                                          sectionIndex: sectionIndex,
-                                          targetCourtKind:
-                                              PlayerSectionKind.assigned.value,
-                                        );
-                                  },
+                                  isLoading: isFinishing,
+                                  onTap: () => context
+                                      .read<PlayersProvider>()
+                                      .finishCourtMatch(
+                                        sectionIndex: sectionIndex,
+                                      ),
                                   child: Text(
                                     '경기 종료',
                                     style: TextStyle(

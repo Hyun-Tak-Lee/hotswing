@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/constants/court_constants.dart';
+import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
 import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/models/players/player.dart';
@@ -36,6 +37,7 @@ class PlayersProvider with ChangeNotifier {
   final Map<String, String> _customGroupNames = {};
   Timer? _saveDebounce;
   DateTime? _pendingSince;
+  final Set<int> _finishingCourtIndices = {};
 
   /// [PlayersProvider] 생성자. 옵션 조회 및 서비스 초기화를 진행합니다.
   PlayersProvider() {
@@ -491,6 +493,43 @@ class PlayersProvider with ChangeNotifier {
     _saveLoadedPlayers();
     notifyListeners();
     return true;
+  }
+
+  /// 지정된 코트([sectionIndex])가 현재 경기 종료 처리 진행 중인지 여부를 반환합니다.
+  bool isCourtFinishing(int sectionIndex) =>
+      _finishingCourtIndices.contains(sectionIndex);
+
+  /// 지정된 배정 코트([sectionIndex])의 경기를 종료하고 선수들을 대기열로 복귀시킵니다.
+  ///
+  /// 코트별 종료 처리 상태를 관리하여 연타 및 중복 처리를 방지합니다.
+  Future<void> finishCourtMatch({required int sectionIndex}) async {
+    if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) {
+      return;
+    }
+
+    if (_finishingCourtIndices.contains(sectionIndex)) {
+      return;
+    }
+
+    final courtPlayers = _assignedPlayers[sectionIndex];
+    if (!courtPlayers.any((p) => p != null)) {
+      return;
+    }
+
+    _finishingCourtIndices.add(sectionIndex);
+    notifyListeners();
+
+    try {
+      incrementWaitedTimeForAllUnassignedPlayers();
+      movePlayersFromCourtToUnassigned(
+        sectionIndex: sectionIndex,
+        targetCourtKind: PlayerSectionKind.assigned.value,
+        played: 1,
+      );
+    } finally {
+      _finishingCourtIndices.remove(sectionIndex);
+      notifyListeners();
+    }
   }
 
   /// 코트의 경기를 종료하거나 비우고 선수들을 대기열로 복귀시킵니다.
