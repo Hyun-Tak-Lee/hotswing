@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/constants/court_constants.dart';
-import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
 import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/models/players/player.dart';
