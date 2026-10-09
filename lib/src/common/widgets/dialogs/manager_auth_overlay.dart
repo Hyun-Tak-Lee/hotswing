@@ -75,13 +75,21 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
         break;
     }
 
+    final isLandscape =
+        MediaQuery.orientationOf(context) == Orientation.landscape;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: isLandscape ? 12 : 24,
+      ),
       child: Container(
-        width: 400,
-        padding: const EdgeInsets.all(32),
+        width: isLandscape ? 440 : 400,
+        padding: isLandscape
+            ? const EdgeInsets.symmetric(horizontal: 24, vertical: 14)
+            : const EdgeInsets.all(32),
         decoration: BoxDecoration(
           color: baseColors.cardBg,
           borderRadius: BorderRadius.circular(24),
@@ -94,143 +102,156 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // X (닫기) 버튼
-            Align(
-              alignment: Alignment.topRight,
-              child: IconButton(
-                icon: Icon(Icons.close, color: baseColors.textSecondary),
-                onPressed: () => Navigator.of(context).pop(false),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // X (닫기) 버튼
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  icon: Icon(Icons.close, color: baseColors.textSecondary),
+                  onPressed: () => Navigator.of(context).pop(false),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
               ),
-            ),
 
-            Icon(
-              Icons.admin_panel_settings,
-              size: 64,
-              color: baseColors.primaryAccent,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: baseColors.textPrimary,
+              // 가로 모드에서는 세로 공간 확보를 위해 대형 아이콘 숨김
+              if (!isLandscape) ...[
+                Icon(
+                  Icons.admin_panel_settings,
+                  size: 64,
+                  color: baseColors.primaryAccent,
+                ),
+                const SizedBox(height: 20),
+              ],
+
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: isLandscape ? 19 : 24,
+                  fontWeight: FontWeight.bold,
+                  color: baseColors.textPrimary,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              style: TextStyle(color: baseColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              autofocus: true,
-              style: TextStyle(color: baseColors.textPrimary),
-              decoration: InputDecoration(
-                labelText: '비밀번호',
-                labelStyle: TextStyle(color: baseColors.textSecondary),
-                hintText: hintText,
-                hintStyle: TextStyle(color: baseColors.textSecondary),
-                errorText: _errorMessage,
-                prefixIcon: Icon(Icons.lock, color: baseColors.textSecondary),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: formColors.inputBorder),
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: isLandscape ? 13 : 14,
+                  color: baseColors.textSecondary,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: formColors.inputBorder),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: formColors.inputFocusBorder,
-                    width: 2,
-                  ),
-                ),
-                filled: true,
-                fillColor: playerColors.playerInputFill,
+                textAlign: TextAlign.center,
               ),
-              onSubmitted: (_) => _handleSubmit(),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _handleSubmit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: baseColors.primaryAccent,
-                  foregroundColor: baseColors.sliderIndicatorText,
-                  shape: RoundedRectangleBorder(
+              SizedBox(height: isLandscape ? 14 : 32),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                autofocus: true,
+                style: TextStyle(color: baseColors.textPrimary),
+                decoration: InputDecoration(
+                  labelText: '비밀번호',
+                  labelStyle: TextStyle(color: baseColors.textSecondary),
+                  hintText: hintText,
+                  hintStyle: TextStyle(color: baseColors.textSecondary),
+                  errorText: _errorMessage,
+                  prefixIcon: Icon(Icons.lock, color: baseColors.textSecondary),
+                  isDense: isLandscape,
+                  contentPadding: isLandscape
+                      ? const EdgeInsets.symmetric(horizontal: 14, vertical: 12)
+                      : null,
+                  border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: formColors.inputBorder),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: formColors.inputBorder),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: formColors.inputFocusBorder,
+                      width: 2,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: playerColors.playerInputFill,
+                ),
+                onSubmitted: (_) => _handleSubmit(),
+              ),
+              SizedBox(height: isLandscape ? 14 : 24),
+              SizedBox(
+                width: double.infinity,
+                height: isLandscape ? 42 : 50,
+                child: ElevatedButton(
+                  onPressed: _handleSubmit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: baseColors.primaryAccent,
+                    foregroundColor: baseColors.sliderIndicatorText,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    '확인',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
-                child: const Text(
-                  '확인',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
               ),
-            ),
 
-            // 비밀번호 재설정 버튼 (인증 모드일 때만 표시)
-            if (_currentMode == _AuthMode.verifyManager) ...[
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    _currentMode = _AuthMode.verifyActivationForReset;
-                    _passwordController.clear();
-                    _errorMessage = null;
-                  });
-                },
-                child: Text(
-                  '비밀번호를 잊으셨나요? (재설정)',
-                  style: TextStyle(color: baseColors.textSecondary),
+              // 비밀번호 재설정 버튼 (인증 모드일 때만 표시)
+              if (_currentMode == _AuthMode.verifyManager) ...[
+                SizedBox(height: isLandscape ? 8 : 16),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _currentMode = _AuthMode.verifyActivationForReset;
+                      _passwordController.clear();
+                      _errorMessage = null;
+                    });
+                  },
+                  child: Text(
+                    '비밀번호를 잊으셨나요? (재설정)',
+                    style: TextStyle(color: baseColors.textSecondary),
+                  ),
                 ),
-              ),
-            ],
+              ],
 
-            // 마스터 비밀번호 확인 중이거나 새 비밀번호 설정 중일 때 '우회 진입' 옵션 제공
-            if (_currentMode != _AuthMode.verifyManager) ...[
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () {
-                  if (_currentMode == _AuthMode.setNewManagerPassword) {
-                    // 이미 마스터 비밀번호 검증이 완료된 상태
-                    Navigator.of(context).pop(true);
-                  } else {
-                    // 현재 마스터 비밀번호 입력창인 경우, 여기서 바로 검증 후 진입 시도
-                    final password = _passwordController.text;
-                    if (password.isEmpty) {
-                      setState(() => _errorMessage = '활성화 비밀번호를 입력하세요.');
-                      return;
-                    }
-                    if (_authService.verifyActivationPassword(password)) {
+              // 마스터 비밀번호 확인 중이거나 새 비밀번호 설정 중일 때 '우회 진입' 옵션 제공
+              if (_currentMode != _AuthMode.verifyManager) ...[
+                SizedBox(height: isLandscape ? 8 : 16),
+                TextButton(
+                  onPressed: () {
+                    if (_currentMode == _AuthMode.setNewManagerPassword) {
+                      // 이미 마스터 비밀번호 검증이 완료된 상태
                       Navigator.of(context).pop(true);
                     } else {
-                      setState(() => _errorMessage = '활성화 비밀번호가 일치하지 않습니다.');
+                      // 현재 마스터 비밀번호 입력창인 경우, 여기서 바로 검증 후 진입 시도
+                      final password = _passwordController.text;
+                      if (password.isEmpty) {
+                        setState(() => _errorMessage = '활성화 비밀번호를 입력하세요.');
+                        return;
+                      }
+                      if (_authService.verifyActivationPassword(password)) {
+                        Navigator.of(context).pop(true);
+                      } else {
+                        setState(() => _errorMessage = '활성화 비밀번호가 일치하지 않습니다.');
+                      }
                     }
-                  }
-                },
-                child: Text(
-                  _currentMode == _AuthMode.setNewManagerPassword
-                      ? '비밀번호 변경 없이 진입하기'
-                      : '마스터 비밀번호로 즉시 진입',
-                  style: TextStyle(color: baseColors.primaryAccent),
+                  },
+                  child: Text(
+                    _currentMode == _AuthMode.setNewManagerPassword
+                        ? '비밀번호 변경 없이 진입하기'
+                        : '마스터 비밀번호로 즉시 진입',
+                    style: TextStyle(color: baseColors.primaryAccent),
+                  ),
                 ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
