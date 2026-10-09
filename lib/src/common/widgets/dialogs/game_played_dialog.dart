@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
+import 'package:hotswing/src/providers/players_provider.dart';
 
 /// 특정 선수의 경기 횟수, 대기 횟수, 총 경기 시간 및 함께 경기한 선수 통계를 표시하는 상세 다이얼로그.
 class GamePlayedDialog extends StatelessWidget {
@@ -28,6 +30,10 @@ class GamePlayedDialog extends StatelessWidget {
     final playerColors = context.playerColors;
     final formColors = context.formColors;
     final dialogColors = context.dialogColors;
+    final courtColors = context.courtColors;
+
+    final playersProvider = context.watch<PlayersProvider>();
+    final groupInfo = playersProvider.getGroupInfo(player.id);
 
     final mediaQuery = MediaQuery.of(context);
     final screenWidth = mediaQuery.size.width;
@@ -39,10 +45,8 @@ class GamePlayedDialog extends StatelessWidget {
     final double dialogHeight = isMobile ? screenHeight * 0.5 : 400.0;
 
     // 반응형 스타일 정의
-    final titleStyle = ResponsiveUtils.getResponsiveStyle(
-      context,
-      textTheme.headlineSmall,
-    )?.copyWith(color: baseColors.textPrimary);
+    final isTablet = ResponsiveUtils.isTablet(context);
+    final double titleFontSize = isTablet ? 21.0 : 17.0;
     final listTitleStyle = ResponsiveUtils.getResponsiveStyle(
       context,
       textTheme.titleMedium,
@@ -84,39 +88,46 @@ class GamePlayedDialog extends StatelessWidget {
       formattedPlayTime =
           '${totalPlaySeconds ~/ 60}분 ${totalPlaySeconds % 60}초';
     }
-
     // 종합 대시보드 요약 카드 위젯 정의
     final playerSummaryCard = Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
+      padding: EdgeInsets.symmetric(
+        vertical: isTablet ? 10.0 : 12.0,
+        horizontal: isTablet ? 12.0 : 16.0,
+      ),
       decoration: BoxDecoration(
         color: dialogColors.dialogSummaryBg,
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(color: dialogColors.dialogSummaryBorder),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _PlaySummaryItem(
-            label: '경기 횟수',
-            value:
-                '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}회',
-            labelColor: baseColors.textSecondary,
-            valueColor: baseColors.primaryAccent,
+          Expanded(
+            child: _PlaySummaryItem(
+              label: '경기 횟수',
+              value:
+                  '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}회',
+              labelColor: baseColors.textSecondary,
+              valueColor: baseColors.primaryAccent,
+            ),
           ),
           _PlaySummaryDivider(color: formColors.filterDivider),
-          _PlaySummaryItem(
-            label: '대기 횟수',
-            value: '${player.waited}회',
-            labelColor: baseColors.textSecondary,
-            valueColor: baseColors.textSecondary,
+          Expanded(
+            child: _PlaySummaryItem(
+              label: '대기 횟수',
+              value: '${player.waited}회',
+              labelColor: baseColors.textSecondary,
+              valueColor: baseColors.textSecondary,
+            ),
           ),
           _PlaySummaryDivider(color: formColors.filterDivider),
-          _PlaySummaryItem(
-            label: '경기 시간',
-            value: formattedPlayTime,
-            labelColor: baseColors.textSecondary,
-            valueColor: playerColors.genderTag,
+          Expanded(
+            child: _PlaySummaryItem(
+              label: '경기 시간',
+              value: formattedPlayTime,
+              labelColor: baseColors.textSecondary,
+              valueColor: playerColors.genderTag,
+            ),
           ),
         ],
       ),
@@ -125,7 +136,46 @@ class GamePlayedDialog extends StatelessWidget {
     return AlertDialog(
       backgroundColor: baseColors.cardBg,
       surfaceTintColor: Colors.transparent,
-      title: Text('${player.name}님 상세 정보', style: titleStyle),
+      contentPadding: isTablet
+          ? const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 16.0)
+          : const EdgeInsets.fromLTRB(24.0, 20.0, 24.0, 24.0),
+      title: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Flexible(
+            child: Text(
+              player.name,
+              style: TextStyle(
+                fontSize: titleFontSize,
+                fontWeight: FontWeight.bold,
+                color: baseColors.textPrimary,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8.0),
+          Text(
+            '${player.gender}  ${player.grade} (${player.rate})',
+            style: TextStyle(
+              fontSize: titleFontSize,
+              fontWeight: FontWeight.bold,
+              color: courtColors.playerItemGenderText,
+            ),
+          ),
+          if (groupInfo != null) ...[
+            const SizedBox(width: 8.0),
+            Text(
+              groupInfo.label,
+              style: TextStyle(
+                fontSize: titleFontSize,
+                fontWeight: FontWeight.bold,
+                color: groupInfo.color,
+              ),
+            ),
+          ],
+        ],
+      ),
       content: SizedBox(
         width: dialogWidth,
         height: dialogHeight,
@@ -135,11 +185,11 @@ class GamePlayedDialog extends StatelessWidget {
           children: [
             // 1. 상단 전적 요약 카드 고정 노출
             playerSummaryCard,
-            const SizedBox(height: 16.0),
+            SizedBox(height: isTablet ? 12.0 : 16.0),
             // 2. 기존 이력 리스트로 이어지는 서브 타이틀
             Padding(
               padding: const EdgeInsets.only(left: 4.0, bottom: 6.0),
-              child: Text('함께 플레이한 사람', style: listTitleStyle),
+              child: Text('경기 이력', style: listTitleStyle),
             ),
             // 3. 스크롤 가능한 히스토리 목록 리스트뷰
             Expanded(
@@ -202,24 +252,29 @@ class _PlaySummaryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = ResponsiveUtils.isTablet(context);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
           style: TextStyle(
-            fontSize: 12.0,
+            fontSize: isTablet ? 17.0 : 12.0,
             fontWeight: FontWeight.w600,
             color: labelColor,
           ),
         ),
-        const SizedBox(height: 6.0),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 15.0,
-            fontWeight: FontWeight.bold,
-            color: valueColor,
+        const SizedBox(height: 4.0),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: isTablet ? 23.0 : 15.0,
+              fontWeight: FontWeight.bold,
+              color: valueColor,
+            ),
           ),
         ),
       ],
@@ -234,6 +289,7 @@ class _PlaySummaryDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(height: 24.0, width: 1.2, color: color);
+    final isTablet = ResponsiveUtils.isTablet(context);
+    return Container(height: isTablet ? 28.0 : 24.0, width: 1.2, color: color);
   }
 }
