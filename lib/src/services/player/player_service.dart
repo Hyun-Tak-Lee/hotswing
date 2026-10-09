@@ -159,11 +159,6 @@ class PlayerService {
     _playerRepository.deleteAllPlayers();
   }
 
-  /// [player]의 대기 횟수를 1 증가시킵니다.
-  void incrementWaited(Player player) {
-    _playerRepository.updatePlayer(player: player, waited: player.waited + 1);
-  }
-
   /// [player]의 경기 완료 처리를 수행합니다. (플레이 수 증가, 대기 수 초기화, 플레이 시간 누적)
   void playedFinish(Player player, {int elapsedSeconds = 0}) {
     _playerRepository.updatePlayer(

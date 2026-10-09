@@ -236,12 +236,8 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       color: formColors.filterDivider,
                     ),
                     PlayerGenderField(
-                      baseColors: baseColors,
-                      playerColors: playerColors,
                       formColors: formColors,
-                      labelStyle: labelStyle,
                       isLoaded: _isLoaded,
-                      isManager: _isManager,
                       selectedGender: _selectedGender,
                       genders: _genders,
                       onChanged: (newValue) {

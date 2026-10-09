@@ -305,15 +305,6 @@ class PlayersProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// 대기 중인 모든 미배정 선수의 대기 횟수를 1씩 증가시킵니다.
-  void incrementWaitedTimeForAllUnassignedPlayers() {
-    for (var player in _unassignedPlayers) {
-      _playerService.incrementWaited(player);
-    }
-    _saveLoadedPlayers();
-    notifyListeners();
-  }
-
   /// 진행 코트의 개수를 [newCount]로 변경합니다.
   void updateAssignedPlayersListCount(int newCount) {
     _courtSlotService.resizeAssignedCourts(
@@ -458,11 +449,6 @@ class PlayersProvider with ChangeNotifier {
 
     _saveLoadedPlayers();
     notifyListeners();
-  }
-
-  /// 첫 번째 대기 팀을 지정된 진행 코트([assignedIndex])로 승격합니다.
-  bool popStandByPlayers(int assignedIndex) {
-    return popStandByPlayerByIndex(assignedIndex, 0);
   }
 
   /// [standbyIndex]번째 대기 팀을 [assignedIndex]번째 진행 코트로 승격합니다.

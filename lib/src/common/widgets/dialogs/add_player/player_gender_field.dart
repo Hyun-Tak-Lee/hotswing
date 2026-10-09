@@ -6,24 +6,16 @@ import 'package:hotswing/src/enums/player_feature.dart';
 class PlayerGenderField extends StatelessWidget {
   const PlayerGenderField({
     super.key,
-    required this.baseColors,
-    required this.playerColors,
     required this.formColors,
-    required this.labelStyle,
     required this.isLoaded,
-    required this.isManager,
     required this.selectedGender,
     required this.genders,
     required this.onChanged,
     required this.onSaved,
   });
 
-  final BaseColors baseColors;
-  final PlayerColors playerColors;
   final FormColors formColors;
-  final TextStyle? labelStyle;
   final bool isLoaded;
-  final bool isManager;
   final PlayerGender? selectedGender;
   final List<PlayerGender> genders;
   final ValueChanged<PlayerGender?> onChanged;
