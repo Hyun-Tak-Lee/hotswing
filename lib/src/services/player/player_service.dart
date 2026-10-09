@@ -115,6 +115,7 @@ class PlayerService {
     int playTime,
     List<ObjectId> groups,
     DateTime? recentMatchDate,
+    String description,
   ) {
     _playerRepository.updatePlayer(
       player: player,
@@ -129,6 +130,7 @@ class PlayerService {
       playTime: playTime,
       groups: RealmList(groups),
       recentMatchDate: recentMatchDate,
+      description: description,
     );
   }
 

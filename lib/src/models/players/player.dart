@@ -22,4 +22,5 @@ class _Player {
   late List<ObjectId> groups;
   @Indexed()
   DateTime? recentMatchDate;
+  String description = '';
 }

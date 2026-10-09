@@ -76,9 +76,13 @@ class PlayerRepository {
     DateTime? recentMatchDate,
     RealmMap<int>? gamesPlayedWith,
     RealmList<ObjectId>? groups,
+    String? description,
   }) {
     try {
       _realm.write(() {
+        if (description != null) {
+          player.description = description;
+        }
         if (name != null) {
           player.name = name;
         }

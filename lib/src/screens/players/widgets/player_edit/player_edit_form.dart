@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:realm/realm.dart';
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/screens/players/widgets/provider/players_view_model.dart';
 import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
+import 'package:hotswing/src/common/forms/advanced_settings_section.dart';
+import 'package:hotswing/src/common/widgets/dialogs/add_player/player_group_field.dart';
+import 'package:hotswing/src/screens/players/widgets/player_edit/player_edit_description_field.dart';
 import 'package:hotswing/src/screens/players/widgets/player_edit/player_edit_footer.dart';
 import 'package:hotswing/src/screens/players/widgets/player_edit/player_edit_header.dart';
 import 'package:hotswing/src/screens/players/widgets/player_edit/player_gender_segment.dart';
@@ -33,19 +38,23 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _nameController;
+  late String _currentDescription;
   late int _currentRate;
   late String _currentSkillLevel;
   late String _currentGender;
   late bool _isManager;
+  List<ObjectId> _groups = [];
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.player.name);
+    _currentDescription = widget.player.description;
     _currentRate = widget.player.rate;
     _currentSkillLevel = widget.player.grade;
     _currentGender = widget.player.gender;
     _isManager = widget.player.role == "manager";
+    _groups = List<ObjectId>.from(widget.player.groups);
   }
 
   @override
@@ -84,21 +93,66 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
               isGuest: widget.player.role == 'guest',
               onToggleManager: () => setState(() => _isManager = !_isManager),
             ),
-            Divider(height: 18, thickness: 0.6, color: formColors.filterDivider),
+            Divider(
+              height: 18,
+              thickness: 0.6,
+              color: formColors.filterDivider,
+            ),
             PlayerGenderSegment(
               currentGender: _currentGender,
               onSelected: (label) => setState(() => _currentGender = label),
             ),
-            Divider(height: 18, thickness: 0.6, color: formColors.filterDivider),
+            Divider(
+              height: 18,
+              thickness: 0.6,
+              color: formColors.filterDivider,
+            ),
             PlayerSkillChipList(
               currentSkillLevel: _currentSkillLevel,
               onSelected: _selectSkill,
             ),
-            Divider(height: 18, thickness: 0.6, color: formColors.filterDivider),
+            Divider(
+              height: 18,
+              thickness: 0.6,
+              color: formColors.filterDivider,
+            ),
             PlayerRateStepper(
               currentRate: _currentRate,
               onDecrease: () => _updateRate(_currentRate - 50),
               onIncrease: () => _updateRate(_currentRate + 50),
+            ),
+            Divider(
+              height: 18,
+              thickness: 0.6,
+              color: formColors.filterDivider,
+            ),
+            AdvancedSettingsSection(
+              children: [
+                PlayerGroupField(
+                  players: context
+                      .watch<PlayersProvider>()
+                      .players
+                      .values
+                      .toList(),
+                  currentGroups: widget.player.groups,
+                  groups: _groups,
+                  currentId: widget.player.id,
+                  onSelectionChanged: (selectedOptions) {
+                    setState(() {
+                      _groups = selectedOptions;
+                    });
+                  },
+                ),
+                Divider(
+                  height: 18,
+                  thickness: 0.6,
+                  color: formColors.filterDivider,
+                ),
+                PlayerEditDescriptionField(
+                  initialValue: _currentDescription,
+                  onChanged: (value) => _currentDescription = value,
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             PlayerEditFooter(onCancel: widget.onCancel, onSubmit: _submit),
@@ -140,11 +194,11 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
         gender: _currentGender,
         played: widget.player.played,
         waited: widget.player.waited,
-        groups: widget.player.groups,
+        groups: _groups,
+        description: _currentDescription.trim(),
       );
 
       viewModel.toggleEditMode(null);
     }
   }
 }
-

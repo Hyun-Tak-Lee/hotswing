@@ -185,6 +185,7 @@ class PlayersViewModel extends ChangeNotifier {
     required int played,
     required int waited,
     required List<ObjectId> groups,
+    required String description,
   }) {
     _repository.updatePlayer(
       player: player,
@@ -196,6 +197,7 @@ class PlayersViewModel extends ChangeNotifier {
       played: played,
       waited: waited,
       groups: RealmList<ObjectId>(groups),
+      description: description,
     );
 
     // 목록 데이터 갱신

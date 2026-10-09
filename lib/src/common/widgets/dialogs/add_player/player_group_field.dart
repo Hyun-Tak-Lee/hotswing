@@ -27,7 +27,7 @@ class PlayerGroupField extends StatelessWidget {
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 46.0),
       child: MultiSelectForm(
-        title: '그룹 플레이어',
+        title: '그룹 플레이어 선택',
         options: sortedPlayers.map((p) => p.name).toList(),
         optionsId: sortedPlayers.map((p) => p.id).toList(),
         groupsOptionId: sortedPlayers

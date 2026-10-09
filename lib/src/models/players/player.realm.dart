@@ -27,6 +27,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
     Map<String, int> gamesPlayedWith = const {},
     Iterable<ObjectId> groups = const [],
     DateTime? recentMatchDate,
+    String description = '',
   }) {
     if (!_defaultsSet) {
       _defaultsSet = RealmObjectBase.setDefaults<Player>({
@@ -35,6 +36,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
         'lated': 0,
         'playTime': 0,
         'activate': true,
+        'description': '',
       });
     }
     RealmObjectBase.set(this, 'id', id);
@@ -59,6 +61,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       RealmList<ObjectId>(groups),
     );
     RealmObjectBase.set(this, 'recentMatchDate', recentMatchDate);
+    RealmObjectBase.set(this, 'description', description);
   }
 
   Player._();
@@ -140,6 +143,13 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       RealmObjectBase.set(this, 'recentMatchDate', value);
 
   @override
+  String get description =>
+      RealmObjectBase.get<String>(this, 'description') as String;
+  @override
+  set description(String value) =>
+      RealmObjectBase.set(this, 'description', value);
+
+  @override
   Stream<RealmObjectChanges<Player>> get changes =>
       RealmObjectBase.getChanges<Player>(this);
 
@@ -166,6 +176,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
       'gamesPlayedWith': gamesPlayedWith.toEJson(),
       'groups': groups.toEJson(),
       'recentMatchDate': recentMatchDate.toEJson(),
+      'description': description.toEJson(),
     };
   }
 
@@ -196,6 +207,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
           gamesPlayedWith: fromEJson(ejson['gamesPlayedWith']),
           groups: fromEJson(ejson['groups']),
           recentMatchDate: fromEJson(ejson['recentMatchDate']),
+          description: fromEJson(ejson['description'], defaultValue: ''),
         ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -236,6 +248,7 @@ class Player extends _Player with RealmEntity, RealmObjectBase, RealmObject {
         optional: true,
         indexType: RealmIndexType.regular,
       ),
+      SchemaProperty('description', RealmPropertyType.string),
     ]);
   }();
 

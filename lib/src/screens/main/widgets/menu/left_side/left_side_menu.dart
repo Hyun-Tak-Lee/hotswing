@@ -43,55 +43,62 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
 
     return Drawer(
       width: drawerWidth,
-      child: ListView.builder(
-        padding: EdgeInsets.zero,
-        itemCount: players.length + 1,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return LeftSideMenuHeader(
-              playerCount: players.length,
-              isMobile: isMobile,
-              isTablet: isTablet,
-              onClearAll: () =>
-                  _showClearAllPlayersConfirmationDialog(playersProvider),
-              onAddGuest: () => _showAddPlayerDialog(playersProvider, true),
-              onAddRegular: () => _showAddPlayerDialog(playersProvider, false),
-            );
-          }
-
-          final player = players[index - 1];
-          final groupInfo = playersProvider.getGroupInfo(player.id);
-          return PlayerListItemTile(
-            player: player,
-            groupInfo: groupInfo,
+      child: Column(
+        children: [
+          LeftSideMenuHeader(
+            playerCount: players.length,
             isMobile: isMobile,
             isTablet: isTablet,
-            roleLabel: _getRoleLabel(player.role),
-            roleColor: _getRoleColor(context, player.role),
-            genderLabel: _getGenderLabel(player.gender, isMobile: isMobile),
-            onToggleActivate: () => playersProvider.toggleIsActivate(player),
-            onEdit: () => _showAddPlayerDialog(
-              playersProvider,
-              false,
-              existingPlayer: player,
+            onClearAll: () =>
+                _showClearAllPlayersConfirmationDialog(playersProvider),
+            onAddGuest: () => _showAddPlayerDialog(playersProvider, true),
+            onAddRegular: () => _showAddPlayerDialog(playersProvider, false),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              itemCount: players.length,
+              itemBuilder: (context, index) {
+                final player = players[index];
+                final groupInfo = playersProvider.getGroupInfo(player.id);
+                return PlayerListItemTile(
+                  player: player,
+                  groupInfo: groupInfo,
+                  isMobile: isMobile,
+                  isTablet: isTablet,
+                  roleLabel: _getRoleLabel(player.role),
+                  roleColor: _getRoleColor(context, player.role),
+                  genderLabel: _getGenderLabel(
+                    player.gender,
+                    isMobile: isMobile,
+                  ),
+                  onToggleActivate: () =>
+                      playersProvider.toggleIsActivate(player),
+                  onEdit: () => _showAddPlayerDialog(
+                    playersProvider,
+                    false,
+                    existingPlayer: player,
+                  ),
+                  onDelete: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext dialogContext) {
+                        return ConfirmationDialog(
+                          message: '"${player.name}" 님을 참여 명단에서 제외하시겠습니까?',
+                          confirmText: '제외',
+                          isDestructive: true,
+                          onConfirm: () {
+                            playersProvider.removePlayer(player.id);
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              },
             ),
-            onDelete: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext dialogContext) {
-                  return ConfirmationDialog(
-                    message: '"${player.name}" 님을 참여 명단에서 제외하시겠습니까?',
-                    confirmText: '제외',
-                    isDestructive: true,
-                    onConfirm: () {
-                      playersProvider.removePlayer(player.id);
-                    },
-                  );
-                },
-              );
-            },
-          );
-        },
+          ),
+        ],
       ),
     );
   }
@@ -155,6 +162,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
             newWaited: (result['waited'] as int?) ?? 0,
             newLated: (result['lated'] as int?) ?? 0,
             newGroups: (result['groups'] as List<ObjectId>?) ?? [],
+            newDescription: (result['description'] as String?) ?? '',
           );
         } else {
           int latedValue = 0;
@@ -182,6 +190,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
               waited: 0,
               lated: latedValue,
               groups: result['groups'] as List<ObjectId>,
+              description: (result['description'] as String?) ?? '',
             );
           }
         }
@@ -211,4 +220,3 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
     );
   }
 }
-

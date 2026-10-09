@@ -13,7 +13,7 @@ class RealmProvider {
   RealmProvider._() {
     final config = Configuration.local(
       [Player.schema, Options.schema],
-      schemaVersion: 6,
+      schemaVersion: 7,
       migrationCallback: (migration, oldSchemaVersion) {
         if (oldSchemaVersion < 1) {
           for (final obj in migration.newRealm.all<Options>()) {
@@ -43,6 +43,11 @@ class RealmProvider {
         if (oldSchemaVersion < 6) {
           for (final obj in migration.newRealm.all<Player>()) {
             obj.playTime = 0;
+          }
+        }
+        if (oldSchemaVersion < 7) {
+          for (final obj in migration.newRealm.all<Player>()) {
+            obj.description = '';
           }
         }
       },

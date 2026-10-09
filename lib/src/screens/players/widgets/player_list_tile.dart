@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/tags/player_skill_rate.dart';
+import 'package:hotswing/src/common/widgets/player_name_and_description.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:provider/provider.dart';
@@ -85,16 +86,14 @@ class PlayerListTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // 1층: 이름 (단독 배치로 긴 이름도 잘림 없이 가용 공간 최대 확보)
-                Text(
-                  player.name,
-                  style: TextStyle(
-                    fontSize: baseFontSize + 2,
-                    fontWeight: FontWeight.bold,
-                    color: baseColors.textPrimary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                // 1층: 이름 및 설명
+                PlayerNameAndDescription(
+                  name: player.name,
+                  description: player.description,
+                  nameFontSize: baseFontSize + 2,
+                  descFontSize: baseFontSize,
+                  nameColor: baseColors.textPrimary,
+                  descColor: baseColors.textSecondary,
                 ),
                 const SizedBox(height: 4),
                 // 2층: 게스트(해당 시) · 성별 · 그룹 (가운뎃점 텍스트 방식)

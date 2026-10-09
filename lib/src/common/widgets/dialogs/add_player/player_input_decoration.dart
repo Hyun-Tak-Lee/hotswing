@@ -7,7 +7,8 @@ InputDecoration playerInputDecoration(
   required BaseColors baseColors,
   required PlayerColors playerColors,
   required FormColors formColors,
-  required String labelText,
+  String? labelText,
+  String? hintText,
   required bool isManager,
   double? customVerticalPadding,
   double? customHorizontalPadding,
@@ -16,6 +17,12 @@ InputDecoration playerInputDecoration(
 }) {
   return InputDecoration(
     labelText: labelText,
+    hintText: hintText,
+    hintStyle: TextStyle(
+      color: isDisabled
+          ? baseColors.textSecondary.withValues(alpha: 0.5)
+          : baseColors.textSecondary,
+    ),
     labelStyle: TextStyle(
       color: isDisabled
           ? baseColors.textSecondary.withValues(alpha: 0.5)

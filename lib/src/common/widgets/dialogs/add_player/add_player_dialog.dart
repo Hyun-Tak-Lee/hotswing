@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/forms/advanced_settings_section.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/utils/game/skill_utils.dart';
+import 'package:hotswing/src/common/widgets/dialogs/add_player/player_description_field.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_gender_field.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_group_field.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_name_field.dart';
@@ -44,6 +46,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   Player? _player;
   ObjectId? _id;
   String? _name;
+  String _description = '';
   int? _rate;
   PlayerGender? _selectedGender;
   String? _selectedSkillLevel;
@@ -60,6 +63,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     if (widget.player != null) {
       _id = widget.player!.id;
       _name = widget.player!.name;
+      _description = widget.player!.description;
       _rate = widget.player!.rate;
       _selectedSkillLevel = widget.player!.grade;
       _selectedGender = PlayerGender.values.cast<PlayerGender?>().firstWhere(
@@ -252,37 +256,57 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       thickness: 0.6,
                       color: formColors.filterDivider,
                     ),
-                    PlayerGroupField(
-                      players: widget.playersProvider.players.values.toList(),
-                      currentGroups: widget.player?.groups ?? const [],
-                      groups: _groups,
-                      currentId: _id,
-                      onSelectionChanged: (selectedOptions) {
-                        setState(() {
-                          _groups = selectedOptions;
-                        });
-                      },
+                    AdvancedSettingsSection(
+                      children: [
+                        PlayerGroupField(
+                          players: widget.playersProvider.players.values
+                              .toList(),
+                          currentGroups: widget.player?.groups ?? const [],
+                          groups: _groups,
+                          currentId: _id,
+                          onSelectionChanged: (selectedOptions) {
+                            setState(() {
+                              _groups = selectedOptions;
+                            });
+                          },
+                        ),
+                        Divider(
+                          height: isTablet ? 18 : 14,
+                          thickness: 0.6,
+                          color: formColors.filterDivider,
+                        ),
+                        PlayerDescriptionField(
+                          baseColors: baseColors,
+                          playerColors: playerColors,
+                          formColors: formColors,
+                          labelStyle: labelStyle,
+                          isManager: _isManager,
+                          initialValue: _description,
+                          onDescriptionSaved: (value) =>
+                              _description = value?.trim() ?? '',
+                        ),
+                        if (isEditMode) ...[
+                          Divider(
+                            height: isTablet ? 18 : 14,
+                            thickness: 0.6,
+                            color: formColors.filterDivider,
+                          ),
+                          PlayerStatsRow(
+                            baseColors: baseColors,
+                            playerColors: playerColors,
+                            formColors: formColors,
+                            labelStyle: labelStyle,
+                            isManager: _isManager,
+                            playCount: _playCount,
+                            waitCount: _waitCount,
+                            lateCount: _lateCount,
+                            onPlayCountSaved: (value) => _playCount = value,
+                            onWaitCountSaved: (value) => _waitCount = value,
+                            onLateCountSaved: (value) => _lateCount = value,
+                          ),
+                        ],
+                      ],
                     ),
-                    if (isEditMode) ...[
-                      Divider(
-                        height: isTablet ? 18 : 14,
-                        thickness: 0.6,
-                        color: formColors.filterDivider,
-                      ),
-                      PlayerStatsRow(
-                        baseColors: baseColors,
-                        playerColors: playerColors,
-                        formColors: formColors,
-                        labelStyle: labelStyle,
-                        isManager: _isManager,
-                        playCount: _playCount,
-                        waitCount: _waitCount,
-                        lateCount: _lateCount,
-                        onPlayCountSaved: (value) => _playCount = value,
-                        onWaitCountSaved: (value) => _waitCount = value,
-                        onLateCountSaved: (value) => _lateCount = value,
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -359,6 +383,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _isLoaded = true;
       _player = player;
       _name = player.name;
+      _description = player.description;
       _rate = player.rate;
       _rateController.text = player.rate.toString();
       _selectedSkillLevel = player.grade;
@@ -393,6 +418,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         'waited': _waitCount ?? 0,
         'lated': _lateCount ?? 0,
         'groups': _groups,
+        'description': _description,
         'loaded': _isLoaded,
         'player': _player,
       });

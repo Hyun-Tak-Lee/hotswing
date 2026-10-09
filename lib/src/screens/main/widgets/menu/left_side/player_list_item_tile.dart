@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
+import 'package:hotswing/src/common/widgets/player_name_and_description.dart';
 import 'package:hotswing/src/models/players/player.dart';
 
 /// 참여자 목록의 단일 항목 카드 위젯.
@@ -87,15 +88,13 @@ class PlayerListItemTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    player.name,
-                    style: TextStyle(
-                      fontSize: nameFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: baseColors.textPrimary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  PlayerNameAndDescription(
+                    name: player.name,
+                    description: player.description,
+                    nameFontSize: nameFontSize,
+                    descFontSize: nameFontSize * 0.8,
+                    nameColor: baseColors.textPrimary,
+                    descColor: baseColors.textSecondary,
                   ),
                   const SizedBox(height: 5),
                   _PlayerMetadataRow(

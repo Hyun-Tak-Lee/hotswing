@@ -71,6 +71,9 @@ class PlayerNameField extends StatelessWidget {
                               final isTablet = ResponsiveUtils.isTablet(
                                 context,
                               );
+                              final descText = option.description.isNotEmpty
+                                  ? ' ${option.description}'
+                                  : '';
                               return ListTile(
                                 dense: !isTablet,
                                 contentPadding: EdgeInsets.symmetric(
@@ -78,7 +81,7 @@ class PlayerNameField extends StatelessWidget {
                                   vertical: isTablet ? 6.0 : 0.0,
                                 ),
                                 title: Text(
-                                  '${option.name} ($skillLevel)',
+                                  '${option.name}$descText ($skillLevel)',
                                   style: (labelStyle ?? const TextStyle())
                                       .copyWith(
                                         fontSize: isTablet ? 18.0 : 14.0,

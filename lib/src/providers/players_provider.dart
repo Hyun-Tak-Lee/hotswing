@@ -150,8 +150,9 @@ class PlayersProvider with ChangeNotifier {
     required int waited,
     required int lated,
     required List<ObjectId> groups,
+    required String description,
   }) {
-    if (name.length > 10) return;
+    if (name.length > 10 || description.length > 16) return;
     if (_players.values.any((player) => player.name == name)) return;
 
     final ObjectId newId = ObjectId();
@@ -168,6 +169,7 @@ class PlayersProvider with ChangeNotifier {
       gamesPlayedWith: {},
       groups: RealmList<ObjectId>(groups),
       recentMatchDate: DateTime.now(),
+      description: description,
     );
     _playerService.addPlayer(newPlayer);
     addPlayerInCourt(newPlayer, groups);
@@ -199,8 +201,9 @@ class PlayersProvider with ChangeNotifier {
     required int newWaited,
     required int newLated,
     required List<ObjectId> newGroups,
+    required String newDescription,
   }) {
-    if (newName.length > 10) return;
+    if (newName.length > 10 || newDescription.length > 16) return;
     if (!_players.containsKey(playerId)) return;
     Player playerToUpdate = _players[playerId]!;
 
@@ -241,6 +244,7 @@ class PlayersProvider with ChangeNotifier {
       playerToUpdate.playTime,
       isGroupChanged ? newGroups : oldGroups,
       null,
+      newDescription,
     );
 
     // 3. 새 그룹원들과의 상호 그룹 연결 갱신 (그룹이 변경된 경우에만 실행)
