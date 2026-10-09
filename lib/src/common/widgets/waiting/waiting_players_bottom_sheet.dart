@@ -81,44 +81,39 @@ class _WaitingPlayersBottomSheetState extends State<WaitingPlayersBottomSheet> {
           ),
         ],
       ),
-      child: SafeArea(
-        top: false,
-        left: false,
-        right: false,
-        child: Column(
-          children: [
-            const _BottomSheetDragHandle(),
-            _BottomSheetHeader(
-              title: widget.title,
-              count: playerList.length,
-              sortCriterion: _sortCriterion,
-              onSortChanged: _handleSortChanged,
-            ),
-            Divider(height: 1.0, color: courtColors.homeDivider),
-            Expanded(
-              child: playerList.isEmpty
-                  ? const _EmptyWaitingPlayerView()
-                  : ListView.builder(
-                      padding: EdgeInsets.only(
-                        top: 8.0,
-                        bottom: 8.0 + bottomInset,
-                      ),
-                      itemCount: playerList.length,
-                      itemBuilder: (context, index) {
-                        final player = playerList[index];
-                        final groupInfo = playersProvider.getGroupInfo(
-                          player.id,
-                        );
-                        return _WaitingPlayerCard(
-                          player: player,
-                          groupInfo: groupInfo,
-                          onTap: () => Navigator.of(context).pop(player),
-                        );
-                      },
+      child: Column(
+        children: [
+          const _BottomSheetDragHandle(),
+          _BottomSheetHeader(
+            title: widget.title,
+            count: playerList.length,
+            sortCriterion: _sortCriterion,
+            onSortChanged: _handleSortChanged,
+          ),
+          Divider(height: 1.0, color: courtColors.homeDivider),
+          Expanded(
+            child: playerList.isEmpty
+                ? const _EmptyWaitingPlayerView()
+                : ListView.builder(
+                    padding: EdgeInsets.only(
+                      top: 8.0,
+                      bottom: 8.0 + bottomInset,
                     ),
-            ),
-          ],
-        ),
+                    itemCount: playerList.length,
+                    itemBuilder: (context, index) {
+                      final player = playerList[index];
+                      final groupInfo = playersProvider.getGroupInfo(
+                        player.id,
+                      );
+                      return _WaitingPlayerCard(
+                        player: player,
+                        groupInfo: groupInfo,
+                        onTap: () => Navigator.of(context).pop(player),
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
     );
   }
