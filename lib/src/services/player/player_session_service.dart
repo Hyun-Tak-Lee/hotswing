@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:hotswing/src/models/players/player.dart';
@@ -6,6 +7,9 @@ import 'package:realm/realm.dart';
 
 /// 앱 재시작 시 세션 유지를 위해 경기/대기 상태 데이터를 로컬 스토리지에 저장하고 복원하는 서비스.
 class PlayerSessionService {
+  static const Duration _saveDebounceDuration = Duration(milliseconds: 300);
+  static const Duration _saveMaxWait = Duration(seconds: 1);
+
   final SharedProvider _sharedProvider = SharedProvider();
 
   // SharedPreferences 저장 키 상수
@@ -23,6 +27,9 @@ class PlayerSessionService {
   List<String>? _cachedPlayers;
   List<String>? _cachedCourtStartTimes;
   String? _cachedCustomGroupNames;
+
+  Timer? _saveDebounce;
+  DateTime? _pendingSince;
 
   // MARK: - Load Methods
 
@@ -42,7 +49,9 @@ class PlayerSessionService {
 
   /// 로컬 저장소에서 진행 코트별 선수 ID 2차원 목록을 복원합니다.
   Future<List<List<ObjectId?>>> loadAssignedPlayerIds() async {
-    final encodedList = await _sharedProvider.getStringList(_keyAssignedPlayers);
+    final encodedList = await _sharedProvider.getStringList(
+      _keyAssignedPlayers,
+    );
     _cachedAssignedPlayers = List<String>.from(encodedList);
     return _decodeCourts(encodedList);
   }
@@ -112,8 +121,9 @@ class PlayerSessionService {
     }
 
     // 3. 미배정 선수
-    final unassignedIds =
-        unassignedPlayers.map((player) => player.id.toString()).toList();
+    final unassignedIds = unassignedPlayers
+        .map((player) => player.id.toString())
+        .toList();
     if (!_isListEqual(_cachedUnassignedPlayers, unassignedIds)) {
       _cachedUnassignedPlayers = unassignedIds;
       saveTasks.add(
@@ -129,8 +139,9 @@ class PlayerSessionService {
     }
 
     // 5. 코트 경기 시작 시간
-    final startTimeStrings =
-        courtStartTimes.map((dt) => dt?.toIso8601String() ?? '').toList();
+    final startTimeStrings = courtStartTimes
+        .map((dt) => dt?.toIso8601String() ?? '')
+        .toList();
     if (!_isListEqual(_cachedCourtStartTimes, startTimeStrings)) {
       _cachedCourtStartTimes = startTimeStrings;
       saveTasks.add(
@@ -149,6 +160,36 @@ class PlayerSessionService {
 
     if (saveTasks.isNotEmpty) {
       await Future.wait(saveTasks);
+    }
+  }
+
+  /// 변경 사항 저장을 디바운스 및 최대 대기 시간을 고려하여 예약합니다.
+  void scheduleSave(Future<void> Function() onSave) {
+    _saveDebounce?.cancel();
+
+    final now = DateTime.now();
+    _pendingSince ??= now;
+
+    if (now.difference(_pendingSince!) >= _saveMaxWait) {
+      _pendingSince = null;
+      onSave();
+      return;
+    }
+
+    _saveDebounce = Timer(_saveDebounceDuration, () {
+      _pendingSince = null;
+      _saveDebounce = null;
+      onSave();
+    });
+  }
+
+  /// 보류 중인 저장을 즉시 수행하고 타이머 자원을 해제합니다.
+  void dispose({Future<void> Function()? onFlush}) {
+    _saveDebounce?.cancel();
+    _saveDebounce = null;
+    if (_pendingSince != null) {
+      _pendingSince = null;
+      onFlush?.call();
     }
   }
 

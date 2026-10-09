@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/constants/court_constants.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
@@ -16,9 +14,6 @@ import 'package:realm/realm.dart';
 
 /// 코트 배정, 대기열, 동반 그룹, 세션 영속화 등 경기 운영 전반의 상태를 관리하는 프로바이더.
 class PlayersProvider with ChangeNotifier {
-  static const Duration _saveDebounceDuration = Duration(milliseconds: 300);
-  static const Duration _saveMaxWait = Duration(seconds: 1);
-
   late final CourtAssignService _courtService;
   final CourtSlotService _courtSlotService = const CourtSlotService();
   final PlayerSessionService _sessionService = PlayerSessionService();
@@ -34,8 +29,6 @@ class PlayersProvider with ChangeNotifier {
   Map<ObjectId, GroupInfo>? _cachedGroupInfo;
   List<Player>? _cachedSortedPlayers;
   final Map<String, String> _customGroupNames = {};
-  Timer? _saveDebounce;
-  DateTime? _pendingSince;
   final Set<int> _finishingCourtIndices = {};
 
   /// [PlayersProvider] 생성자. 옵션 조회 및 서비스 초기화를 진행합니다.
@@ -83,12 +76,7 @@ class PlayersProvider with ChangeNotifier {
 
   @override
   void dispose() {
-    _saveDebounce?.cancel();
-    _saveDebounce = null;
-    if (_pendingSince != null) {
-      _pendingSince = null;
-      _flushSave();
-    }
+    _sessionService.dispose(onFlush: _flushSave);
     super.dispose();
   }
 
@@ -789,25 +777,7 @@ class PlayersProvider with ChangeNotifier {
   }
 
   void _saveLoadedPlayers() {
-    _saveDebounce?.cancel();
-
-    final now = DateTime.now();
-    // 최초 변경 발생 시점 기록 (연속 조작 중에는 최초 시점이 유지되어 최대 지연 시간 계산에 사용)
-    _pendingSince ??= now;
-
-    // 연속 조작이 계속되더라도 최대 대기 시간(1초)을 초과하면 강제 저장
-    if (now.difference(_pendingSince!) >= _saveMaxWait) {
-      _pendingSince = null;
-      _flushSave();
-      return;
-    }
-
-    // 300ms 동안 추가 조작이 없을 때 저장 수행
-    _saveDebounce = Timer(_saveDebounceDuration, () {
-      _pendingSince = null;
-      _saveDebounce = null;
-      _flushSave();
-    });
+    _sessionService.scheduleSave(_flushSave);
   }
 
   Future<void> _flushSave() {
