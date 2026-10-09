@@ -29,6 +29,10 @@ class _MainWrapperState extends State<MainWrapper> {
   @override
   Widget build(BuildContext context) {
     final isTablet = ResponsiveUtils.isTablet(context);
+    final isLandscape =
+        MediaQuery.orientationOf(context) == Orientation.landscape;
+    final useNavigationRail = isTablet || isLandscape;
+    final isMobileSize = !isTablet;
     final baseColors = context.baseColors;
 
     // 다크모드 여부에 따른 그라데이션 배경색 정의
@@ -40,7 +44,10 @@ class _MainWrapperState extends State<MainWrapper> {
     // 다크모드 여부에 따른 메뉴 아이콘 색상
     final iconColor = baseColors.menuIcon;
 
-    if (isTablet) {
+    if (useNavigationRail) {
+      final double headerButtonWidth = isTablet ? 72.0 : 56.0;
+      final double headerIconSize = isTablet ? 30.0 : 26.0;
+
       return Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -49,63 +56,69 @@ class _MainWrapperState extends State<MainWrapper> {
             colors: gradientColors,
           ),
         ),
-        child: Scaffold(
-          key: _scaffoldKey,
-          backgroundColor: Colors.transparent, // 그라디언트가 보이도록 투명 배경
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leadingWidth: 72.0,
-            leading: IconButton(
-              icon: const Icon(Icons.menu_rounded),
-              iconSize: 30.0,
-              color: iconColor,
-              onPressed: () {
-                _scaffoldKey.currentState?.openDrawer();
-              },
-            ),
-            automaticallyImplyLeading: false,
-            actions: [
-              SizedBox(
-                width: 72.0,
-                child: IconButton(
-                  icon: const Icon(Icons.menu_rounded),
-                  iconSize: 30.0,
-                  color: iconColor,
-                  onPressed: () {
-                    _scaffoldKey.currentState?.openEndDrawer();
-                  },
-                ),
+        child: SafeArea(
+          top: false, // 상단은 AppBar가 자체적으로 primary: true로 처리
+          bottom: true, // 하단 제스처 바 보호
+          left: true, // 좌측 카메라 노치 보호
+          right: true, // 우측 카메라 노치/여백 보호
+          child: Scaffold(
+            key: _scaffoldKey,
+            backgroundColor: Colors.transparent, // 그라디언트가 보이도록 투명 배경
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leadingWidth: headerButtonWidth,
+              leading: IconButton(
+                icon: const Icon(Icons.menu_rounded),
+                iconSize: headerIconSize,
+                color: iconColor,
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
               ),
-            ],
-          ),
-          drawer: const LeftSideMenu(isMobileSize: false),
-          endDrawer: const RightSideMenu(isMobileSize: false),
-          body: Row(
-            children: [
-              MainNavigationRail(
-                selectedIndex: _selectedIndex,
-                onDestinationSelected: _onDestinationSelected,
-              ),
-              const VerticalDivider(
-                thickness: 1,
-                width: 1,
-                color: Colors.transparent,
-              ), // 투명 구분선
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 0, right: 0, bottom: 0),
-                  decoration: BoxDecoration(
-                    color: contentBgColor,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                    ),
+              automaticallyImplyLeading: false,
+              actions: [
+                SizedBox(
+                  width: headerButtonWidth,
+                  child: IconButton(
+                    icon: const Icon(Icons.menu_rounded),
+                    iconSize: headerIconSize,
+                    color: iconColor,
+                    onPressed: () {
+                      _scaffoldKey.currentState?.openEndDrawer();
+                    },
                   ),
-                  clipBehavior: Clip.antiAlias, // 둥근 모서리에 맞춰 내용 자르기
-                  child: _MainTabStack(selectedIndex: _selectedIndex),
                 ),
-              ),
-            ],
+              ],
+            ),
+            drawer: LeftSideMenu(isMobileSize: isMobileSize),
+            endDrawer: RightSideMenu(isMobileSize: isMobileSize),
+            body: Row(
+              children: [
+                MainNavigationRail(
+                  selectedIndex: _selectedIndex,
+                  onDestinationSelected: _onDestinationSelected,
+                ),
+                const VerticalDivider(
+                  thickness: 1,
+                  width: 1,
+                  color: Colors.transparent,
+                ), // 투명 구분선
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 0, right: 0, bottom: 0),
+                    decoration: BoxDecoration(
+                      color: contentBgColor,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias, // 둥근 모서리에 맞춰 내용 자르기
+                    child: _MainTabStack(selectedIndex: _selectedIndex),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );

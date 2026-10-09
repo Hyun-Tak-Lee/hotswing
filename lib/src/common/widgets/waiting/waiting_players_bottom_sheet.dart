@@ -62,7 +62,10 @@ class _WaitingPlayersBottomSheetState extends State<WaitingPlayersBottomSheet> {
       criterion: _sortCriterion,
       ascending: true,
     );
-    final sheetHeight = MediaQuery.sizeOf(context).height * 0.52;
+    final isLandscape =
+        MediaQuery.orientationOf(context) == Orientation.landscape;
+    final sheetHeight =
+        MediaQuery.sizeOf(context).height * (isLandscape ? 0.85 : 0.52);
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Container(
@@ -80,37 +83,42 @@ class _WaitingPlayersBottomSheetState extends State<WaitingPlayersBottomSheet> {
       ),
       child: SafeArea(
         top: false,
+        left: false,
+        right: false,
         child: Column(
-        children: [
-          const _BottomSheetDragHandle(),
-          _BottomSheetHeader(
-            title: widget.title,
-            count: playerList.length,
-            sortCriterion: _sortCriterion,
-            onSortChanged: _handleSortChanged,
-          ),
-          Divider(height: 1.0, color: courtColors.homeDivider),
-          Expanded(
-            child: playerList.isEmpty
-                ? const _EmptyWaitingPlayerView()
-                : ListView.builder(
-                    padding: EdgeInsets.only(
-                      top: 8.0,
-                      bottom: 8.0 + bottomInset,
+          children: [
+            const _BottomSheetDragHandle(),
+            _BottomSheetHeader(
+              title: widget.title,
+              count: playerList.length,
+              sortCriterion: _sortCriterion,
+              onSortChanged: _handleSortChanged,
+            ),
+            Divider(height: 1.0, color: courtColors.homeDivider),
+            Expanded(
+              child: playerList.isEmpty
+                  ? const _EmptyWaitingPlayerView()
+                  : ListView.builder(
+                      padding: EdgeInsets.only(
+                        top: 8.0,
+                        bottom: 8.0 + bottomInset,
+                      ),
+                      itemCount: playerList.length,
+                      itemBuilder: (context, index) {
+                        final player = playerList[index];
+                        final groupInfo = playersProvider.getGroupInfo(
+                          player.id,
+                        );
+                        return _WaitingPlayerCard(
+                          player: player,
+                          groupInfo: groupInfo,
+                          onTap: () => Navigator.of(context).pop(player),
+                        );
+                      },
                     ),
-                    itemCount: playerList.length,
-                    itemBuilder: (context, index) {
-                      final player = playerList[index];
-                      final groupInfo = playersProvider.getGroupInfo(player.id);
-                      return _WaitingPlayerCard(
-                        player: player,
-                        groupInfo: groupInfo,
-                        onTap: () => Navigator.of(context).pop(player),
-                      );
-                    },
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -274,6 +282,7 @@ class _EmptyWaitingPlayerView extends StatelessWidget {
 }
 
 /// 참여자 목록 및 회원 목록 카드 스타일을 적용한 대기 선수 항목 카드 위젯.
+/// 비활성 유저는 대기 패널과 동일하게 비활성 배경 및 투명도(0.4)가 적용됩니다.
 class _WaitingPlayerCard extends StatelessWidget {
   final Player player;
   final GroupInfo? groupInfo;
@@ -291,162 +300,176 @@ class _WaitingPlayerCard extends StatelessWidget {
     final playerColors = context.playerColors;
     final courtColors = context.courtColors;
     final isManager = player.role == 'manager';
+    final isActive = player.activate;
 
     final String genderLabel = player.gender == 'M' ? '남' : '여';
 
+    final BoxDecoration decoration = isActive
+        ? BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                playerColors.playerItemActiveStart,
+                playerColors.playerItemActiveEnd,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isManager
+                  ? playerColors.roleManager.withValues(alpha: 0.75)
+                  : Colors.transparent,
+              width: 1.6,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isManager
+                    ? playerColors.roleManager.withValues(alpha: 0.12)
+                    : Colors.black.withValues(alpha: 0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          )
+        : BoxDecoration(
+            color: courtColors.dropZoneInactiveBg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.transparent, width: 1.6),
+          );
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            playerColors.playerItemActiveStart,
-            playerColors.playerItemActiveEnd,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isManager
-              ? playerColors.roleManager.withValues(alpha: 0.75)
-              : Colors.transparent,
-          width: 1.6,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isManager
-                ? playerColors.roleManager.withValues(alpha: 0.12)
-                : Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: decoration,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 14.0,
-              vertical: 10.0,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 1층: 이름 + 그룹(텍스트) + 게스트(텍스트) - 바닥선(Baseline) 기준 정렬
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              player.name,
-                              style: TextStyle(
-                                fontSize: 20.5,
-                                fontWeight: FontWeight.bold,
-                                color: baseColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (groupInfo != null &&
-                              groupInfo!.label.isNotEmpty) ...[
-                            const SizedBox(width: 8),
-                            Text(
-                              groupInfo!.label,
-                              style: TextStyle(
-                                fontSize: 14.5,
-                                color: groupInfo!.color,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                          if (player.role == 'guest') ...[
-                            const SizedBox(width: 8),
-                            Text(
-                              '게스트',
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                color: playerColors.roleGuest,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      // 2층: 성별, 급수, 경기(+lated), 대기 (Rate 제거 및 시원한 크기 적용)
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+          child: Opacity(
+            opacity: isActive ? 1.0 : 0.4,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14.0,
+                vertical: 10.0,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 1층: 이름 + 그룹(텍스트) + 게스트(텍스트) - 바닥선(Baseline) 기준 정렬
+                        Row(
                           crossAxisAlignment: CrossAxisAlignment.baseline,
                           textBaseline: TextBaseline.alphabetic,
                           children: [
-                            Text(
-                              genderLabel,
-                              style: TextStyle(
-                                fontSize: 15.5,
-                                color: courtColors.playerItemGenderText,
-                                fontWeight: FontWeight.bold,
+                            Flexible(
+                              child: Text(
+                                player.name,
+                                style: TextStyle(
+                                  fontSize: 20.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: baseColors.textPrimary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Text(
-                              '${player.grade}급',
-                              style: TextStyle(
-                                fontSize: 15.5,
-                                color: playerColors.rateWidgetSkill,
-                                fontWeight: FontWeight.bold,
+                            if (groupInfo != null &&
+                                groupInfo!.label.isNotEmpty) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                groupInfo!.label,
+                                style: TextStyle(
+                                  fontSize: 14.5,
+                                  color: groupInfo!.color,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}경기',
-                              style: TextStyle(
-                                fontSize: 15.0,
-                                color: baseColors.textSecondary,
-                                fontWeight: FontWeight.w600,
+                            ],
+                            if (player.role == 'guest') ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                '게스트',
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  color: playerColors.roleGuest,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              '${player.waited}대기',
-                              style: TextStyle(
-                                fontSize: 15.0,
-                                color: baseColors.textSecondary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                            ],
                           ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 6),
+                        // 2층: 성별, 급수, 경기(+lated), 대기
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                genderLabel,
+                                style: TextStyle(
+                                  fontSize: 15.5,
+                                  color: courtColors.playerItemGenderText,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                '${player.grade}급',
+                                style: TextStyle(
+                                  fontSize: 15.5,
+                                  color: playerColors.rateWidgetSkill,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                '${player.played}${player.lated != 0 ? ' (+${player.lated})' : ''}경기',
+                                style: TextStyle(
+                                  fontSize: 15.0,
+                                  color: baseColors.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                '${player.waited}대기',
+                                style: TextStyle(
+                                  fontSize: 15.0,
+                                  color: baseColors.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                // 우측 추가 버튼
-                Container(
-                  padding: const EdgeInsets.all(6.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withAlpha(20),
-                    shape: BoxShape.circle,
+                  const SizedBox(width: 8),
+                  // 우측 추가 버튼
+                  Container(
+                    padding: const EdgeInsets.all(6.0),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withAlpha(20),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.add_rounded,
+                      size: 20.0,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
-                  child: Icon(
-                    Icons.add_rounded,
-                    size: 20.0,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

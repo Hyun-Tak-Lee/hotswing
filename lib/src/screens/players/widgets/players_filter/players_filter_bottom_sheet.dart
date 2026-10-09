@@ -62,6 +62,8 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
       ),
       child: SafeArea(
         top: false,
+        left: false,
+        right: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -117,11 +119,7 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
               ],
             ),
 
-            Divider(
-              height: 1,
-              thickness: 1,
-              color: formColors.filterDivider,
-            ),
+            Divider(height: 1, thickness: 1, color: formColors.filterDivider),
             const SizedBox(height: 24),
 
             // Filter Options
@@ -157,4 +155,3 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
     );
   }
 }
-

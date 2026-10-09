@@ -39,63 +39,47 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
+    final currentCourtView = switch (selectedView) {
+      CourtViewSection.assignedView => CourtSectionsView(
+        onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
+        onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
+        onPlayerDrop: _handlePlayerDrop,
+        isClubMatch: true,
+      ),
+      CourtViewSection.standbyView => StandbyCourtSectionsView(
+        onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
+        onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
+        onPlayerDrop: _handlePlayerDrop,
+        isClubMatch: true,
+      ),
+    };
+
+    final courtViewSelector = CourtViewSelector(
+      selectedView: selectedView,
+      onSelectionChanged: (value) {
+        setState(() {
+          selectedView = value;
+        });
+      },
+      isLandscape: isLandscape,
+    );
+
     final courtSectionWidget = isLandscape
-        ? Row(
+        ? Stack(
             children: [
-              Expanded(
-                child: switch (selectedView) {
-                  CourtViewSection.assignedView => CourtSectionsView(
-                    onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
-                    onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
-                    onPlayerDrop: _handlePlayerDrop,
-                    isClubMatch: true,
-                  ),
-                  CourtViewSection.standbyView => StandbyCourtSectionsView(
-                    onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
-                    onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
-                    onPlayerDrop: _handlePlayerDrop,
-                    isClubMatch: true,
-                  ),
-                },
-              ),
-              CourtViewSelector(
-                selectedView: selectedView,
-                onSelectionChanged: (value) {
-                  setState(() {
-                    selectedView = value;
-                  });
-                },
-                isLandscape: isLandscape,
+              Positioned.fill(child: currentCourtView),
+              Positioned(
+                top: 0,
+                bottom: 0,
+                right: 8.0,
+                child: Center(child: courtViewSelector),
               ),
             ],
           )
         : Column(
             children: [
-              CourtViewSelector(
-                selectedView: selectedView,
-                onSelectionChanged: (value) {
-                  setState(() {
-                    selectedView = value;
-                  });
-                },
-                isLandscape: isLandscape,
-              ),
-              Expanded(
-                child: switch (selectedView) {
-                  CourtViewSection.assignedView => CourtSectionsView(
-                    onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
-                    onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
-                    onPlayerDrop: _handlePlayerDrop,
-                    isClubMatch: true,
-                  ),
-                  CourtViewSection.standbyView => StandbyCourtSectionsView(
-                    onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
-                    onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
-                    onPlayerDrop: _handlePlayerDrop,
-                    isClubMatch: true,
-                  ),
-                },
-              ),
+              courtViewSelector,
+              Expanded(child: currentCourtView),
             ],
           );
 
@@ -115,7 +99,9 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
         left: 0,
         right: 0,
       ),
-      child: isLandscape
+      child: isMobileSize
+          ? RepaintBoundary(child: courtSectionWidget)
+          : isLandscape
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -131,8 +117,6 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
                 ),
               ],
             )
-          : isMobileSize
-          ? RepaintBoundary(child: courtSectionWidget)
           : Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,

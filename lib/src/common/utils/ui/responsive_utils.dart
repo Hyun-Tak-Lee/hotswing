@@ -5,14 +5,14 @@ class ResponsiveUtils {
   /// 태블릿을 구분하기 위한 너비 기준값(dp)입니다.
   static const double tabletThreshold = 600.0;
 
-  /// 현재 화면 너비가 태블릿 기준값보다 작은 모바일 환경인지 확인합니다.
+  /// 현재 화면의 짧은 변이 태블릿 기준값보다 작은 모바일 환경인지 확인합니다.
   static bool isMobile(BuildContext context) {
-    return MediaQuery.of(context).size.width < tabletThreshold;
+    return MediaQuery.sizeOf(context).shortestSide < tabletThreshold;
   }
 
-  /// 현재 화면 너비가 태블릿 기준값 이상인 태블릿 환경인지 확인합니다.
+  /// 현재 화면의 짧은 변이 태블릿 기준값 이상인 태블릿 환경인지 확인합니다.
   static bool isTablet(BuildContext context) {
-    return MediaQuery.of(context).size.width >= tabletThreshold;
+    return MediaQuery.sizeOf(context).shortestSide >= tabletThreshold;
   }
 
   /// 기기 유형에 따라 적절한 폰트 크기 비율을 반환합니다.

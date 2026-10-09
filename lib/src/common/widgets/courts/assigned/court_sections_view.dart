@@ -68,166 +68,186 @@ class CourtSectionsView extends StatelessWidget {
               child: isLandscape
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      children: sectionData.asMap().entries.map((entry) {
-                        int sectionIndex = entry.key;
-                        List<Player?> item = entry.value;
-                        final playerCount = item.where((p) => p != null).length;
-                        bool isGameStarted = (playerCount == 4);
-                        final isFinishing = playersProvider.isCourtFinishing(
-                          sectionIndex,
-                        );
+                      children:
+                          sectionData.asMap().entries.map((entry) {
+                            int sectionIndex = entry.key;
+                            List<Player?> item = entry.value;
+                            final playerCount = item
+                                .where((p) => p != null)
+                                .length;
+                            bool isGameStarted = (playerCount == 4);
+                            final isFinishing = playersProvider
+                                .isCourtFinishing(sectionIndex);
 
-                        return SizedBox(
-                          width: courtWidth,
-                          height: isLandscape ? maxHeight : null,
-                          child: CourtCard(
-                            sectionIndex: sectionIndex,
-                            players: item,
-                            sectionKind: 'assigned',
-                            onPlayerDrop: onPlayerDrop,
-                            onCourtPlayerDragStarted: onCourtPlayerDragStarted,
-                            onCourtPlayerDragEnded: onCourtPlayerDragEnded,
-                            onPlayerRemoved: (courtIndex, playerIndex) {
-                              final removed = playersProvider
-                                  .removeAssignedPlayer(
-                                    courtIndex,
-                                    playerIndex,
-                                  );
-                              if (removed != null) {
-                                playersProvider.addUnassignedPlayer(removed);
-                              }
-                            },
-                            onEmptySlotTap: (courtIndex, slotIndex) =>
-                                _handleEmptySlotTap(
-                                  context: context,
-                                  courtIndex: courtIndex,
-                                  slotIndex: slotIndex,
-                                ),
-                            headerActions: [
-                              // 새로고침 버튼
-                              AssignedGradientButton(
-                                width: isTablet ? 50.0 : 40.0,
-                                height: isTablet ? 45.0 : 30.0,
-                                colors: [
-                                  courtColors.btnRemoveStart,
-                                  courtColors.btnRemoveEnd,
-                                ],
-                                onTap: () {
-                                  playersProvider
-                                      .movePlayersFromCourtToUnassigned(
-                                        sectionIndex: sectionIndex,
-                                        targetCourtKind:
-                                            PlayerSectionKind.assigned.value,
-                                        played: 0,
+                            return SizedBox(
+                              width: courtWidth,
+                              height: isLandscape ? maxHeight : null,
+                              child: CourtCard(
+                                sectionIndex: sectionIndex,
+                                players: item,
+                                sectionKind: 'assigned',
+                                onPlayerDrop: onPlayerDrop,
+                                onCourtPlayerDragStarted:
+                                    onCourtPlayerDragStarted,
+                                onCourtPlayerDragEnded: onCourtPlayerDragEnded,
+                                onPlayerRemoved: (courtIndex, playerIndex) {
+                                  final removed = playersProvider
+                                      .removeAssignedPlayer(
+                                        courtIndex,
+                                        playerIndex,
                                       );
-                                },
-                                child: Icon(
-                                  Icons.group_remove,
-                                  size: isTablet ? 24.0 : 18.0,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              // 자동 매칭 / 경기 종료 버튼
-                              if (!isGameStarted)
-                                AutoMatchSplitButton(
-                                  isTablet: isTablet,
-                                  item: item,
-                                  sectionIndex: sectionIndex,
-                                  isClubMatch: isClubMatch,
-                                )
-                              else
-                                AssignedGradientButton(
-                                  width: isTablet ? 150.0 : 90.0,
-                                  height: isTablet ? 45.0 : 30.0,
-                                  colors: [
-                                    courtColors.btnFinishStart,
-                                    courtColors.btnFinishEnd,
-                                  ],
-                                  isLoading: isFinishing,
-                                  onTap: () => context
-                                      .read<PlayersProvider>()
-                                      .finishCourtMatch(
-                                        sectionIndex: sectionIndex,
-                                      ),
-                                  child: Text(
-                                    '경기 종료',
-                                    style: TextStyle(
-                                      fontSize: isTablet ? 20.0 : 12.0,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              PopupMenuButton<int>(
-                                tooltip: '코트 이동/교환',
-                                color: baseColors.cardBg,
-                                elevation: 6,
-                                position: PopupMenuPosition.under,
-                                offset: const Offset(0, 4),
-                                constraints: const BoxConstraints(minWidth: 80),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                onSelected: (int targetIndex) {
-                                  playersProvider.swapAssignedCourts(
-                                    sectionIndex,
-                                    targetIndex,
-                                  );
-                                },
-                                itemBuilder: (BuildContext context) {
-                                  return List.generate(sectionData.length, (
-                                    index,
-                                  ) {
-                                    if (index == sectionIndex) return null;
-                                    return PopupMenuItem<int>(
-                                      value: index,
-                                      height: 40,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.swap_horiz_rounded,
-                                            color: baseColors.primaryAccent,
-                                            size: isTablet ? 24 : 20,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            '${index + 1}번 코트와 교환',
-                                            style: TextStyle(
-                                              fontSize: isTablet ? 16.0 : 14.0,
-                                              color: baseColors.textPrimary,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                  if (removed != null) {
+                                    playersProvider.addUnassignedPlayer(
+                                      removed,
                                     );
-                                  }).whereType<PopupMenuEntry<int>>().toList();
+                                  }
                                 },
-                                child: IgnorePointer(
-                                  child: AssignedGradientButton(
+                                onEmptySlotTap: (courtIndex, slotIndex) =>
+                                    _handleEmptySlotTap(
+                                      context: context,
+                                      courtIndex: courtIndex,
+                                      slotIndex: slotIndex,
+                                    ),
+                                headerActions: [
+                                  // 새로고침 버튼
+                                  AssignedGradientButton(
                                     width: isTablet ? 50.0 : 40.0,
                                     height: isTablet ? 45.0 : 30.0,
                                     colors: [
-                                      courtColors.btnSwapStart,
-                                      courtColors.btnSwapEnd,
+                                      courtColors.btnRemoveStart,
+                                      courtColors.btnRemoveEnd,
                                     ],
-                                    onTap: () {},
+                                    onTap: () {
+                                      playersProvider
+                                          .movePlayersFromCourtToUnassigned(
+                                            sectionIndex: sectionIndex,
+                                            targetCourtKind: PlayerSectionKind
+                                                .assigned
+                                                .value,
+                                            played: 0,
+                                          );
+                                    },
                                     child: Icon(
-                                      Icons.swap_horiz,
+                                      Icons.group_remove,
                                       size: isTablet ? 24.0 : 18.0,
                                       color: Colors.white,
                                     ),
                                   ),
-                                ),
+                                  // 자동 매칭 / 경기 종료 버튼
+                                  if (!isGameStarted)
+                                    AutoMatchSplitButton(
+                                      isTablet: isTablet,
+                                      item: item,
+                                      sectionIndex: sectionIndex,
+                                      isClubMatch: isClubMatch,
+                                    )
+                                  else
+                                    AssignedGradientButton(
+                                      width: isTablet ? 150.0 : 90.0,
+                                      height: isTablet ? 45.0 : 30.0,
+                                      colors: [
+                                        courtColors.btnFinishStart,
+                                        courtColors.btnFinishEnd,
+                                      ],
+                                      isLoading: isFinishing,
+                                      onTap: () => context
+                                          .read<PlayersProvider>()
+                                          .finishCourtMatch(
+                                            sectionIndex: sectionIndex,
+                                          ),
+                                      child: Text(
+                                        '경기 종료',
+                                        style: TextStyle(
+                                          fontSize: isTablet ? 20.0 : 12.0,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  PopupMenuButton<int>(
+                                    tooltip: '코트 이동/교환',
+                                    color: baseColors.cardBg,
+                                    elevation: 6,
+                                    position: PopupMenuPosition.under,
+                                    offset: const Offset(0, 4),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 80,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    onSelected: (int targetIndex) {
+                                      playersProvider.swapAssignedCourts(
+                                        sectionIndex,
+                                        targetIndex,
+                                      );
+                                    },
+                                    itemBuilder: (BuildContext context) {
+                                      return List.generate(sectionData.length, (
+                                            index,
+                                          ) {
+                                            if (index == sectionIndex)
+                                              return null;
+                                            return PopupMenuItem<int>(
+                                              value: index,
+                                              height: 40,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                  ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.swap_horiz_rounded,
+                                                    color: baseColors
+                                                        .primaryAccent,
+                                                    size: isTablet ? 24 : 20,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    '${index + 1}번 코트와 교환',
+                                                    style: TextStyle(
+                                                      fontSize: isTablet
+                                                          ? 16.0
+                                                          : 14.0,
+                                                      color: baseColors
+                                                          .textPrimary,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          })
+                                          .whereType<PopupMenuEntry<int>>()
+                                          .toList();
+                                    },
+                                    child: IgnorePointer(
+                                      child: AssignedGradientButton(
+                                        width: isTablet ? 50.0 : 40.0,
+                                        height: isTablet ? 45.0 : 30.0,
+                                        colors: [
+                                          courtColors.btnSwapStart,
+                                          courtColors.btnSwapEnd,
+                                        ],
+                                        onTap: () {},
+                                        child: Icon(
+                                          Icons.swap_horiz,
+                                          size: isTablet ? 24.0 : 18.0,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
+                            );
+                          }).toList()..addAll([
+                            if (sectionData.isNotEmpty)
+                              SizedBox(width: isTablet ? 120.0 : 80.0),
+                          ]),
                     )
                   : Column(
                       children: sectionData.asMap().entries.map((entry) {

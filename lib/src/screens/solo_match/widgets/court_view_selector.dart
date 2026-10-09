@@ -54,7 +54,9 @@ class CourtViewSelector extends StatelessWidget {
       padding: isLandscape
           ? const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0)
           : const EdgeInsets.all(4.0),
-      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
+      margin: isLandscape
+          ? EdgeInsets.zero
+          : const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
       decoration: BoxDecoration(
         color: courtColors.courtSelectBg,
         borderRadius: BorderRadius.circular(isLandscape ? 20 : 25),
@@ -69,7 +71,10 @@ class CourtViewSelector extends StatelessWidget {
             : null,
       ),
       child: isLandscape
-          ? Column(mainAxisSize: MainAxisSize.min, children: [assigned, gap, standby])
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [assigned, gap, standby],
+            )
           : Row(
               children: [
                 Expanded(child: assigned),
@@ -103,7 +108,9 @@ class _CourtSegmentOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isSelected = selectedView == value;
-    final String displayLabel = isLandscape ? label.replaceAll(' ', '\n') : label;
+    final String displayLabel = isLandscape
+        ? label.replaceAll(' ', '\n')
+        : label;
 
     return GestureDetector(
       onTap: () => onSelectionChanged(value),

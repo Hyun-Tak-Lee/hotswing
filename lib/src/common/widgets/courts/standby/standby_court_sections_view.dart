@@ -61,7 +61,7 @@ class StandbyCourtSectionsView extends StatelessWidget {
                   : (courtWidth * 0.95).clamp(260.0, 380.0));
 
         final alignment = isLandscape
-            ? Alignment.centerRight
+            ? Alignment.centerLeft
             : Alignment.topCenter;
 
         return Align(
