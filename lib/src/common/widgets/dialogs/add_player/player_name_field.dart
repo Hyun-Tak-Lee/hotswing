@@ -68,12 +68,23 @@ class PlayerNameField extends StatelessWidget {
                             itemBuilder: (context, index) {
                               final option = options.elementAt(index);
                               final skillLevel = option.grade;
+                              final isTablet = ResponsiveUtils.isTablet(
+                                context,
+                              );
                               return ListTile(
+                                dense: !isTablet,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: isTablet ? 16.0 : 12.0,
+                                  vertical: isTablet ? 6.0 : 0.0,
+                                ),
                                 title: Text(
                                   '${option.name} ($skillLevel)',
-                                  style: TextStyle(
-                                    color: baseColors.textPrimary,
-                                  ),
+                                  style: (labelStyle ?? const TextStyle())
+                                      .copyWith(
+                                        fontSize: isTablet ? 18.0 : 14.0,
+                                        color: baseColors.textPrimary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                 ),
                                 onTap: () => onSelected(option),
                               );
