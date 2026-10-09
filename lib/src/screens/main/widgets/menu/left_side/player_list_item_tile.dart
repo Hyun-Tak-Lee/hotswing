@@ -182,7 +182,6 @@ class _PlayerMetadataRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseColors = context.baseColors;
     final playerColors = context.playerColors;
     final courtColors = context.courtColors;
     final double subTextFontSize = isTablet ? 17.0 : 13.0;

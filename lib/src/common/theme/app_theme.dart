@@ -36,9 +36,7 @@ abstract final class AppTheme {
     // Text:      선명하고 쨍한 Slate 차콜 (#0F172A)로 완벽한 가독성 확보
     // ──────────────────────────────────────────────────────────────
     const lightBgBase = Color(0xFFF6F9F7); // L0: 맑고 은은한 라이트 배경
-    const lightBgSurface = Color(0xFFFFFFFF); // L1: 대기 패널, 메인 컨텐츠 영역
     const lightBgRaised = Color(0xFFFFFFFF); // L2: 카드/다이얼로그 Pure White
-    const lightBgSlot = Color(0xFFF1F7F3); // L3: 내부 빈 슬롯 베이스
     const lightAccent = Color(0xFF059669); // Emerald Green (산뜻하고 눈 편안한 메인)
     const lightAccentDim = Color(0xFF047857); // Deep Emerald
     const lightTextPri = Color(0xFF0F172A); // Slate-900 (또렷하고 선명한 최고 가독성)

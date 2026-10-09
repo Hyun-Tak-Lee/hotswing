@@ -216,7 +216,6 @@ class _PlayerMetadataText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseColors = context.baseColors;
     final courtColors = context.courtColors;
     final List<Widget> items = [];
 
