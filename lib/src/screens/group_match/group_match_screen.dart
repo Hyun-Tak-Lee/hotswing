@@ -131,6 +131,8 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
                 ),
               ],
             )
+          : isMobileSize
+          ? RepaintBoundary(child: courtSectionWidget)
           : Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,

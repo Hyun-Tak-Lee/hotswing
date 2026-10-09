@@ -127,6 +127,8 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
                 ),
               ],
             )
+          : isMobileSize
+          ? RepaintBoundary(child: courtSectionWidget)
           : Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,

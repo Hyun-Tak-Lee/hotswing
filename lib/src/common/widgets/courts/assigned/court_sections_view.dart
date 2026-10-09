@@ -9,6 +9,7 @@ import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned/assigned_gradient_button.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned/auto_match_split_button.dart';
+import 'package:hotswing/src/common/widgets/waiting/waiting_players_bottom_sheet.dart';
 
 /// 배정된 진행 코트들의 목록을 반응형(가로/세로)으로 배치하여 렌더링하는 위젯.
 class CourtSectionsView extends StatelessWidget {
@@ -96,6 +97,12 @@ class CourtSectionsView extends StatelessWidget {
                                 playersProvider.addUnassignedPlayer(removed);
                               }
                             },
+                            onEmptySlotTap: (courtIndex, slotIndex) =>
+                                _handleEmptySlotTap(
+                                  context: context,
+                                  courtIndex: courtIndex,
+                                  slotIndex: slotIndex,
+                                ),
                             headerActions: [
                               // 새로고침 버튼
                               AssignedGradientButton(
@@ -252,6 +259,12 @@ class CourtSectionsView extends StatelessWidget {
                                 playersProvider.addUnassignedPlayer(removed);
                               }
                             },
+                            onEmptySlotTap: (courtIndex, slotIndex) =>
+                                _handleEmptySlotTap(
+                                  context: context,
+                                  courtIndex: courtIndex,
+                                  slotIndex: slotIndex,
+                                ),
                             headerActions: [
                               // 새로고침 버튼
                               AssignedGradientButton(
@@ -382,6 +395,28 @@ class CourtSectionsView extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  // ==========================================
+  // Private Helper Methods
+  // ==========================================
+
+  Future<void> _handleEmptySlotTap({
+    required BuildContext context,
+    required int courtIndex,
+    required int slotIndex,
+  }) async {
+    final selectedPlayer = await WaitingPlayersBottomSheet.show(
+      context: context,
+      title: '${courtIndex + 1} 코트 선수 추가',
+    );
+    if (selectedPlayer == null || !context.mounted) return;
+    context.read<PlayersProvider>().assignUnassignedPlayer(
+      player: selectedPlayer,
+      targetSectionKind: PlayerSectionKind.assigned.value,
+      targetSectionIndex: courtIndex,
+      targetSubIndex: slotIndex,
     );
   }
 }

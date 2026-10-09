@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/constants/court_constants.dart';
+import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
 import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/models/players/player.dart';
@@ -433,6 +434,27 @@ class PlayersProvider with ChangeNotifier {
     _ensureSpareStandbyCourt();
     _saveLoadedPlayers();
     notifyListeners();
+  }
+
+  /// 미배정 대기열의 [player]를 [targetSectionKind] 코트의 지정된 슬롯에 배치합니다.
+  void assignUnassignedPlayer({
+    required Player player,
+    required String targetSectionKind,
+    required int targetSectionIndex,
+    required int targetSubIndex,
+  }) {
+    moveOrSwapPlayer(
+      data: PlayerDragData(
+        player: player,
+        sourceSectionId: 'unassigned_${player.id}',
+        sectionKind: PlayerSectionKind.unassigned.value,
+        sectionIndex: -1,
+        subIndex: -1,
+      ),
+      targetSectionKind: targetSectionKind,
+      targetSectionIndex: targetSectionIndex,
+      targetSubIndex: targetSubIndex,
+    );
   }
 
   /// 새로운 대기 코트를 1개 추가합니다.

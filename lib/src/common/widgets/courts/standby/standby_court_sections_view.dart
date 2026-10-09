@@ -9,6 +9,7 @@ import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/common/widgets/courts/standby/animated_court_entry.dart';
 import 'package:hotswing/src/common/widgets/courts/standby/standby_gradient_button.dart';
+import 'package:hotswing/src/common/widgets/waiting/waiting_players_bottom_sheet.dart';
 
 /// 대기 코트들의 목록과 코트 추가 영역을 반응형으로 렌더링하는 위젯.
 class StandbyCourtSectionsView extends StatelessWidget {
@@ -107,6 +108,12 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                       );
                                     }
                                   },
+                                  onEmptySlotTap: (courtIndex, slotIndex) =>
+                                      _handleEmptySlotTap(
+                                        context: context,
+                                        courtIndex: courtIndex,
+                                        slotIndex: slotIndex,
+                                      ),
                                   headerActions: [
                                     // 새로고침 버튼
                                     StandbyGradientButton(
@@ -340,6 +347,12 @@ class StandbyCourtSectionsView extends StatelessWidget {
                                       );
                                     }
                                   },
+                                  onEmptySlotTap: (courtIndex, slotIndex) =>
+                                      _handleEmptySlotTap(
+                                        context: context,
+                                        courtIndex: courtIndex,
+                                        slotIndex: slotIndex,
+                                      ),
                                   headerActions: [
                                     // 새로고침 버튼
                                     StandbyGradientButton(
@@ -540,6 +553,28 @@ class StandbyCourtSectionsView extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  // ==========================================
+  // Private Helper Methods
+  // ==========================================
+
+  Future<void> _handleEmptySlotTap({
+    required BuildContext context,
+    required int courtIndex,
+    required int slotIndex,
+  }) async {
+    final selectedPlayer = await WaitingPlayersBottomSheet.show(
+      context: context,
+      title: '대기 ${courtIndex + 1} 코트 선수 추가',
+    );
+    if (selectedPlayer == null || !context.mounted) return;
+    context.read<PlayersProvider>().assignUnassignedPlayer(
+      player: selectedPlayer,
+      targetSectionKind: PlayerSectionKind.standby.value,
+      targetSectionIndex: courtIndex,
+      targetSubIndex: slotIndex,
     );
   }
 }

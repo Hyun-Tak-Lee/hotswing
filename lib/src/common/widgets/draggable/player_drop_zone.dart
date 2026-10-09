@@ -26,6 +26,7 @@ class PlayerDropZone extends StatelessWidget {
   final VoidCallback? onDragStartedFromZone;
   final VoidCallback? onDragEndedFromZone;
   final VoidCallback? onPlayerRemoved;
+  final VoidCallback? onEmptySlotTap;
 
   const PlayerDropZone({
     super.key,
@@ -40,6 +41,7 @@ class PlayerDropZone extends StatelessWidget {
     this.onDragStartedFromZone,
     this.onDragEndedFromZone,
     this.onPlayerRemoved,
+    this.onEmptySlotTap,
   });
 
   @override
@@ -118,15 +120,10 @@ class PlayerDropZone extends StatelessWidget {
               ),
               child: Center(
                 child: player == null
-                    ? Text(
-                        isDropEnabled ? '' : 'X',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 24.0,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurfaceVariant.withAlpha(100),
-                        ),
+                    ? _EmptySlotContent(
+                        isDropEnabled: isDropEnabled,
+                        isTablet: isTablet,
+                        onTap: onEmptySlotTap,
                       )
                     : Opacity(
                         opacity: player!.activate ? 1.0 : 0.4,
@@ -150,5 +147,62 @@ class PlayerDropZone extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class _EmptySlotContent extends StatelessWidget {
+  final bool isDropEnabled;
+  final bool isTablet;
+  final VoidCallback? onTap;
+
+  const _EmptySlotContent({
+    required this.isDropEnabled,
+    required this.isTablet,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!isDropEnabled) {
+      return Text(
+        'X',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 24.0,
+          color: Theme.of(
+            context,
+          ).colorScheme.onSurfaceVariant.withAlpha(100),
+        ),
+      );
+    }
+
+    // 모바일 환경이고 탭 콜백이 제공된 경우 + 버튼 렌더링
+    if (!isTablet && onTap != null) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16.0),
+          child: SizedBox.expand(
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withAlpha(20),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.add_rounded,
+                  size: 26.0,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }

@@ -41,6 +41,9 @@ class CourtCard extends StatelessWidget {
   /// 코트 내 플레이어 삭제/제거 시 호출되는 콜백 (선택).
   final Function(int sectionIndex, int subIndex)? onPlayerRemoved;
 
+  /// 코트 내 빈 슬롯 탭 시 호출되는 콜백 (선택).
+  final void Function(int sectionIndex, int subIndex)? onEmptySlotTap;
+
   /// [CourtCard] 생성자.
   const CourtCard({
     super.key,
@@ -52,6 +55,7 @@ class CourtCard extends StatelessWidget {
     required this.onCourtPlayerDragStarted,
     required this.onCourtPlayerDragEnded,
     this.onPlayerRemoved,
+    this.onEmptySlotTap,
   });
 
   @override
@@ -145,7 +149,6 @@ class CourtCard extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _CourtDropZone extends StatelessWidget {
@@ -185,6 +188,9 @@ class _CourtDropZone extends StatelessWidget {
       onDragEndedFromZone: card.onCourtPlayerDragEnded,
       onPlayerRemoved: card.onPlayerRemoved != null
           ? () => card.onPlayerRemoved!(card.sectionIndex, subIndex)
+          : null,
+      onEmptySlotTap: card.onEmptySlotTap != null
+          ? () => card.onEmptySlotTap!(card.sectionIndex, subIndex)
           : null,
     );
   }
