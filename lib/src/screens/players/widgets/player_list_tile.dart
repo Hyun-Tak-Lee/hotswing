@@ -36,6 +36,7 @@ class PlayerListTile extends StatelessWidget {
 
     final textScale = ResponsiveUtils.getTextScale(context);
     final baseFontSize = 14.0 * textScale;
+    final skillRateFontSize = isTablet ? 21.0 : 17.5;
 
     final playersProvider = context.watch<PlayersProvider>();
     final groupInfo = playersProvider.getGroupInfo(player.id);
@@ -59,9 +60,17 @@ class PlayerListTile extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: player.role == 'manager'
+              ? playerColors.roleManager.withValues(alpha: 0.75)
+              : Colors.transparent,
+          width: 1.6,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: player.role == 'manager'
+                ? playerColors.roleManager.withValues(alpha: 0.12)
+                : Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -88,31 +97,16 @@ class PlayerListTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                // 2층: 역할, 성별, 그룹 뱃지 (성별은 중립적인 단일 색상 적용)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _MiniTag(
-                      text: _getRoleLabel(player.role),
-                      color: _getRoleColor(playerColors, player.role),
-                      fontSize: baseFontSize - 3.0,
-                    ),
-                    const SizedBox(width: 4),
-                    _MiniTag(
-                      text: _getGenderLabel(player.gender),
-                      color: playerColors.genderTag,
-                      fontSize: baseFontSize - 3.0,
-                    ),
-                    if (groupInfo != null) ...[
-                      const SizedBox(width: 4),
-                      _GroupBadge(
-                        label: groupInfo.label,
-                        color: groupInfo.color,
-                        fontSize: baseFontSize - 3.0,
-                        hasLeftMargin: false,
-                      ),
-                    ],
-                  ],
+                // 2층: 게스트(해당 시) · 성별 · 그룹 (가운뎃점 텍스트 방식)
+                _PlayerMetadataText(
+                  player: player,
+                  groupInfo: groupInfo,
+                  roleLabel: _getRoleLabel(player.role),
+                  roleColor: _getRoleColor(playerColors, player.role),
+                  genderLabel: _getGenderLabel(player.gender),
+                  fontSize: isTablet
+                      ? (baseFontSize - 1.0)
+                      : (baseFontSize - 2.0),
                 ),
               ],
             ),
@@ -124,20 +118,12 @@ class PlayerListTile extends StatelessWidget {
             children: [
               _RetentionBadge(remainingDays: remainingDays),
               const SizedBox(width: 8),
-              if (isTablet)
-                PlayerSkillRateWidget(
-                  skillLevel: skillLevel,
-                  rate: player.rate,
-                )
-              else
-                Text(
-                  skillLevel,
-                  style: TextStyle(
-                    fontSize: baseFontSize + 2,
-                    color: playerColors.rateWidgetSkill,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+              PlayerSkillRateWidget(
+                skillLevel: skillLevel,
+                rate: player.rate,
+                fontSize: skillRateFontSize,
+                rateFontSize: skillRateFontSize,
+              ),
               const SizedBox(width: 4),
               if (onEdit != null)
                 IconButton(
@@ -210,69 +196,72 @@ class PlayerListTile extends StatelessWidget {
   }
 }
 
-class _GroupBadge extends StatelessWidget {
-  final String label;
-  final Color color;
+/// 플레이어 메타데이터(게스트, 성별, 그룹)를 가운뎃점(·)으로 연결하는 텍스트 위젯.
+class _PlayerMetadataText extends StatelessWidget {
+  final Player player;
+  final dynamic groupInfo;
+  final String roleLabel;
+  final Color roleColor;
+  final String genderLabel;
   final double fontSize;
-  final bool hasLeftMargin;
 
-  const _GroupBadge({
-    required this.label,
-    required this.color,
+  const _PlayerMetadataText({
+    required this.player,
+    required this.groupInfo,
+    required this.roleLabel,
+    required this.roleColor,
+    required this.genderLabel,
     required this.fontSize,
-    this.hasLeftMargin = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: hasLeftMargin ? const EdgeInsets.only(left: 8.0) : EdgeInsets.zero,
-      padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 1.0),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.5), width: 0.8),
-      ),
-      child: Text(
-        '그룹 $label',
+    final baseColors = context.baseColors;
+    final courtColors = context.courtColors;
+    final List<Widget> items = [];
+
+    if (player.role == 'guest') {
+      items.add(
+        Text(
+          roleLabel,
+          style: TextStyle(
+            fontSize: fontSize,
+            color: roleColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+    }
+
+    items.add(
+      Text(
+        genderLabel,
         style: TextStyle(
-          fontSize: fontSize - 1.0,
+          fontSize: fontSize,
+          color: courtColors.playerItemGenderText,
           fontWeight: FontWeight.bold,
-          color: color,
         ),
       ),
     );
-  }
-}
 
-class _MiniTag extends StatelessWidget {
-  final String text;
-  final Color color;
-  final double fontSize;
-
-  const _MiniTag({
-    required this.text,
-    required this.color,
-    required this.fontSize,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 1.5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.45), width: 0.8),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.w600,
-          color: color,
+    if (groupInfo != null) {
+      items.add(
+        Text(
+          '그룹 ${groupInfo.label}',
+          style: TextStyle(
+            fontSize: fontSize,
+            color: groupInfo.color,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ),
+      );
+    }
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 3,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: items,
     );
   }
 }

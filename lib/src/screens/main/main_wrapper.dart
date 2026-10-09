@@ -102,9 +102,7 @@ class _MainWrapperState extends State<MainWrapper> {
                     ),
                   ),
                   clipBehavior: Clip.antiAlias, // 둥근 모서리에 맞춰 내용 자르기
-                  child: _MainTabStack(
-                    selectedIndex: _selectedIndex,
-                  ),
+                  child: _MainTabStack(selectedIndex: _selectedIndex),
                 ),
               ),
             ],
@@ -154,9 +152,7 @@ class _MainWrapperState extends State<MainWrapper> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           clipBehavior: Clip.antiAlias,
-          child: _MainTabStack(
-            selectedIndex: _selectedIndex,
-          ),
+          child: _MainTabStack(selectedIndex: _selectedIndex),
         ),
         bottomNavigationBar: MainNavigationBar(
           selectedIndex: _selectedIndex,
@@ -240,9 +236,7 @@ class _MainWrapperState extends State<MainWrapper> {
 }
 
 class _MainTabStack extends StatelessWidget {
-  const _MainTabStack({
-    required this.selectedIndex,
-  });
+  const _MainTabStack({required this.selectedIndex});
 
   final int selectedIndex;
 
