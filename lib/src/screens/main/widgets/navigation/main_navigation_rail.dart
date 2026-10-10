@@ -76,7 +76,7 @@ class MainNavigationRail extends StatelessWidget {
             icon: Icon(Icons.people_outlined),
             selectedIcon: Icon(Icons.people),
             label: Text(
-              '회원 목록',
+              '멤버 목록',
               overflow: TextOverflow.ellipsis,
               softWrap: false,
               maxLines: 1,

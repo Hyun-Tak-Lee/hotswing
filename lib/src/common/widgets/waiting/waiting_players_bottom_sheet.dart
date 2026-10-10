@@ -9,9 +9,9 @@ import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
-/// 모바일 환경에서 코트 빈 슬롯에 대기 선수를 배정하기 위한 바텀시트 위젯.
+/// 모바일 환경에서 코트 빈 슬롯에 대기 멤버를 배정하기 위한 바텀시트 위젯.
 class WaitingPlayersBottomSheet extends StatefulWidget {
-  /// 바텀시트 상단 타이틀 (예: '1 코트 선수 추가').
+  /// 바텀시트 상단 타이틀 (예: '1 코트 멤버 추가').
   final String title;
 
   const WaitingPlayersBottomSheet({super.key, required this.title});
@@ -264,7 +264,7 @@ class _EmptyWaitingPlayerView extends StatelessWidget {
           ),
           const SizedBox(height: 8.0),
           Text(
-            '대기 중인 선수가 없습니다.',
+            '대기 중인 멤버가 없습니다.',
             style: TextStyle(
               fontSize: 14.0,
               color: Theme.of(context).colorScheme.outline,
@@ -276,7 +276,7 @@ class _EmptyWaitingPlayerView extends StatelessWidget {
   }
 }
 
-/// 참여자 목록 및 회원 목록 카드 스타일을 적용한 대기 선수 항목 카드 위젯.
+/// 참여자 목록 및 멤버 목록 카드 스타일을 적용한 대기 멤버 항목 카드 위젯.
 /// 비활성 유저는 대기 패널과 동일하게 비활성 배경 및 투명도(0.4)가 적용됩니다.
 class _WaitingPlayerCard extends StatelessWidget {
   final Player player;

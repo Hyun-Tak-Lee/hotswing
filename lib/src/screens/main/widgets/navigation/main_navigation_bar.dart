@@ -62,7 +62,7 @@ class MainNavigationBar extends StatelessWidget {
           NavigationDestination(
             icon: Icon(Icons.people_outlined),
             selectedIcon: Icon(Icons.people),
-            label: '회원 목록',
+            label: '멤버 목록',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),

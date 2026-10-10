@@ -9,7 +9,7 @@ import 'package:hotswing/src/screens/players/widgets/player_edit/player_edit_for
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
-/// 전체 등록된 선수 목록 조회, 검색, 필터링, 수정 및 일괄 삭제 기능을 제공하는 화면 위젯.
+/// 전체 등록된 멤버 목록 조회, 검색, 필터링, 수정 및 일괄 삭제 기능을 제공하는 화면 위젯.
 class PlayersScreen extends StatelessWidget {
   /// [PlayersScreen] 생성자.
   const PlayersScreen({super.key});
@@ -105,7 +105,7 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
                               child: TextField(
                                 style: TextStyle(color: baseColors.textPrimary),
                                 decoration: InputDecoration(
-                                  hintText: '회원 이름 검색',
+                                  hintText: '멤버 이름 검색',
                                   hintStyle: TextStyle(
                                     color: baseColors.textSecondary,
                                   ),
@@ -312,8 +312,8 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
       context: context,
       builder: (BuildContext context) {
         return ConfirmationDialog(
-          title: '플레이어 삭제',
-          message: '${player.name} 플레이어를 삭제하시겠습니까?',
+          title: '멤버 삭제',
+          message: '${player.name} 멤버를 삭제하시겠습니까?',
           confirmText: '삭제',
           isDestructive: true,
           onConfirm: () {
@@ -332,9 +332,9 @@ class _PlayersScreenContentState extends State<_PlayersScreenContent> {
       context: context,
       builder: (BuildContext context) {
         return ConfirmationDialog(
-          title: '플레이어 삭제',
+          title: '멤버 삭제',
           message:
-              '선택한 ${viewModel.selectedPlayerIds.length}명의 플레이어를 삭제하시겠습니까?',
+              '선택한 ${viewModel.selectedPlayerIds.length}명의 멤버를 삭제하시겠습니까?',
           confirmText: '삭제',
           isDestructive: true,
           onConfirm: () {

@@ -155,7 +155,7 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                                         if (tabPlayers.isEmpty) {
                                           return Center(
                                             child: Text(
-                                              '대기 중인 회원이 없습니다.',
+                                              '대기 중인 멤버가 없습니다.',
                                               style: TextStyle(
                                                 color: baseColors.textSecondary,
                                                 fontSize: isTablet
@@ -279,7 +279,7 @@ class _GroupWaitingPlayersPanelState extends State<GroupWaitingPlayersPanel> {
                                         if (tabPlayers.isEmpty) {
                                           return Center(
                                             child: Text(
-                                              '대기 중인 회원이 없습니다.',
+                                              '대기 중인 멤버가 없습니다.',
                                               style: TextStyle(
                                                 color: baseColors.textSecondary,
                                                 fontSize: isTablet

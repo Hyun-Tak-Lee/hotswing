@@ -209,7 +209,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
       context: context,
       builder: (BuildContext dialogContext) {
         return ConfirmationDialog(
-          message: '모든 참여자를 명단에서 제외하시겠습니까?',
+          message: '모든 멤버를 명단에서 제외하시겠습니까?',
           confirmText: '전체 제외',
           isDestructive: true,
           onConfirm: () {

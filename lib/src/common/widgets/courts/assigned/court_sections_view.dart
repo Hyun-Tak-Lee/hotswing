@@ -429,7 +429,7 @@ class CourtSectionsView extends StatelessWidget {
   }) async {
     final selectedPlayer = await WaitingPlayersBottomSheet.show(
       context: context,
-      title: '${courtIndex + 1} 코트 선수 추가',
+      title: '${courtIndex + 1} 코트 멤버 추가',
     );
     if (selectedPlayer == null || !context.mounted) return;
     context.read<PlayersProvider>().assignUnassignedPlayer(

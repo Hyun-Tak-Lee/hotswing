@@ -9,7 +9,7 @@ import 'package:hotswing/src/screens/settings/widgets/setting_int_slider_card.da
 import 'package:hotswing/src/screens/settings/widgets/setting_section_header.dart';
 import 'package:hotswing/src/screens/settings/widgets/setting_slider_card.dart';
 
-/// 테마 모드, 코트 수, 매칭 알고리즘 가중치 및 비활동 회원 정리 등 환경설정을 관리하는 화면 위젯.
+/// 테마 모드, 코트 수, 매칭 알고리즘 가중치 및 비활동 멤버 정리 등 환경설정을 관리하는 화면 위젯.
 class SettingsScreen extends StatefulWidget {
   /// [SettingsScreen] 생성자.
   const SettingsScreen({super.key});
@@ -400,12 +400,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
 
             case 3:
-              // 플레이어 관리 섹션
+              // 멤버 관리 섹션
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   SettingSectionHeader(
-                    title: '플레이어 관리',
+                    title: '멤버 관리',
                     fontSize: headerFontSize,
                     isExpanded: _isPlayerExpanded,
                     onToggle: () =>
@@ -417,7 +417,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     secondChild: Padding(
                       padding: const EdgeInsets.only(top: 4.0, bottom: 24.0),
                       child: SettingIntSliderCard(
-                        title: '미활동 플레이어 정리 기간',
+                        title: '미활동 멤버 정리 기간',
                         leftText: '30일',
                         rightText: '180일',
                         value: optionsProvider.inactiveDaysThreshold,

@@ -230,7 +230,7 @@ class _MainWrapperState extends State<MainWrapper> {
             ],
           ),
           content: const Text(
-            '코트에 플레이어가 배치되었을 경우 모드 변경이 불가능합니다',
+            '코트에 멤버가 배치되었을 경우 모드 변경이 불가능합니다',
             style: TextStyle(fontSize: 15, height: 1.4),
           ),
           actions: [

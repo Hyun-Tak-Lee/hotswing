@@ -42,7 +42,7 @@ class LeftSideMenuHeader extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '참여자 ($playerCount명)',
+              '멤버 ($playerCount명)',
               style: TextStyle(
                 fontSize: titleFontSize,
                 fontWeight: FontWeight.bold,
@@ -53,7 +53,7 @@ class LeftSideMenuHeader extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  tooltip: '전체 참여자 제외',
+                  tooltip: '전체 멤버 제외',
                   icon: const Icon(Icons.delete_sweep),
                   iconSize: iconSize,
                   padding: buttonPadding,
@@ -73,7 +73,7 @@ class LeftSideMenuHeader extends StatelessWidget {
                 ),
                 SizedBox(width: isMobile ? 4 : 8),
                 IconButton(
-                  tooltip: '일반 참여자 추가',
+                  tooltip: '일반 멤버 추가',
                   icon: const Icon(Icons.person_add),
                   iconSize: iconSize,
                   padding: buttonPadding,
