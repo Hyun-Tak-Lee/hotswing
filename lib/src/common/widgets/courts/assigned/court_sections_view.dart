@@ -10,6 +10,7 @@ import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned/assigned_gradient_button.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned/auto_match_split_button.dart';
 import 'package:hotswing/src/common/widgets/waiting/waiting_players_bottom_sheet.dart';
+import 'package:hotswing/src/domain/court/court_speaker.dart';
 
 /// 배정된 진행 코트들의 목록을 반응형(가로/세로)으로 배치하여 렌더링하는 위젯.
 class CourtSectionsView extends StatelessWidget {
@@ -241,6 +242,31 @@ class CourtSectionsView extends StatelessWidget {
                                       ),
                                     ),
                                   ),
+                                  // 사운드(선수 호명) 버튼: 4명이 채워졌을 때만 노출
+                                  if (isGameStarted)
+                                    AssignedGradientButton(
+                                      width: isTablet ? 50.0 : 40.0,
+                                      height: isTablet ? 45.0 : 30.0,
+                                      colors: const [
+                                        Color(0xFF3B82F6),
+                                        Color(0xFF1D4ED8),
+                                      ],
+                                      onTap: () {
+                                        final playerNames = item
+                                            .whereType<Player>()
+                                            .map((p) => p.name)
+                                            .toList();
+                                        CourtSpeaker().speakPlayers(
+                                          courtNumber: sectionIndex + 1,
+                                          playerNames: playerNames,
+                                        );
+                                      },
+                                      child: Icon(
+                                        Icons.volume_up_rounded,
+                                        size: isTablet ? 24.0 : 18.0,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                 ],
                               ),
                             );
@@ -406,6 +432,31 @@ class CourtSectionsView extends StatelessWidget {
                                   ),
                                 ),
                               ),
+                              // 사운드(선수 호명) 버튼: 4명이 채워졌을 때만 노출
+                              if (isGameStarted)
+                                AssignedGradientButton(
+                                  width: isTablet ? 50.0 : 40.0,
+                                  height: isTablet ? 45.0 : 30.0,
+                                  colors: const [
+                                    Color(0xFF3B82F6),
+                                    Color(0xFF1D4ED8),
+                                  ],
+                                  onTap: () {
+                                    final playerNames = item
+                                        .whereType<Player>()
+                                        .map((p) => p.name)
+                                        .toList();
+                                    CourtSpeaker().speakPlayers(
+                                      courtNumber: sectionIndex + 1,
+                                      playerNames: playerNames,
+                                    );
+                                  },
+                                  child: Icon(
+                                    Icons.volume_up_rounded,
+                                    size: isTablet ? 24.0 : 18.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
                             ],
                           ),
                         );
