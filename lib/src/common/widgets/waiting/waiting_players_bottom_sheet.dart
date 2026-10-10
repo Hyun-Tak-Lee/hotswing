@@ -416,7 +416,7 @@ class _WaitingPlayerCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 12),
                               Text(
-                                '${player.grade}급',
+                                player.grade,
                                 style: TextStyle(
                                   fontSize: 15.5,
                                   color: playerColors.rateWidgetSkill,

@@ -169,15 +169,13 @@ class _EmptySlotContent extends StatelessWidget {
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 24.0,
-          color: Theme.of(
-            context,
-          ).colorScheme.onSurfaceVariant.withAlpha(100),
+          color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(100),
         ),
       );
     }
 
-    // 모바일 환경이고 탭 콜백이 제공된 경우 + 버튼 렌더링
-    if (!isTablet && onTap != null) {
+    // 탭 콜백이 제공된 경우 + 버튼 렌더링 (모바일 및 태블릿 공통)
+    if (onTap != null) {
       return Material(
         color: Colors.transparent,
         child: InkWell(
@@ -193,7 +191,7 @@ class _EmptySlotContent extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.add_rounded,
-                  size: 26.0,
+                  size: isTablet ? 30.0 : 26.0,
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
