@@ -11,11 +11,11 @@ dependencies:
     sdk: flutter
   provider: ^6.1.5
   realm: ^20.2.0
-  cupertino_icons: ^1.0.8
   shared_preferences: ^2.5.3
-  device_info_plus: ^12.3.0
+  device_info_plus: ^13.3.0
   flutter_dotenv: ^6.0.0
   crypto: ^3.0.5
+  flutter_tts: ^4.2.5
 
 dev_dependencies:
   flutter_test:
