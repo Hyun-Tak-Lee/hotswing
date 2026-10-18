@@ -9,17 +9,23 @@ class CourtSlotService {
 
   /// [courtPlayers]의 인원이 꽉 찼는지([CourtConstants.capacity]명) 확인하여 경기 시작 시간을 계산합니다.
   ///
-  /// 인원이 충족되면 기존 [currentStartTime]을 유지하거나 새로 시작된 경우 현재 시각을 반환하며,
+  /// 인원이 충족되고 [previousPlayers]와 멤버 구성이 같으면(자리 이동만 있는 경우) 기존 [currentStartTime]을 유지하고,
+  /// 멤버가 한 명이라도 바뀌었으면 현재 시각을 반환하여 타이머를 새로 시작합니다.
   /// 인원이 부족하면 `null`을 반환하여 타이머를 초기화합니다.
-  DateTime? calculateCourtStartTime(
-    List<Player?> courtPlayers,
-    DateTime? currentStartTime,
-  ) {
-    final activeCount = courtPlayers.where((p) => p != null).length;
-    if (activeCount == CourtConstants.capacity) {
-      return currentStartTime ?? DateTime.now();
-    }
-    return null;
+  DateTime? calculateCourtStartTime({
+    required List<Player?> courtPlayers,
+    required List<Player?> previousPlayers,
+    required DateTime? currentStartTime,
+  }) {
+    final currentMembers = courtPlayers.whereType<Player>().toList();
+    if (currentMembers.length != CourtConstants.capacity) return null;
+
+    final previousMembers = previousPlayers.whereType<Player>().toList();
+    final bool isSameMembers =
+        previousMembers.length == currentMembers.length &&
+        currentMembers.every(previousMembers.contains);
+    if (isSameMembers && currentStartTime != null) return currentStartTime;
+    return DateTime.now();
   }
 
   /// [courts] 내에 [courtIndex] 및 [slotIndex]가 유효한 범위에 있는지 검증합니다.

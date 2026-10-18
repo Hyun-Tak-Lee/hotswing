@@ -263,6 +263,7 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
 
   Future<void> _checkInitialState() async {
     final hasPassword = await _authService.hasManagerPassword();
+    if (!mounted) return;
     setState(() {
       _currentMode = hasPassword
           ? _AuthMode.verifyManager
@@ -283,8 +284,9 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
     switch (_currentMode) {
       case _AuthMode.verifyManager:
         final isValid = await _authService.verifyManagerPassword(password);
+        if (!mounted) return;
         if (isValid) {
-          if (mounted) Navigator.of(context).pop(true);
+          Navigator.of(context).pop(true);
         } else {
           setState(() {
             _errorMessage = '비밀번호가 일치하지 않습니다.';

@@ -270,7 +270,22 @@ class PlayersProvider with ChangeNotifier {
           playerId,
         );
       }
-      for (var court in _assignedPlayers) {
+      final previousCourts = _snapshotAssignedCourts();
+      for (
+        int courtIndex = 0;
+        courtIndex < _assignedPlayers.length;
+        courtIndex++
+      ) {
+        final court = _assignedPlayers[courtIndex];
+        if (!court.contains(playerToRemove)) continue;
+        for (int i = 0; i < court.length; i++) {
+          if (court[i] == playerToRemove) {
+            court[i] = null;
+          }
+        }
+        _updateCourtStartTime(courtIndex, previousCourts: previousCourts);
+      }
+      for (var court in _standbyPlayers) {
         for (int i = 0; i < court.length; i++) {
           if (court[i] == playerToRemove) {
             court[i] = null;
@@ -289,8 +304,11 @@ class PlayersProvider with ChangeNotifier {
     _players.clear();
     _unassignedPlayers.clear();
     for (int i = 0; i < _assignedPlayers.length; i++) {
-      _assignedPlayers[i] = List.filled(4, null);
+      _assignedPlayers[i] = List.filled(CourtConstants.capacity, null);
     }
+    _courtStartTimes.fillRange(0, _courtStartTimes.length, null);
+    _standbyPlayers.clear();
+    _ensureSpareStandbyCourt();
     _saveLoadedPlayers();
     notifyListeners();
   }
@@ -357,6 +375,7 @@ class PlayersProvider with ChangeNotifier {
 
   /// 진행 코트의 특정 슬롯에 [player]를 배치합니다.
   void addAssignedPlayer(Player? player, int courtIndex, int playerIndex) {
+    final previousCourts = _snapshotAssignedCourts();
     if (!_courtSlotService.setPlayerAt(
       _assignedPlayers,
       courtIndex,
@@ -365,13 +384,14 @@ class PlayersProvider with ChangeNotifier {
     )) {
       return;
     }
-    _updateCourtStartTime(courtIndex);
+    _updateCourtStartTime(courtIndex, previousCourts: previousCourts);
     _saveLoadedPlayers();
     notifyListeners();
   }
 
   /// 진행 코트의 특정 슬롯에서 선수를 제거하고 반환합니다.
   Player? removeAssignedPlayer(int courtIndex, int playerIndex) {
+    final previousCourts = _snapshotAssignedCourts();
     final removed = _courtSlotService.removePlayerAt(
       _assignedPlayers,
       courtIndex,
@@ -379,7 +399,7 @@ class PlayersProvider with ChangeNotifier {
     );
     if (removed == null) return null;
 
-    _updateCourtStartTime(courtIndex);
+    _updateCourtStartTime(courtIndex, previousCourts: previousCourts);
     _saveLoadedPlayers();
     notifyListeners();
     return removed;
@@ -421,6 +441,7 @@ class PlayersProvider with ChangeNotifier {
     required int targetSectionIndex,
     required int targetSubIndex,
   }) {
+    final previousCourts = _snapshotAssignedCourts();
     final affectedCourts = _courtSlotService.moveOrSwapPlayer(
       assignedPlayers: _assignedPlayers,
       standbyPlayers: _standbyPlayers,
@@ -432,7 +453,7 @@ class PlayersProvider with ChangeNotifier {
     );
 
     for (final courtIndex in affectedCourts) {
-      _updateCourtStartTime(courtIndex);
+      _updateCourtStartTime(courtIndex, previousCourts: previousCourts);
     }
 
     _ensureSpareStandbyCourt();
@@ -479,6 +500,7 @@ class PlayersProvider with ChangeNotifier {
 
   /// [standbyIndex]번째 대기 팀을 [assignedIndex]번째 진행 코트로 승격합니다.
   bool popStandByPlayerByIndex(int assignedIndex, int standbyIndex) {
+    final previousCourts = _snapshotAssignedCourts();
     final success = _courtSlotService.popStandbyTeam(
       assignedPlayers: _assignedPlayers,
       standbyPlayers: _standbyPlayers,
@@ -488,7 +510,7 @@ class PlayersProvider with ChangeNotifier {
     if (!success) return false;
 
     _ensureSpareStandbyCourt();
-    _updateCourtStartTime(assignedIndex);
+    _updateCourtStartTime(assignedIndex, previousCourts: previousCourts);
     _saveLoadedPlayers();
     notifyListeners();
     return true;
@@ -682,13 +704,14 @@ class PlayersProvider with ChangeNotifier {
   void addPlayersToAssignedCourt(int sectionIndex, List<Player> playersToAdd) {
     if (sectionIndex < 0 || sectionIndex >= _assignedPlayers.length) return;
 
+    final previousCourts = _snapshotAssignedCourts();
     _courtSlotService.fillCourtSlots(
       court: _assignedPlayers[sectionIndex],
       unassignedPlayers: _unassignedPlayers,
       playersToAdd: playersToAdd,
     );
 
-    _updateCourtStartTime(sectionIndex);
+    _updateCourtStartTime(sectionIndex, previousCourts: previousCourts);
     _saveLoadedPlayers();
     notifyListeners();
   }
@@ -809,11 +832,21 @@ class PlayersProvider with ChangeNotifier {
     _customGroupNames.addAll(loadedNames);
   }
 
-  void _updateCourtStartTime(int courtIndex) {
+  List<List<Player?>> _snapshotAssignedCourts() {
+    return _assignedPlayers.map(List<Player?>.of).toList();
+  }
+
+  void _updateCourtStartTime(
+    int courtIndex, {
+    required List<List<Player?>> previousCourts,
+  }) {
     if (courtIndex < 0 || courtIndex >= _assignedPlayers.length) return;
     _courtStartTimes[courtIndex] = _courtSlotService.calculateCourtStartTime(
-      _assignedPlayers[courtIndex],
-      _courtStartTimes[courtIndex],
+      courtPlayers: _assignedPlayers[courtIndex],
+      previousPlayers: courtIndex < previousCourts.length
+          ? previousCourts[courtIndex]
+          : const [],
+      currentStartTime: _courtStartTimes[courtIndex],
     );
   }
 
