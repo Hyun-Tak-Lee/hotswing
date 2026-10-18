@@ -297,7 +297,7 @@ class _WaitingPlayerCard extends StatelessWidget {
     final isManager = player.role == 'manager';
     final isActive = player.activate;
 
-    final String genderLabel = player.gender == 'M' ? '남' : '여';
+    final String genderLabel = player.gender.startsWith('남') ? '남' : '여';
 
     final BoxDecoration decoration = isActive
         ? BoxDecoration(

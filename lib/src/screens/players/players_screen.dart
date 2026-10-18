@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/screens/players/widgets/provider/players_view_model.dart';
 import 'package:hotswing/src/screens/players/widgets/player_list_tile.dart';
 import 'package:hotswing/src/screens/players/widgets/players_filter/players_filter_bottom_sheet.dart';
@@ -17,7 +18,7 @@ class PlayersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => PlayersViewModel(),
+      create: (context) => PlayersViewModel(context.read<PlayersProvider>()),
       child: const _PlayersScreenContent(),
     );
   }

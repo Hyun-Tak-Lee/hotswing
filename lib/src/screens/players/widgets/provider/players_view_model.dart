@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:hotswing/src/models/players/player.dart';
+import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/repository/realms/players.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/common/utils/database/realm_query_builder.dart';
@@ -11,6 +12,7 @@ class PlayersViewModel extends ChangeNotifier {
   static const int _pageSize = 30;
 
   final PlayerRepository _repository = PlayerRepository.instance;
+  final PlayersProvider _playersProvider;
 
   // 현재 화면에 표시되는 플레이어 목록
   List<Player> _players = [];
@@ -48,7 +50,7 @@ class PlayersViewModel extends ChangeNotifier {
   bool _isDisposed = false;
 
   /// [PlayersViewModel] 생성자. 초기 데이터를 조회합니다.
-  PlayersViewModel() {
+  PlayersViewModel(this._playersProvider) {
     _loadInitialData();
   }
 
@@ -187,18 +189,34 @@ class PlayersViewModel extends ChangeNotifier {
     required List<ObjectId> groups,
     required String description,
   }) {
-    _repository.updatePlayer(
-      player: player,
-      name: name,
-      role: role,
-      rate: rate,
-      grade: grade,
-      gender: gender,
-      played: played,
-      waited: waited,
-      groups: RealmList<ObjectId>(groups),
-      description: description,
-    );
+    if (_playersProvider.players.containsKey(player.id)) {
+      _playersProvider.updatePlayer(
+        playerId: player.id,
+        newName: name,
+        newRate: rate,
+        newGrade: grade,
+        newGender: gender,
+        newRole: role,
+        newPlayed: played,
+        newWaited: waited,
+        newLated: player.lated,
+        newGroups: groups,
+        newDescription: description,
+      );
+    } else {
+      _repository.updatePlayer(
+        player: player,
+        name: name,
+        role: role,
+        rate: rate,
+        grade: grade,
+        gender: gender,
+        played: played,
+        waited: waited,
+        groups: RealmList<ObjectId>(groups),
+        description: description,
+      );
+    }
 
     // 목록 데이터 갱신
     notifyListeners();
@@ -249,7 +267,9 @@ class PlayersViewModel extends ChangeNotifier {
 
   /// 단일 선수([player])를 DB에서 삭제하고 목록에서 제거합니다.
   void deletePlayer(Player player) {
-    _repository.deletePlayer(player.id);
+    final playerId = player.id;
+    _playersProvider.removePlayer(playerId);
+    _repository.deletePlayer(playerId);
 
     // 삭제 후 리스트 갱신 (Realm 객체가 삭제되면무효화되므로 isValid 체크)
     _players.removeWhere((p) => !p.isValid);
@@ -260,7 +280,11 @@ class PlayersViewModel extends ChangeNotifier {
   void deleteSelectedPlayers() {
     if (_selectedPlayerIds.isEmpty) return;
 
-    _repository.deletePlayers(_selectedPlayerIds.toList());
+    final idsToDelete = _selectedPlayerIds.toList();
+    for (final id in idsToDelete) {
+      _playersProvider.removePlayer(id);
+    }
+    _repository.deletePlayers(idsToDelete);
 
     _players.removeWhere((p) => !p.isValid);
 

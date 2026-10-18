@@ -85,8 +85,8 @@ class PlayersProvider with ChangeNotifier {
   void initialized() async {
     try {
       await _loadCustomGroupNames();
-      await _loadInitialAssignedPlayersCount();
       await _loadInitialPlayers();
+      await _loadInitialAssignedPlayersCount();
 
       final activePlayerIds = _players.keys.toList();
       _playerService.cleanupInactivePlayers(
@@ -344,7 +344,7 @@ class PlayersProvider with ChangeNotifier {
     if (!_players.containsKey(player.id)) {
       _players[player.id] = player;
     }
-    if (!unassignedPlayers.contains(player)) {
+    if (!_unassignedPlayers.contains(player)) {
       _unassignedPlayers.add(player);
     }
     if (player.groups.isNotEmpty) {
