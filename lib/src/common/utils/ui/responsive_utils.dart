@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// 화면 크기에 따른 모바일/태블릿 반응형 레이아웃 및 텍스트 스케일링 유틸리티.
-class ResponsiveUtils {
+abstract final class ResponsiveUtils {
   /// 태블릿을 구분하기 위한 너비 기준값(dp)입니다.
   static const double tabletThreshold = 600.0;
 

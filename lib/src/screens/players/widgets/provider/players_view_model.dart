@@ -38,7 +38,7 @@ class PlayersViewModel extends ChangeNotifier {
   // 이름 검색어
   String _searchQuery = '';
 
-  // 급수 필터 (다중 선택 가능, skill_utils 기준 키값)
+  // 급수 필터 (다중 선택 가능, SkillConstants.levelToRate 기준 키값)
   final Set<String> _selectedSkills = {};
 
   // 현재 수정 중인 플레이어 ID

@@ -1,3 +1,4 @@
+import 'package:hotswing/src/common/constants/auth_constants.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 import 'package:hotswing/src/common/utils/security/crypto_utils.dart';
 import 'package:hotswing/src/services/system/activation_service.dart';
@@ -9,9 +10,6 @@ class ManagerAuthService {
   static final ManagerAuthService _instance = ManagerAuthService._internal();
   final SharedProvider _sharedProvider = SharedProvider();
 
-  static const String _keyManagerPasswordHash = 'manager_password_hash';
-  static const String _keyManagerPasswordSalt = 'manager_password_salt';
-
   ManagerAuthService._internal();
 
   factory ManagerAuthService() {
@@ -20,18 +18,24 @@ class ManagerAuthService {
 
   /// 관리자 비밀번호가 설정되어 있는지 확인
   Future<bool> hasManagerPassword() async {
-    final hash = await _sharedProvider.getString(_keyManagerPasswordHash);
+    final hash = await _sharedProvider.getString(
+      AuthConstants.managerPasswordHashKey,
+    );
     return hash != null && hash.isNotEmpty;
   }
 
   /// 관리자 비밀번호 검증
   Future<bool> verifyManagerPassword(String password) async {
-    final savedHash = await _sharedProvider.getString(_keyManagerPasswordHash);
+    final savedHash = await _sharedProvider.getString(
+      AuthConstants.managerPasswordHashKey,
+    );
     if (savedHash == null || savedHash.isEmpty) {
       return false;
     }
 
-    final salt = await _sharedProvider.getString(_keyManagerPasswordSalt);
+    final salt = await _sharedProvider.getString(
+      AuthConstants.managerPasswordSaltKey,
+    );
     if (salt == null || salt.isEmpty) {
       // salt 도입 이전에 저장된 해시: 일치하면 salt 적용 해시로 재저장
       if (savedHash != CryptoUtils.generateHash(password)) return false;
@@ -53,7 +57,13 @@ class ManagerAuthService {
   Future<void> setManagerPassword(String newPassword) async {
     final salt = CryptoUtils.generateSalt();
     final hash = CryptoUtils.generateSaltedHash(newPassword, salt);
-    await _sharedProvider.saveString(_keyManagerPasswordSalt, salt);
-    await _sharedProvider.saveString(_keyManagerPasswordHash, hash);
+    await _sharedProvider.saveString(
+      AuthConstants.managerPasswordSaltKey,
+      salt,
+    );
+    await _sharedProvider.saveString(
+      AuthConstants.managerPasswordHashKey,
+      hash,
+    );
   }
 }

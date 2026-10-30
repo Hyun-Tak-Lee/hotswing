@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:realm/realm.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
@@ -45,19 +46,9 @@ class _MultiSelectFormState extends State<MultiSelectForm> {
   late List<ObjectId> _selectedOptions;
   bool _isMenuOpen = false;
 
-  double get _labelFontSize {
-    double screenWidth = MediaQuery.of(context).size.width;
-    const double tabletThreshold = 600.0;
-    final isMobileSize = screenWidth < tabletThreshold;
-    return isMobileSize ? 15 : 18;
-  }
+  double get _labelFontSize => ResponsiveUtils.isTablet(context) ? 18 : 15;
 
-  double get _chipFontSize {
-    double screenWidth = MediaQuery.of(context).size.width;
-    const double tabletThreshold = 600.0;
-    final isMobileSize = screenWidth < tabletThreshold;
-    return isMobileSize ? 12 : 14;
-  }
+  double get _chipFontSize => ResponsiveUtils.isTablet(context) ? 14 : 12;
 
   @override
   void initState() {

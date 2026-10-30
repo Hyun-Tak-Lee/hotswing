@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/player_constants.dart';
 import 'package:flutter/services.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
@@ -45,8 +46,12 @@ class PlayerDescriptionField extends StatelessWidget {
           customVerticalPadding: isTablet ? 12.0 : 8.0,
         ),
         style: labelStyle,
-        maxLength: 16,
-        inputFormatters: [LengthLimitingTextInputFormatter(16)],
+        maxLength: PlayerConstants.maxDescriptionLength,
+        inputFormatters: [
+          LengthLimitingTextInputFormatter(
+            PlayerConstants.maxDescriptionLength,
+          ),
+        ],
         onSaved: onDescriptionSaved,
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/player_constants.dart';
 import 'package:flutter/services.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
@@ -123,7 +124,7 @@ class PlayerNameField extends StatelessWidget {
                             ),
                           ),
                           style: labelStyle,
-                          maxLength: 10,
+                          maxLength: PlayerConstants.maxNameLength,
                           inputFormatters: [
                             LengthLimitingTextInputFormatter(10),
                           ],
@@ -131,7 +132,9 @@ class PlayerNameField extends StatelessWidget {
                             if (value == null || value.isEmpty) {
                               return '이름을 입력하세요';
                             }
-                            if (value.length > 10) return '이름은 10자 이하로 입력해주세요';
+                            if (value.length > PlayerConstants.maxNameLength) {
+                              return '이름은 ${PlayerConstants.maxNameLength}자 이하로 입력해주세요';
+                            }
                             return null;
                           },
                           onSaved: onNameSaved,

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/theme_constants.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 
 /// 애플리케이션의 테마 모드(시스템, 라이트, 다크)를 관리하고 영속화하는 프로바이더.
 class ThemeProvider with ChangeNotifier {
-  static const String _keyThemeMode = 'theme_mode';
   final SharedProvider _sharedProvider = SharedProvider();
 
   ThemeMode _themeMode = ThemeMode.system;
@@ -23,7 +23,7 @@ class ThemeProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _sharedProvider.saveString(_keyThemeMode, mode.name);
+      await _sharedProvider.saveString(ThemeConstants.themeModeKey, mode.name);
     } catch (_) {
       // 저장 실패 로그 처리 등을 추가할 수 있습니다.
     }
@@ -36,7 +36,9 @@ class ThemeProvider with ChangeNotifier {
   /// 로컬 저장소(SharedPreferences)로부터 설정값을 불러옵니다.
   Future<void> _loadThemeMode() async {
     try {
-      final String? themeStr = await _sharedProvider.getString(_keyThemeMode);
+      final String? themeStr = await _sharedProvider.getString(
+        ThemeConstants.themeModeKey,
+      );
       if (themeStr != null) {
         _themeMode = ThemeMode.values.firstWhere(
           (e) => e.name == themeStr,

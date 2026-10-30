@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/player_constants.dart';
 import 'package:hotswing/src/common/constants/court_constants.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
@@ -158,7 +159,10 @@ class PlayersProvider with ChangeNotifier {
     required List<ObjectId> groups,
     required String description,
   }) {
-    if (name.length > 10 || description.length > 16) return;
+    if (name.length > PlayerConstants.maxNameLength ||
+        description.length > PlayerConstants.maxDescriptionLength) {
+      return;
+    }
     if (_players.values.any((player) => player.name == name)) return;
 
     final ObjectId newId = ObjectId();
@@ -210,7 +214,10 @@ class PlayersProvider with ChangeNotifier {
     required List<ObjectId> newGroups,
     required String newDescription,
   }) {
-    if (newName.length > 10 || newDescription.length > 16) return;
+    if (newName.length > PlayerConstants.maxNameLength ||
+        newDescription.length > PlayerConstants.maxDescriptionLength) {
+      return;
+    }
     if (!_players.containsKey(playerId)) return;
     Player playerToUpdate = _players[playerId]!;
 

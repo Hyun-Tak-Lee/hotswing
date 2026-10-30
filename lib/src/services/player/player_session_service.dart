@@ -2,24 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:hotswing/src/common/constants/court_constants.dart';
+import 'package:hotswing/src/common/constants/session_constants.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 import 'package:realm/realm.dart';
 
 /// 앱 재시작 시 세션 유지를 위해 경기/대기 상태 데이터를 로컬 스토리지에 저장하고 복원하는 서비스.
 class PlayerSessionService {
-  static const Duration _saveDebounceDuration = Duration(milliseconds: 300);
-  static const Duration _saveMaxWait = Duration(seconds: 1);
-
   final SharedProvider _sharedProvider = SharedProvider();
-
-  // SharedPreferences 저장 키 상수
-  static const String _keyAssignedPlayers = 'assignedPlayers';
-  static const String _keyStandbyPlayers = 'standbyPlayers';
-  static const String _keyUnassignedPlayers = 'unassignedPlayers';
-  static const String _keyPlayers = 'players';
-  static const String _keyCourtStartTimes = 'courtStartTimes';
-  static const String _keyCustomGroupNames = 'customGroupNames';
 
   // 6개 플레이어 세션 정보 내부 변수 캐시
   List<String>? _cachedAssignedPlayers;
@@ -36,14 +26,18 @@ class PlayerSessionService {
 
   /// 로컬 저장소에서 세션에 등록된 전체 선수 ID 목록을 복원합니다.
   Future<List<ObjectId>> loadPlayerIds() async {
-    final ids = await _sharedProvider.getStringList(_keyPlayers);
+    final ids = await _sharedProvider.getStringList(
+      SessionConstants.playersKey,
+    );
     _cachedPlayers = List<String>.from(ids);
     return _parseIds(ids);
   }
 
   /// 로컬 저장소에서 미배정(대기열) 선수 ID 목록을 복원합니다.
   Future<List<ObjectId>> loadUnassignedPlayerIds() async {
-    final ids = await _sharedProvider.getStringList(_keyUnassignedPlayers);
+    final ids = await _sharedProvider.getStringList(
+      SessionConstants.unassignedPlayersKey,
+    );
     _cachedUnassignedPlayers = List<String>.from(ids);
     return _parseIds(ids);
   }
@@ -51,7 +45,7 @@ class PlayerSessionService {
   /// 로컬 저장소에서 진행 코트별 선수 ID 2차원 목록을 복원합니다.
   Future<List<List<ObjectId?>>> loadAssignedPlayerIds() async {
     final encodedList = await _sharedProvider.getStringList(
-      _keyAssignedPlayers,
+      SessionConstants.assignedPlayersKey,
     );
     _cachedAssignedPlayers = List<String>.from(encodedList);
     return _decodeCourts(encodedList);
@@ -59,14 +53,18 @@ class PlayerSessionService {
 
   /// 로컬 저장소에서 대기 코트별 선수 ID 2차원 목록을 복원합니다.
   Future<List<List<ObjectId?>>> loadStandbyPlayerIds() async {
-    final encodedList = await _sharedProvider.getStringList(_keyStandbyPlayers);
+    final encodedList = await _sharedProvider.getStringList(
+      SessionConstants.standbyPlayersKey,
+    );
     _cachedStandbyPlayers = List<String>.from(encodedList);
     return _decodeCourts(encodedList);
   }
 
   /// 로컬 저장소에서 코트별 경기 시작 시각 목록을 복원합니다.
   Future<List<DateTime?>> loadCourtStartTimes() async {
-    final stringList = await _sharedProvider.getStringList(_keyCourtStartTimes);
+    final stringList = await _sharedProvider.getStringList(
+      SessionConstants.courtStartTimesKey,
+    );
     _cachedCourtStartTimes = List<String>.from(stringList);
     return stringList
         .map((str) => str.isEmpty ? null : DateTime.tryParse(str))
@@ -75,7 +73,9 @@ class PlayerSessionService {
 
   /// 로컬 저장소에서 동반 그룹 사용자 정의 이름 맵을 복원합니다.
   Future<Map<String, String>> loadCustomGroupNames() async {
-    final jsonStr = await _sharedProvider.getString(_keyCustomGroupNames);
+    final jsonStr = await _sharedProvider.getString(
+      SessionConstants.customGroupNamesKey,
+    );
     _cachedCustomGroupNames = jsonStr ?? '';
     if (jsonStr == null || jsonStr.isEmpty) {
       return {};
@@ -108,7 +108,10 @@ class PlayerSessionService {
     if (!_isListEqual(_cachedAssignedPlayers, assignedEncoded)) {
       _cachedAssignedPlayers = assignedEncoded;
       saveTasks.add(
-        _sharedProvider.saveStringList(_keyAssignedPlayers, assignedEncoded),
+        _sharedProvider.saveStringList(
+          SessionConstants.assignedPlayersKey,
+          assignedEncoded,
+        ),
       );
     }
 
@@ -117,7 +120,10 @@ class PlayerSessionService {
     if (!_isListEqual(_cachedStandbyPlayers, standbyEncoded)) {
       _cachedStandbyPlayers = standbyEncoded;
       saveTasks.add(
-        _sharedProvider.saveStringList(_keyStandbyPlayers, standbyEncoded),
+        _sharedProvider.saveStringList(
+          SessionConstants.standbyPlayersKey,
+          standbyEncoded,
+        ),
       );
     }
 
@@ -128,7 +134,10 @@ class PlayerSessionService {
     if (!_isListEqual(_cachedUnassignedPlayers, unassignedIds)) {
       _cachedUnassignedPlayers = unassignedIds;
       saveTasks.add(
-        _sharedProvider.saveStringList(_keyUnassignedPlayers, unassignedIds),
+        _sharedProvider.saveStringList(
+          SessionConstants.unassignedPlayersKey,
+          unassignedIds,
+        ),
       );
     }
 
@@ -136,7 +145,9 @@ class PlayerSessionService {
     final playerIds = players.keys.map((key) => key.toString()).toList();
     if (!_isListEqual(_cachedPlayers, playerIds)) {
       _cachedPlayers = playerIds;
-      saveTasks.add(_sharedProvider.saveStringList(_keyPlayers, playerIds));
+      saveTasks.add(
+        _sharedProvider.saveStringList(SessionConstants.playersKey, playerIds),
+      );
     }
 
     // 5. 코트 경기 시작 시간
@@ -146,7 +157,10 @@ class PlayerSessionService {
     if (!_isListEqual(_cachedCourtStartTimes, startTimeStrings)) {
       _cachedCourtStartTimes = startTimeStrings;
       saveTasks.add(
-        _sharedProvider.saveStringList(_keyCourtStartTimes, startTimeStrings),
+        _sharedProvider.saveStringList(
+          SessionConstants.courtStartTimesKey,
+          startTimeStrings,
+        ),
       );
     }
 
@@ -155,7 +169,10 @@ class PlayerSessionService {
     if (_cachedCustomGroupNames != groupNamesJson) {
       _cachedCustomGroupNames = groupNamesJson;
       saveTasks.add(
-        _sharedProvider.saveString(_keyCustomGroupNames, groupNamesJson),
+        _sharedProvider.saveString(
+          SessionConstants.customGroupNamesKey,
+          groupNamesJson,
+        ),
       );
     }
 
@@ -171,13 +188,13 @@ class PlayerSessionService {
     final now = DateTime.now();
     _pendingSince ??= now;
 
-    if (now.difference(_pendingSince!) >= _saveMaxWait) {
+    if (now.difference(_pendingSince!) >= SessionConstants.saveMaxWait) {
       _pendingSince = null;
       onSave();
       return;
     }
 
-    _saveDebounce = Timer(_saveDebounceDuration, () {
+    _saveDebounce = Timer(SessionConstants.saveDebounceDuration, () {
       _pendingSince = null;
       _saveDebounce = null;
       onSave();

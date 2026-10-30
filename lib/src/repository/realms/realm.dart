@@ -32,7 +32,7 @@ class RealmProvider {
         }
         if (oldSchemaVersion < 4) {
           for (final obj in migration.newRealm.all<Player>()) {
-            obj.grade = rateToSkillLevel(obj.rate);
+            obj.grade = SkillUtils.rateToSkillLevel(obj.rate);
           }
         }
         if (oldSchemaVersion < 5) {

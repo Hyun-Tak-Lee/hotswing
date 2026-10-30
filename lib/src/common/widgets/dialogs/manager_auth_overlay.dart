@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/auth_constants.dart';
 import 'package:hotswing/src/services/system/manager_auth_service.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
@@ -72,7 +73,8 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
       case _AuthMode.setNewManagerPassword:
         title = '새 관리자 비밀번호 설정';
         subtitle = '사용할 관리자 비밀번호를 입력하세요.';
-        hintText = '새 관리자 비밀번호 (4자리 이상)';
+        hintText =
+            '새 관리자 비밀번호 (${AuthConstants.minManagerPasswordLength}자리 이상)';
         break;
     }
 
@@ -348,9 +350,10 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
         break;
 
       case _AuthMode.setNewManagerPassword:
-        if (password.length < 4) {
+        if (password.length < AuthConstants.minManagerPasswordLength) {
           setState(() {
-            _errorMessage = '비밀번호는 4자리 이상이어야 합니다.';
+            _errorMessage =
+                '비밀번호는 ${AuthConstants.minManagerPasswordLength}자리 이상이어야 합니다.';
           });
           return;
         }

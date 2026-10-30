@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/screens/players/widgets/provider/players_view_model.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
-import 'package:hotswing/src/common/utils/game/skill_utils.dart';
+import 'package:hotswing/src/common/constants/skill_constants.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/screens/players/widgets/players_filter/filter_options.dart';
 import 'package:hotswing/src/screens/players/widgets/players_filter/filter_tab.dart';
@@ -141,7 +141,7 @@ class _PlayersFilterBottomSheetState extends State<PlayersFilterBottomSheet> {
               )
             else if (_selectedTabIndex == 2)
               FilterOptions<String>(
-                values: skillLevelToRate.keys.toList(),
+                values: SkillConstants.levelToRate.keys.toList(),
                 selectedValues: viewModel.selectedSkills,
                 onSelected: viewModel.toggleSkillFilter,
                 labelBuilder: (skill) => skill,

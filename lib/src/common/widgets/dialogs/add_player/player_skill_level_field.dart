@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
-import 'package:hotswing/src/common/utils/game/skill_utils.dart';
+import 'package:hotswing/src/common/constants/skill_constants.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/dialog_skill_chip_button.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_rate_field.dart';
@@ -41,7 +41,7 @@ class PlayerSkillLevelField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final levels = skillLevelToRate.keys.toList();
+    final levels = SkillConstants.levelToRate.keys.toList();
     final isTablet = ResponsiveUtils.isTablet(context);
 
     return Opacity(

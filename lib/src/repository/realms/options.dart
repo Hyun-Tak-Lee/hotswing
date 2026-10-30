@@ -1,3 +1,4 @@
+import 'package:hotswing/src/common/constants/option_constants.dart';
 import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/repository/realms/realm.dart';
 import 'package:realm/realm.dart';
@@ -22,15 +23,15 @@ class OptionsRepository {
         _options = realm.add(
           Options(
             0, // id
-            3, // numberOfSections
-            1.0, // skillWeight
-            1.0, // genderWeight
-            1.0, // waitedWeight
-            1.0, // playedWeight
-            1.0, // playedWithWeight
-            true, // reserveManager
-            90, // inactiveDaysThreshold
-            1, // randomPoolSize
+            OptionConstants.defaultNumberOfSections,
+            OptionConstants.defaultWeight, // skillWeight
+            OptionConstants.defaultWeight, // genderWeight
+            OptionConstants.defaultWeight, // waitedWeight
+            OptionConstants.defaultWeight, // playedWeight
+            OptionConstants.defaultWeight, // playedWithWeight
+            OptionConstants.defaultReserveManager,
+            OptionConstants.defaultInactiveDays,
+            OptionConstants.defaultRandomPoolSize,
           ),
         );
       });

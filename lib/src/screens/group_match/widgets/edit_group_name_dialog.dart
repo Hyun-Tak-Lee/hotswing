@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/player_constants.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:provider/provider.dart';
@@ -147,7 +148,7 @@ class _EditGroupNameDialogState extends State<EditGroupNameDialog> {
               TextField(
                 controller: _controller,
                 autofocus: true,
-                maxLength: 6,
+                maxLength: PlayerConstants.maxGroupNameLength,
                 style: TextStyle(
                   fontSize: 15.0,
                   fontWeight: FontWeight.w600,

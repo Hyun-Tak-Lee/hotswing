@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/player_constants.dart';
+import 'package:hotswing/src/common/constants/skill_constants.dart';
 import 'package:hotswing/src/common/forms/advanced_settings_section.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
-import 'package:hotswing/src/common/utils/game/skill_utils.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_description_field.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_gender_field.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_group_field.dart';
@@ -35,8 +36,6 @@ class AddPlayerDialog extends StatefulWidget {
 }
 
 class _AddPlayerDialogState extends State<AddPlayerDialog> {
-  static const int _maxRate = 7500;
-
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _rateController;
 
@@ -224,7 +223,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       selectedSkillLevel: _selectedSkillLevel,
                       rateController: _rateController,
                       rate: _rate,
-                      maxRate: _maxRate,
+                      maxRate: PlayerConstants.maxRate,
                       onChanged: _onSkillChanged,
                       onRateUpdated: _updateRate,
                       onRateEdited: (parsed) {
@@ -428,16 +427,17 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
   void _onSkillChanged(String? newValue) {
     setState(() {
       _selectedSkillLevel = newValue;
-      if (newValue != null && skillLevelToRate.containsKey(newValue)) {
-        _updateRate(skillLevelToRate[newValue]!);
+      if (newValue != null &&
+          SkillConstants.levelToRate.containsKey(newValue)) {
+        _updateRate(SkillConstants.levelToRate[newValue]!);
       }
     });
   }
 
   /// 레이팅을 주어진 [newRate]로 업데이트합니다.
-  /// 값은 0에서 [_maxRate] 사이로 제한됩니다.
+  /// 값은 0에서 [PlayerConstants.maxRate] 사이로 제한됩니다.
   void _updateRate(int newRate) {
-    final clampedRate = newRate.clamp(0, _maxRate);
+    final clampedRate = newRate.clamp(0, PlayerConstants.maxRate);
     setState(() {
       _rate = clampedRate;
       _rateController.text = clampedRate.toString();

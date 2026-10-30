@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:isolate';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:hotswing/src/common/constants/auth_constants.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 import 'package:hotswing/src/common/utils/security/crypto_utils.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -12,16 +13,6 @@ class ActivationService {
   static final ActivationService _instance = ActivationService._internal();
   final SharedProvider _sharedProvider = SharedProvider();
   final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
-
-  // SharedPreferences 키
-  static const String _keyDeviceId = 'device_id';
-  static const String _keyEncryptedDeviceId = 'encrypted_device_id';
-  static const String _keyIsActivated = 'is_activated';
-  static const String _keyActivationTimestamp = 'activation_timestamp';
-
-  // .env 키
-  static const String _envPasswordSalt = 'MASTER_PASSWORD_SALT';
-  static const String _envPasswordHash = 'MASTER_PASSWORD_HASH';
 
   ActivationService._internal();
 
@@ -54,17 +45,20 @@ class ActivationService {
 
   /// 저장된 기기 ID 가져오기
   Future<String?> getSavedDeviceId() async {
-    return await _sharedProvider.getString(_keyDeviceId);
+    return await _sharedProvider.getString(AuthConstants.deviceIdKey);
   }
 
   /// 활성화 여부 확인
   Future<bool> isActivated() async {
-    return await _sharedProvider.getBool(_keyIsActivated, defaultValue: false);
+    return await _sharedProvider.getBool(
+      AuthConstants.isActivatedKey,
+      defaultValue: false,
+    );
   }
 
   /// 활성화 타임스탬프 가져오기
   Future<int?> getActivationTimestamp() async {
-    return await _sharedProvider.getInt(_keyActivationTimestamp);
+    return await _sharedProvider.getInt(AuthConstants.activationTimestampKey);
   }
 
   /// 마스터 비밀번호로 활성화
@@ -76,7 +70,8 @@ class ActivationService {
     try {
       // 입력한 비밀번호의 해시와 .env의 마스터 비밀번호 해시 비교
       if (await verifyMasterPassword(password)) {
-        final passwordHash = dotenv.env[_envPasswordHash]!.toLowerCase();
+        final passwordHash = dotenv.env[AuthConstants.envPasswordHash]!
+            .toLowerCase();
 
         // 현재 기기 ID 가져오기
         final deviceId = await getDeviceId();
@@ -91,14 +86,14 @@ class ActivationService {
         );
 
         // 활성화 처리 - 암호화된 기기 ID 저장
-        await _sharedProvider.saveString(_keyDeviceId, deviceId);
+        await _sharedProvider.saveString(AuthConstants.deviceIdKey, deviceId);
         await _sharedProvider.saveString(
-          _keyEncryptedDeviceId,
+          AuthConstants.encryptedDeviceIdKey,
           encryptedDeviceId,
         );
-        await _sharedProvider.saveBool(_keyIsActivated, true);
+        await _sharedProvider.saveBool(AuthConstants.isActivatedKey, true);
         await _sharedProvider.saveInt(
-          _keyActivationTimestamp,
+          AuthConstants.activationTimestampKey,
           DateTime.now().millisecondsSinceEpoch,
         );
 
@@ -116,8 +111,8 @@ class ActivationService {
   /// `.env`의 salt로 PBKDF2 해시를 계산하여 저장된 해시와 비교합니다.
   /// 계산 비용이 커서 UI가 멈추지 않도록 별도 Isolate에서 수행합니다.
   Future<bool> verifyMasterPassword(String password) async {
-    final salt = dotenv.env[_envPasswordSalt];
-    final passwordHash = dotenv.env[_envPasswordHash];
+    final salt = dotenv.env[AuthConstants.envPasswordSalt];
+    final passwordHash = dotenv.env[AuthConstants.envPasswordHash];
     if (salt == null || salt.isEmpty) return false;
     if (passwordHash == null || passwordHash.isEmpty) return false;
 
@@ -153,11 +148,11 @@ class ActivationService {
 
       // 저장된 암호화 값 가져오기
       final encryptedDeviceId = await _sharedProvider.getString(
-        _keyEncryptedDeviceId,
+        AuthConstants.encryptedDeviceIdKey,
       );
       if (encryptedDeviceId == null) {
         // 이전 버전에서 활성화된 경우 - 재활성화 필요
-        await _sharedProvider.saveBool(_keyIsActivated, false);
+        await _sharedProvider.saveBool(AuthConstants.isActivatedKey, false);
         return false;
       }
 
@@ -169,7 +164,7 @@ class ActivationService {
       }
 
       // .env에서 마스터 비밀번호 해시 가져오기
-      final passwordHash = dotenv.env[_envPasswordHash];
+      final passwordHash = dotenv.env[AuthConstants.envPasswordHash];
       if (passwordHash == null || passwordHash.isEmpty) {
         return false;
       }
@@ -185,7 +180,7 @@ class ActivationService {
         return true;
       } else {
         // 불일치 시 활성화 해제
-        await _sharedProvider.saveBool(_keyIsActivated, false);
+        await _sharedProvider.saveBool(AuthConstants.isActivatedKey, false);
         return false;
       }
     } catch (e) {
@@ -216,6 +211,6 @@ class ActivationService {
   ///
   /// 주의: 프로덕션에서는 사용하지 말 것
   Future<void> resetActivation() async {
-    await _sharedProvider.saveBool(_keyIsActivated, false);
+    await _sharedProvider.saveBool(AuthConstants.isActivatedKey, false);
   }
 }

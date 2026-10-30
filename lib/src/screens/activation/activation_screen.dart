@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:hotswing/src/providers/activation_provider.dart';
 import 'package:hotswing/src/services/system/activation_service.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
@@ -130,27 +132,8 @@ class _ActivationScreenState extends State<ActivationScreen> {
     if (!mounted) return;
 
     if (success) {
-      // 활성화 성공 - 앱 재시작 필요
-      // 간단한 방법: 사용자에게 앱 재시작 요청
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: const Text('활성화 완료'),
-          content: const Text('앱이 성공적으로 활성화되었습니다.\n앱을 재시작해주세요.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // 앱 종료 (사용자가 수동으로 재시작)
-                Navigator.of(context).pop();
-              },
-              child: const Text('확인'),
-            ),
-          ],
-        ),
-      );
+      // 활성화 성공 - 루트 위젯이 메인 앱으로 즉시 전환
+      context.read<ActivationProvider>().markActivated();
     } else {
       // 활성화 실패
       setState(() {

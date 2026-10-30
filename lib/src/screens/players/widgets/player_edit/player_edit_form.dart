@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/player_constants.dart';
 import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/screens/players/widgets/provider/players_view_model.dart';
-import 'package:hotswing/src/common/utils/game/skill_utils.dart';
+import 'package:hotswing/src/common/constants/skill_constants.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/common/forms/advanced_settings_section.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_group_field.dart';
@@ -164,15 +165,15 @@ class _PlayerEditFormState extends State<PlayerEditForm> {
 
   void _updateRate(int newRate) {
     setState(() {
-      _currentRate = newRate.clamp(0, 7500);
+      _currentRate = newRate.clamp(0, PlayerConstants.maxRate);
     });
   }
 
   void _selectSkill(String level) {
     setState(() {
       _currentSkillLevel = level;
-      if (skillLevelToRate.containsKey(level)) {
-        _updateRate(skillLevelToRate[level]!);
+      if (SkillConstants.levelToRate.containsKey(level)) {
+        _updateRate(SkillConstants.levelToRate[level]!);
       }
     });
   }

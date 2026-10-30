@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/player_constants.dart';
 import 'package:flutter/services.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
@@ -55,8 +56,10 @@ class PlayerEditDescriptionField extends StatelessWidget {
           vertical: 12,
         ),
       ),
-      maxLength: 16,
-      inputFormatters: [LengthLimitingTextInputFormatter(16)],
+      maxLength: PlayerConstants.maxDescriptionLength,
+      inputFormatters: [
+        LengthLimitingTextInputFormatter(PlayerConstants.maxDescriptionLength),
+      ],
     );
   }
 }

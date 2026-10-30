@@ -4,8 +4,8 @@ import 'package:hotswing/src/providers/theme_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/services/system/activation_service.dart';
-import 'package:hotswing/src/app/activation_app.dart';
-import 'package:hotswing/src/app/main_app.dart';
+import 'package:hotswing/src/providers/activation_provider.dart';
+import 'package:hotswing/src/app/app_root.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// 애플리케이션 진입점 함수. 바인딩 초기화, 환경 변수 로드, 기기 활성화 검증 후 앱을 구동합니다.
@@ -26,8 +26,11 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => PlayersProvider()),
         ChangeNotifierProvider(create: (_) => OptionsProvider()),
+        ChangeNotifierProvider(
+          create: (_) => ActivationProvider(isActivated: isActivated),
+        ),
       ],
-      child: isActivated ? const MainApp() : const ActivationApp(),
+      child: const AppRoot(),
     ),
   );
 }

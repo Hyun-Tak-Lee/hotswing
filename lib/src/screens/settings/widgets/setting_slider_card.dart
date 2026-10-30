@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/option_constants.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
 /// 부동소수점(double) 가중치 값을 조절하기 위한 슬라이더 카드 위젯.
@@ -116,9 +117,9 @@ class SettingSliderCard extends StatelessWidget {
               ),
               child: Slider(
                 value: value,
-                min: 0,
-                max: 2,
-                divisions: 20,
+                min: OptionConstants.minWeight,
+                max: OptionConstants.maxWeight,
+                divisions: OptionConstants.weightDivisions,
                 label: value.toStringAsFixed(1),
                 onChanged: onChanged,
               ),

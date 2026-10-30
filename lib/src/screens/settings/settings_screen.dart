@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/option_constants.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/options_provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
@@ -235,9 +236,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: Slider(
                                 value: optionsProvider.numberOfSections
                                     .toDouble(),
-                                min: 1,
-                                max: 10,
-                                divisions: 9,
+                                min: OptionConstants.minNumberOfSections
+                                    .toDouble(),
+                                max: OptionConstants.maxNumberOfSections
+                                    .toDouble(),
+                                divisions:
+                                    OptionConstants.maxNumberOfSections -
+                                    OptionConstants.minNumberOfSections,
                                 label: optionsProvider.numberOfSections
                                     .round()
                                     .toString(),
@@ -379,9 +384,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             leftText: '최적 조합',
                             rightText: '랜덤성 부여',
                             value: optionsProvider.randomPoolSize,
-                            min: 1,
-                            max: 5,
-                            divisions: 4,
+                            min: OptionConstants.minRandomPoolSize,
+                            max: OptionConstants.maxRandomPoolSize,
+                            divisions:
+                                OptionConstants.maxRandomPoolSize -
+                                OptionConstants.minRandomPoolSize,
                             unit: '',
                             onChanged: (int value) =>
                                 optionsProvider.setRandomPoolSize(value),
@@ -418,12 +425,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       padding: const EdgeInsets.only(top: 4.0, bottom: 24.0),
                       child: SettingIntSliderCard(
                         title: '미활동 멤버 정리 기간',
-                        leftText: '30일',
-                        rightText: '180일',
+                        leftText: '${OptionConstants.minInactiveDays}일',
+                        rightText: '${OptionConstants.maxInactiveDays}일',
                         value: optionsProvider.inactiveDaysThreshold,
-                        min: 30,
-                        max: 180,
-                        divisions: 30,
+                        min: OptionConstants.minInactiveDays,
+                        max: OptionConstants.maxInactiveDays,
+                        divisions:
+                            (OptionConstants.maxInactiveDays -
+                                OptionConstants.minInactiveDays) ~/
+                            OptionConstants.inactiveDaysStep,
                         unit: '일',
                         onChanged: (int value) =>
                             optionsProvider.setInactiveDaysThreshold(value),

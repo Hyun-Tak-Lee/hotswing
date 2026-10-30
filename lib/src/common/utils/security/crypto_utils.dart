@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
+import 'package:hotswing/src/common/constants/auth_constants.dart';
 
 /// 암호화 관련 유틸리티 클래스
-class CryptoUtils {
+abstract final class CryptoUtils {
   /// SHA-256 해시 생성
   static String generateHash(String input) {
     final bytes = utf8.encode(input);
@@ -23,9 +24,6 @@ class CryptoUtils {
     return generateHash('$salt:$input');
   }
 
-  /// 마스터 비밀번호 해시에 사용하는 PBKDF2 반복 횟수
-  static const int pbkdf2Iterations = 300000;
-
   /// PBKDF2-HMAC-SHA256 키 유도 (32바이트, 16진수 문자열)
   ///
   /// [saltHex] 16진수 문자열 salt (바이트로 디코딩하여 사용)
@@ -34,7 +32,7 @@ class CryptoUtils {
   static String pbkdf2Sha256({
     required String password,
     required String saltHex,
-    int iterations = pbkdf2Iterations,
+    int iterations = AuthConstants.pbkdf2Iterations,
   }) {
     final hmac = Hmac(sha256, utf8.encode(password));
     // 출력 길이(32바이트)가 SHA-256 블록 하나이므로 블록 인덱스는 1 고정

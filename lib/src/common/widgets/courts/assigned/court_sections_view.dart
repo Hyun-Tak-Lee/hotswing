@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/court_constants.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/courts/court_card.dart';
 import 'package:hotswing/src/models/players/player.dart';
@@ -76,7 +77,8 @@ class CourtSectionsView extends StatelessWidget {
                             final playerCount = item
                                 .where((p) => p != null)
                                 .length;
-                            bool isGameStarted = (playerCount == 4);
+                            bool isGameStarted =
+                                (playerCount == CourtConstants.capacity);
                             final isFinishing = playersProvider
                                 .isCourtFinishing(sectionIndex);
 
@@ -281,7 +283,8 @@ class CourtSectionsView extends StatelessWidget {
                         int sectionIndex = entry.key;
                         List<Player?> item = entry.value;
                         final playerCount = item.where((p) => p != null).length;
-                        bool isGameStarted = (playerCount == 4);
+                        bool isGameStarted =
+                            (playerCount == CourtConstants.capacity);
                         final isFinishing = playersProvider.isCourtFinishing(
                           sectionIndex,
                         );

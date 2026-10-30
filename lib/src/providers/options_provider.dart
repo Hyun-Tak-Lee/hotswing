@@ -1,19 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hotswing/src/common/constants/option_constants.dart';
 import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/repository/realms/options.dart';
 import 'package:realm/realm.dart';
 
 /// 앱 운영 옵션(코트 수, 매칭 가중치, 운영진 예약 등)을 관리하고 변경 사항을 전파하는 프로바이더.
 class OptionsProvider with ChangeNotifier {
-  static const int _minNumberOfSections = 1;
-  static const int _maxNumberOfSections = 10;
-  static const double _minWeight = 0.0;
-  static const double _maxWeight = 2.0;
-  static const int _minInactiveDays = 30;
-  static const int _maxInactiveDays = 180;
-  static const int _minRandomPoolSize = 1;
-  static const int _maxRandomPoolSize = 5;
-
   late Realm _realm;
   late Options _options;
 
@@ -53,8 +45,8 @@ class OptionsProvider with ChangeNotifier {
   void setNumberOfSections(int newNumberOfSections) {
     _realm.write(() {
       _options.numberOfSections = newNumberOfSections.clamp(
-        _minNumberOfSections,
-        _maxNumberOfSections,
+        OptionConstants.minNumberOfSections,
+        OptionConstants.maxNumberOfSections,
       );
     });
     notifyListeners();
@@ -63,7 +55,10 @@ class OptionsProvider with ChangeNotifier {
   /// 실력 가중치를 변경합니다.
   void setSkillWeight(double newSkillWeight) {
     _realm.write(() {
-      _options.skillWeight = newSkillWeight.clamp(_minWeight, _maxWeight);
+      _options.skillWeight = newSkillWeight.clamp(
+        OptionConstants.minWeight,
+        OptionConstants.maxWeight,
+      );
     });
     notifyListeners();
   }
@@ -71,7 +66,10 @@ class OptionsProvider with ChangeNotifier {
   /// 성별 가중치를 변경합니다.
   void setGenderWeight(double newGenderWeight) {
     _realm.write(() {
-      _options.genderWeight = newGenderWeight.clamp(_minWeight, _maxWeight);
+      _options.genderWeight = newGenderWeight.clamp(
+        OptionConstants.minWeight,
+        OptionConstants.maxWeight,
+      );
     });
     notifyListeners();
   }
@@ -79,7 +77,10 @@ class OptionsProvider with ChangeNotifier {
   /// 대기 시간 가중치를 변경합니다.
   void setWaitedWeight(double newWaitedWeight) {
     _realm.write(() {
-      _options.waitedWeight = newWaitedWeight.clamp(_minWeight, _maxWeight);
+      _options.waitedWeight = newWaitedWeight.clamp(
+        OptionConstants.minWeight,
+        OptionConstants.maxWeight,
+      );
     });
     notifyListeners();
   }
@@ -87,7 +88,10 @@ class OptionsProvider with ChangeNotifier {
   /// 경기 수 가중치를 변경합니다.
   void setPlayedWeight(double newPlayedWeight) {
     _realm.write(() {
-      _options.playedWeight = newPlayedWeight.clamp(_minWeight, _maxWeight);
+      _options.playedWeight = newPlayedWeight.clamp(
+        OptionConstants.minWeight,
+        OptionConstants.maxWeight,
+      );
     });
     notifyListeners();
   }
@@ -96,8 +100,8 @@ class OptionsProvider with ChangeNotifier {
   void setPlayedWithWeight(double newPlayedWithWeight) {
     _realm.write(() {
       _options.playedWithWeight = newPlayedWithWeight.clamp(
-        _minWeight,
-        _maxWeight,
+        OptionConstants.minWeight,
+        OptionConstants.maxWeight,
       );
     });
     notifyListeners();
@@ -115,8 +119,8 @@ class OptionsProvider with ChangeNotifier {
   void setInactiveDaysThreshold(int newValue) {
     _realm.write(() {
       _options.inactiveDaysThreshold = newValue.clamp(
-        _minInactiveDays,
-        _maxInactiveDays,
+        OptionConstants.minInactiveDays,
+        OptionConstants.maxInactiveDays,
       );
     });
     notifyListeners();
@@ -126,8 +130,8 @@ class OptionsProvider with ChangeNotifier {
   void setRandomPoolSize(int newValue) {
     _realm.write(() {
       _options.randomPoolSize = newValue.clamp(
-        _minRandomPoolSize,
-        _maxRandomPoolSize,
+        OptionConstants.minRandomPoolSize,
+        OptionConstants.maxRandomPoolSize,
       );
     });
     notifyListeners();

@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:realm/realm.dart';
+import 'package:hotswing/src/common/constants/court_constants.dart';
+import 'package:hotswing/src/common/constants/matching_constants.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/models/options/option.dart';
 
@@ -96,26 +98,28 @@ class CourtAssignService {
     final double rateDiff = isGroupMember
         ? 0.0
         : (player1.rate - player2.rate).abs().toDouble();
-    final skillScore = 1.0 - (rateDiff / 1000.0);
+    final skillScore = 1.0 - (rateDiff / MatchingConstants.pairRateDiffScale);
 
-    // 성별 점수: 같은 성별일 경우 가산점 5.0을 부여하여 동성 페어 우선 결성 추구
+    // 성별 점수: 같은 성별일 경우 가산점을 부여하여 동성 페어 우선 결성 추구
     final genderScore = (isGroupMember || player1.gender == player2.gender)
-        ? 5.0
+        ? MatchingConstants.sameGenderPairBonus
         : 0.0;
 
     // 대기 점수: 대기 시간이 길수록 높은 점수 부여
     final totalWaited = player1.waited + player2.waited;
-    final waitedScore = totalWaited * 0.2;
+    final waitedScore = totalWaited * MatchingConstants.waitedScorePerTurn;
 
     // 플레이 점수: 경기 횟수가 많을수록 감점 처리
     final totalPlayed =
         player1.played + player1.lated + player2.played + player2.lated;
-    final playedScore = totalPlayed * -0.25; // 음수화하여 감점 처리
+    final playedScore =
+        totalPlayed * -MatchingConstants.playedPenaltyPerGame; // 음수화하여 감점 처리
 
     // 중복 플레이 점수: 이미 매칭되었던 페어일 경우 감점 처리
     final gamesPlayedTogether =
         player1.gamesPlayedWith[player2.id.hexString] ?? 0;
-    final playedWithScore = 1.0 - (gamesPlayedTogether * 0.2);
+    final playedWithScore =
+        1.0 - (gamesPlayedTogether * MatchingConstants.pairPlayedWithPenalty);
 
     // 각 항목에 설정된 가중치를 곱하여 최종 점수 산출
     return skillScore +
@@ -134,7 +138,8 @@ class CourtAssignService {
     required List<Player> availablePlayers,
     required List<Player> currentPlayersOnCourt,
   }) {
-    if (availablePlayers.length + currentPlayersOnCourt.length <= 4) {
+    if (availablePlayers.length + currentPlayersOnCourt.length <=
+        CourtConstants.capacity) {
       return availablePlayers.toList();
     }
 
@@ -359,7 +364,10 @@ class CourtAssignService {
 
     for (var opponent in opponents) {
       final gamesPlayed = candidate.gamesPlayedWith[opponent.id.hexString] ?? 0;
-      penalty -= gamesPlayed * 0.25 * _options.playedWithWeight;
+      penalty -=
+          gamesPlayed *
+          MatchingConstants.opponentPlayedWithPenalty *
+          _options.playedWithWeight;
     }
 
     return penalty;
@@ -368,7 +376,7 @@ class CourtAssignService {
   /// 코트 전체의 성별 구성에 따른 매칭 점수 보너스
   ///
   /// 1. 1팀(앞 팀)이 혼복인 경우:
-  ///    - 2팀도 혼복일 때 최고 보너스(16.0)를 부여해 2:2 혼복 코트를 우선 구성
+  ///    - 2팀도 혼복일 때 최고 보너스([MatchingConstants.mixedDoublesCourtBonus])를 부여해 2:2 혼복 코트를 우선 구성
   ///    - 혼복 vs 동성의 불균형 매칭에는 보너스 없음
   ///
   /// 2. 1팀이 동성(남남/여여)인 경우:
@@ -383,14 +391,16 @@ class CourtAssignService {
 
     // 1. 1팀이 혼복인 경우
     if (isTeamAMixed) {
-      // 2팀 또한 혼복일 시 고정 만점을 부여하여 최우선 매칭 (기본 성별 점수 5점 차 극복)
+      // 2팀 또한 혼복일 시 고정 만점을 부여하여 최우선 매칭 (동성 페어 가산점 차 극복)
       // 동성일 경우 밸런스 붕괴를 막기 위해 아주 큰 패널티 부여
-      return isTeamBMixed ? 16.0 : -16.0;
+      return isTeamBMixed
+          ? MatchingConstants.mixedDoublesCourtBonus
+          : -MatchingConstants.unbalancedGenderCourtPenalty;
     }
 
     // 2. 1팀이 동성인 경우
     // 2-1. 동성 vs 혼복 구도는 피함 (밸런스 붕괴 패널티 부여)
-    if (isTeamBMixed) return -16.0;
+    if (isTeamBMixed) return -MatchingConstants.unbalancedGenderCourtPenalty;
 
     // 2-2. 1팀과 2팀이 같은 동성인지 확인 (예: 남남 vs 남남)
     bool isSameGenderAcrossTeams = teamA[0].gender == teamB[0].gender;
@@ -398,13 +408,9 @@ class CourtAssignService {
     // genderWeight (0.0 ~ 2.0) -> (-1.0 ~ 1.0 비율)
     double weightRatio = _options.genderWeight - 1.0;
 
-    // 동성 매칭 간의 보너스 계수
-    // (이 값이 작을수록 코트 성비 점수가 대기 시간 1~2턴 차이 등과 유연하게 경합함)
-    double sameGenderMaxBonus = 4.0;
-
     // 양 팀의 구성(남남/여여)이 일치할 시엔 그대로 배율 적용, 반대 구성이면 음수로 반전
     return (isSameGenderAcrossTeams ? weightRatio : -weightRatio) *
-        sameGenderMaxBonus;
+        MatchingConstants.sameGenderCourtMaxBonus;
   }
 
   /// 팀 간 평균 레이팅의 차이가 적을수록 보너스를 주며, 차이가 클수록 기하급수적으로 큰 감점(패널티)을 부여
@@ -417,10 +423,11 @@ class CourtAssignService {
         teamB.fold(0.0, (sum, p) => sum + p.rate) / teamB.length;
     final teamRateDiff = (teamARateAvg - teamBRateAvg).abs();
 
-    // 차이가 0일 때 최고점(0.25 * skillWeight)을 부여합니다.
+    // 차이가 0일 때 감점이 없는 최고점(0점)입니다.
     // 차이가 커질수록 제곱(square)에 비례하여 마이너스(감점)가 가파르게 커집니다.
-    // 1000.0은 감쇄 기준점입니다. 이 수치가 작을수록 더 빨리 감점됩니다.
-    return pow(teamRateDiff / 1000.0, 2) * -1 * _options.skillWeight;
+    return pow(teamRateDiff / MatchingConstants.teamRateDiffScale, 2) *
+        -1 *
+        _options.skillWeight;
   }
 
   /// 플레이어 리스트에서 가능한 모든 인접 조합을 생성하고 기본 점수를 매겨 정렬함
@@ -428,7 +435,6 @@ class CourtAssignService {
     final sortedPlayers = List<Player>.from(players)..shuffle(_random);
     sortedPlayers.sort((a, b) => a.rate.compareTo(b.rate));
 
-    const int searchRange = 20;
     final List<_Candidate<List<Player>>> pairsWithScore = [];
 
     for (int i = 0; i < sortedPlayers.length; i++) {
@@ -452,7 +458,11 @@ class CourtAssignService {
 
       for (
         int j = i + 1;
-        j < min(i + 1 + searchRange, sortedPlayers.length);
+        j <
+            min(
+              i + 1 + MatchingConstants.pairSearchRange,
+              sortedPlayers.length,
+            );
         j++
       ) {
         final playerB = sortedPlayers[j];
@@ -473,8 +483,12 @@ class CourtAssignService {
     if (players.isEmpty) return null;
 
     return players.reduce((a, b) {
-      final scoreA = (a.played + a.lated) * 1.0 - (a.waited * 0.15);
-      final scoreB = (b.played + b.lated) * 1.0 - (b.waited * 0.15);
+      final scoreA =
+          (a.played + a.lated) * 1.0 -
+          (a.waited * MatchingConstants.managerReserveWaitedFactor);
+      final scoreB =
+          (b.played + b.lated) * 1.0 -
+          (b.waited * MatchingConstants.managerReserveWaitedFactor);
       return scoreA > scoreB ? a : b;
     });
   }

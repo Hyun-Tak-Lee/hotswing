@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hotswing/src/common/utils/game/skill_utils.dart';
+import 'package:hotswing/src/common/constants/skill_constants.dart';
 import 'package:hotswing/src/screens/players/widgets/player_edit/player_skill_chip_button.dart';
 
 class PlayerSkillChipList extends StatelessWidget {
@@ -14,7 +14,7 @@ class PlayerSkillChipList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final levels = skillLevelToRate.keys.toList();
+    final levels = SkillConstants.levelToRate.keys.toList();
 
     return Wrap(
       spacing: 8,
@@ -29,4 +29,3 @@ class PlayerSkillChipList extends StatelessWidget {
     );
   }
 }
-

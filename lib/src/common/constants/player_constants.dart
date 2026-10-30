@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 
 /// 선수 및 대기열 관련 도메인 상수
 abstract final class PlayerConstants {
+  /// 선수 이름 최대 글자 수
+  static const int maxNameLength = 10;
+
+  /// 선수 설명(메모) 최대 글자 수
+  static const int maxDescriptionLength = 16;
+
+  /// 선수 레이팅 최대값 (최소값은 0)
+  static const int maxRate = 7500;
+
+  /// 동반 그룹 사용자 지정 이름 최대 글자 수
+  static const int maxGroupNameLength = 6;
+
   /// 대기열 정렬 기준 SharedPreferences 저장 키
   static const String waitingSortCriterionKey = 'standby_sort';
 
