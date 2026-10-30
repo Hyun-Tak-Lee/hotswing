@@ -18,11 +18,16 @@ class TtsClient {
   Future<void> speak(String text) async {
     if (_isPlaying) return;
 
-    await _initTts();
+    // 초기화 대기 중의 연타도 막도록 먼저 재생 상태로 표시
     _isPlaying = true;
     try {
+      await _initTts();
+      // awaitSpeakCompletion(true)이므로 재생이 끝날 때까지 대기
       await _tts.speak(text);
     } catch (_) {
+      // 음성 출력 실패는 무시
+    } finally {
+      // 실패 시 완료 콜백이 오지 않아도 상태가 고정되지 않도록 해제
       _isPlaying = false;
     }
   }

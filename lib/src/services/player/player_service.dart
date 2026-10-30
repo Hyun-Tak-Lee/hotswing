@@ -92,8 +92,8 @@ class PlayerService {
   }
 
   /// 신규 [player]를 데이터베이스에 추가합니다.
-  void addPlayer(Player player) {
-    _playerRepository.addPlayer(player);
+  bool addPlayer(Player player) {
+    return _playerRepository.addPlayer(player);
   }
 
   /// 주어진 식별자([id])의 선수를 데이터베이스에서 삭제합니다.

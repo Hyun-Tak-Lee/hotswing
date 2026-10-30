@@ -28,20 +28,22 @@ class ActivationService {
   ///
   /// Android: androidId
   /// iOS: identifierForVendor
-  Future<String> getDeviceId() async {
+  ///
+  /// 일시적으로 조회할 수 없는 경우(플랫폼 오류, 재부팅 직후 잠금 상태의 iOS 등) null을 반환합니다.
+  Future<String?> getDeviceId() async {
     try {
       if (Platform.isAndroid) {
         final androidInfo = await _deviceInfo.androidInfo;
         return androidInfo.id; // Android ID
       } else if (Platform.isIOS) {
         final iosInfo = await _deviceInfo.iosInfo;
-        return iosInfo.identifierForVendor ?? 'unknown_ios_device';
+        return iosInfo.identifierForVendor;
       } else {
         // Android, iOS 이외의 플랫폼은 지원하지 않음
         return 'unsupported_platform';
       }
     } catch (e) {
-      return 'error_getting_device_id';
+      return null;
     }
   }
 
@@ -83,6 +85,9 @@ class ActivationService {
       if (password.trim() == masterPassword) {
         // 현재 기기 ID 가져오기
         final deviceId = await getDeviceId();
+        if (deviceId == null) {
+          return false;
+        }
 
         // 기기 ID + 비밀번호 함께 암호화
         final encryptedDeviceId = CryptoUtils.encryptDeviceId(
@@ -141,6 +146,10 @@ class ActivationService {
 
       // 현재 기기 ID 가져오기
       final currentDeviceId = await getDeviceId();
+      if (currentDeviceId == null) {
+        // 기기 ID를 일시적으로 조회할 수 없는 경우 활성화 상태는 유지
+        return false;
+      }
 
       // .env에서 마스터 비밀번호와 시크릿 키 가져오기
       final masterPassword = dotenv.env['MASTER_PASSWORD'];
@@ -166,8 +175,7 @@ class ActivationService {
         return false;
       }
     } catch (e) {
-      // 에러 시 안전을 위해 재활성화 요구
-      await _sharedProvider.saveBool(_keyIsActivated, false);
+      // 일시적 오류로 활성화가 해제되지 않도록 이번 실행만 검증 실패 처리
       return false;
     }
   }

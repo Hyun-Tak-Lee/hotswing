@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:hotswing/src/common/constants/court_constants.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 import 'package:realm/realm.dart';
@@ -37,14 +38,14 @@ class PlayerSessionService {
   Future<List<ObjectId>> loadPlayerIds() async {
     final ids = await _sharedProvider.getStringList(_keyPlayers);
     _cachedPlayers = List<String>.from(ids);
-    return ids.map((id) => ObjectId.fromHexString(id)).toList();
+    return _parseIds(ids);
   }
 
   /// 로컬 저장소에서 미배정(대기열) 선수 ID 목록을 복원합니다.
   Future<List<ObjectId>> loadUnassignedPlayerIds() async {
     final ids = await _sharedProvider.getStringList(_keyUnassignedPlayers);
     _cachedUnassignedPlayers = List<String>.from(ids);
-    return ids.map((id) => ObjectId.fromHexString(id)).toList();
+    return _parseIds(ids);
   }
 
   /// 로컬 저장소에서 진행 코트별 선수 ID 2차원 목록을 복원합니다.
@@ -183,6 +184,17 @@ class PlayerSessionService {
     });
   }
 
+  /// 디바운스 대기 중인 저장이 있으면 즉시 수행합니다.
+  ///
+  /// 앱이 백그라운드로 전환되거나 종료되기 직전 호출하여 변경 사항 유실을 방지합니다.
+  Future<void> flushPendingSave(Future<void> Function() onSave) async {
+    _saveDebounce?.cancel();
+    _saveDebounce = null;
+    if (_pendingSince == null) return;
+    _pendingSince = null;
+    await onSave();
+  }
+
   /// 보류 중인 저장을 즉시 수행하고 타이머 자원을 해제합니다.
   void dispose({Future<void> Function()? onFlush}) {
     _saveDebounce?.cancel();
@@ -205,13 +217,34 @@ class PlayerSessionService {
         .toList();
   }
 
+  /// 손상된 코트 데이터는 빈 코트로, 잘못된 ID는 빈 슬롯으로 복원하여 슬롯 위치를 보존합니다.
   List<List<ObjectId?>> _decodeCourts(List<String> encodedList) {
     return encodedList.map((encoded) {
-      final List<dynamic> decoded = jsonDecode(encoded);
-      return decoded
-          .map((id) => (id == '') ? null : ObjectId.fromHexString(id as String))
-          .toList();
+      try {
+        final decoded = jsonDecode(encoded);
+        if (decoded is! List) {
+          return List<ObjectId?>.filled(CourtConstants.capacity, null);
+        }
+        return decoded
+            .map((id) => id is String ? _tryParseObjectId(id) : null)
+            .toList();
+      } on FormatException {
+        return List<ObjectId?>.filled(CourtConstants.capacity, null);
+      }
     }).toList();
+  }
+
+  List<ObjectId> _parseIds(List<String> ids) {
+    return ids.map(_tryParseObjectId).whereType<ObjectId>().toList();
+  }
+
+  ObjectId? _tryParseObjectId(String hex) {
+    if (hex.isEmpty) return null;
+    try {
+      return ObjectId.fromHexString(hex);
+    } catch (_) {
+      return null;
+    }
   }
 
   bool _isListEqual(List<String>? a, List<String> b) {

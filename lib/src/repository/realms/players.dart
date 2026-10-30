@@ -47,16 +47,18 @@ class PlayerRepository {
     return _realm.query<Player>(finalQuery, args);
   }
 
-  /// 신규 [player]를 데이터베이스에 추가합니다.
-  void addPlayer(Player player) {
+  /// 신규 [player]를 데이터베이스에 추가합니다. 저장에 성공하면 true를 반환합니다.
+  bool addPlayer(Player player) {
     try {
       _realm.write(() {
         _realm.add(player);
       });
+      return true;
     } catch (e) {
       if (kDebugMode) {
         print(e);
       }
+      return false;
     }
   }
 
@@ -284,7 +286,7 @@ class PlayerRepository {
       }
     } catch (e) {
       if (kDebugMode) {
-        print("Cleanup error: \$e");
+        print("Cleanup error: $e");
       }
     }
   }
@@ -304,7 +306,7 @@ class PlayerRepository {
       }
     } catch (e) {
       if (kDebugMode) {
-        print("Cleanup guest error: \$e");
+        print("Cleanup guest error: $e");
       }
     }
   }

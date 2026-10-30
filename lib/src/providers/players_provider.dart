@@ -31,14 +31,19 @@ class PlayersProvider with ChangeNotifier {
   List<Player>? _cachedSortedPlayers;
   final Map<String, String> _customGroupNames = {};
   final Set<int> _finishingCourtIndices = {};
+  late final AppLifecycleListener _lifecycleListener;
 
   /// [PlayersProvider] 생성자. 옵션 조회 및 서비스 초기화를 진행합니다.
   PlayersProvider() {
     _options = OptionsRepository.instance.getOptions();
     _courtService = CourtAssignService(_options);
+    _lifecycleListener = AppLifecycleListener(
+      onHide: _flushPendingSave,
+      onPause: _flushPendingSave,
+      onDetach: _flushPendingSave,
+    );
     _ensureSpareStandbyCourt();
     initialized();
-    notifyListeners();
   }
 
   /// 진행 코트 또는 대기 코트에 1명 이상의 선수가 배정되어 있는지 여부.
@@ -77,12 +82,13 @@ class PlayersProvider with ChangeNotifier {
 
   @override
   void dispose() {
+    _lifecycleListener.dispose();
     _sessionService.dispose(onFlush: _flushSave);
     super.dispose();
   }
 
   /// 로컬 저장소로부터 세션 상태 및 플레이어 데이터를 불러와 초기화합니다.
-  void initialized() async {
+  Future<void> initialized() async {
     try {
       await _loadCustomGroupNames();
       await _loadInitialPlayers();
@@ -171,7 +177,8 @@ class PlayersProvider with ChangeNotifier {
       recentMatchDate: DateTime.now(),
       description: description,
     );
-    _playerService.addPlayer(newPlayer);
+    // DB 저장 실패 시 세션에만 존재하는 미관리 객체가 생기지 않도록 중단
+    if (!_playerService.addPlayer(newPlayer)) return;
     addPlayerInCourt(newPlayer, groups);
 
     _saveLoadedPlayers();
@@ -824,6 +831,10 @@ class PlayersProvider with ChangeNotifier {
       courtStartTimes: _courtStartTimes,
       customGroupNames: _customGroupNames,
     );
+  }
+
+  void _flushPendingSave() {
+    _sessionService.flushPendingSave(_flushSave);
   }
 
   Future<void> _loadCustomGroupNames() async {

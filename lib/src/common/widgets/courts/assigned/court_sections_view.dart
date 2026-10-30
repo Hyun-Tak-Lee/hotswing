@@ -187,8 +187,9 @@ class CourtSectionsView extends StatelessWidget {
                                       return List.generate(sectionData.length, (
                                             index,
                                           ) {
-                                            if (index == sectionIndex)
+                                            if (index == sectionIndex) {
                                               return null;
+                                            }
                                             return PopupMenuItem<int>(
                                               value: index,
                                               height: 40,

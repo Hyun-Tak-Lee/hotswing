@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/screens/players/widgets/player_edit/player_manager_toggle.dart';
 
@@ -58,7 +59,13 @@ class PlayerEditHeader extends StatelessWidget {
               filled: true,
               fillColor: playerColors.playerInputFill,
             ),
-            validator: (val) => (val == null || val.isEmpty) ? "필수" : null,
+            maxLength: 10,
+            inputFormatters: [LengthLimitingTextInputFormatter(10)],
+            validator: (val) {
+              if (val == null || val.isEmpty) return "필수";
+              if (val.length > 10) return "10자 이하";
+              return null;
+            },
           ),
         ),
         const SizedBox(width: 16),
