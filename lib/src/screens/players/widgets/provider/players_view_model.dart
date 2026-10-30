@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:hotswing/src/models/players/player.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
@@ -47,6 +49,9 @@ class PlayersViewModel extends ChangeNotifier {
   // 필터링 및 정렬된 전체 쿼리 결과 (지연 로딩을 위해 전체 객체를 메모리에 두지 않고 쿼리 결과만 유지)
   late RealmResults<Player> _queryResults;
 
+  // 다른 화면(사이드 메뉴 등)에서 추가/삭제된 선수를 목록에 반영하기 위한 쿼리 결과 변경 구독
+  StreamSubscription<RealmResultsChanges<Player>>? _queryChangesSubscription;
+
   bool _isDisposed = false;
 
   /// [PlayersViewModel] 생성자. 초기 데이터를 조회합니다.
@@ -87,6 +92,7 @@ class PlayersViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _isDisposed = true;
+    _queryChangesSubscription?.cancel();
     super.dispose();
   }
 
@@ -316,6 +322,11 @@ class PlayersViewModel extends ChangeNotifier {
       sortAscending: true,
     );
 
+    _queryChangesSubscription?.cancel();
+    _queryChangesSubscription = _queryResults.changes.listen(
+      _onQueryResultsChanged,
+    );
+
     // 페이지 데이터 구성
     int initialCount = _queryResults.length < _pageSize
         ? _queryResults.length
@@ -325,6 +336,25 @@ class PlayersViewModel extends ChangeNotifier {
     _hasMore = _players.length < _queryResults.length;
 
     _isLoading = false;
+    notifyListeners();
+  }
+
+  /// 쿼리 결과에 선수가 추가/삭제/이동되면 현재까지 불러온 개수를 유지한 채 목록을 다시 구성합니다.
+  void _onQueryResultsChanged(RealmResultsChanges<Player> changes) {
+    if (changes.inserted.isEmpty &&
+        changes.deleted.isEmpty &&
+        changes.moved.isEmpty) {
+      return;
+    }
+
+    final loadedCount = _players.length < _pageSize
+        ? _pageSize
+        : _players.length;
+    final count = loadedCount < _queryResults.length
+        ? loadedCount
+        : _queryResults.length;
+    _players = _queryResults.take(count).toList();
+    _hasMore = _players.length < _queryResults.length;
     notifyListeners();
   }
 }

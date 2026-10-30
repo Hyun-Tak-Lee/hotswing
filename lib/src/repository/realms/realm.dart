@@ -13,7 +13,7 @@ class RealmProvider {
   RealmProvider._() {
     final config = Configuration.local(
       [Player.schema, Options.schema],
-      schemaVersion: 9,
+      schemaVersion: 10,
       migrationCallback: (migration, oldSchemaVersion) {
         if (oldSchemaVersion < 1) {
           for (final obj in migration.newRealm.all<Options>()) {
@@ -55,11 +55,7 @@ class RealmProvider {
             obj.keepScreenOn = true;
           }
         }
-        if (oldSchemaVersion < 9) {
-          for (final obj in migration.newRealm.all<Options>()) {
-            obj.orientationMode = 0;
-          }
-        }
+        // 9: orientationMode 추가 → 10: 제거. 삭제된 속성은 Realm이 자동으로 정리합니다.
       },
     );
     _realm = Realm(config);

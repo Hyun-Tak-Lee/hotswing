@@ -7,7 +7,6 @@ import 'package:hotswing/src/providers/theme_provider.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/screens/settings/widgets/setting_int_slider_card.dart';
-import 'package:hotswing/src/screens/settings/widgets/setting_orientation_tile.dart';
 import 'package:hotswing/src/screens/settings/widgets/setting_section_header.dart';
 import 'package:hotswing/src/screens/settings/widgets/setting_slider_card.dart';
 import 'package:hotswing/src/screens/settings/widgets/setting_switch_tile.dart';
@@ -144,14 +143,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               value: optionsProvider.keepScreenOn,
                               onChanged: (bool value) {
                                 context.read<OptionsProvider>().setKeepScreenOn(value);
-                              },
-                              iconAndFontSize: iconAndFontSize,
-                            ),
-                            const Divider(height: 32.0),
-                            SettingOrientationTile(
-                              selectedMode: optionsProvider.orientationMode,
-                              onChanged: (mode) {
-                                context.read<OptionsProvider>().setOrientationMode(mode);
                               },
                               iconAndFontSize: iconAndFontSize,
                             ),

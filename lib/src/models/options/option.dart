@@ -18,5 +18,4 @@ class _Options {
   late int inactiveDaysThreshold; // 비활성 플레이어 자동 삭제 기간 (일)
   late int randomPoolSize; // 매칭 시 랜덤 선택 범위 (1~5)
   late bool keepScreenOn; // 화면 상시 켜짐 유지
-  late int orientationMode; // 화면 방향 모드 (0: 자동, 1: 세로, 2: 가로)
 }

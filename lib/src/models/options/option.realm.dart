@@ -22,7 +22,6 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
     int inactiveDaysThreshold,
     int randomPoolSize,
     bool keepScreenOn,
-    int orientationMode,
   ) {
     RealmObjectBase.set(this, 'id', id);
     RealmObjectBase.set(this, 'numberOfSections', numberOfSections);
@@ -35,7 +34,6 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.set(this, 'inactiveDaysThreshold', inactiveDaysThreshold);
     RealmObjectBase.set(this, 'randomPoolSize', randomPoolSize);
     RealmObjectBase.set(this, 'keepScreenOn', keepScreenOn);
-    RealmObjectBase.set(this, 'orientationMode', orientationMode);
   }
 
   Options._();
@@ -116,13 +114,6 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
       RealmObjectBase.set(this, 'keepScreenOn', value);
 
   @override
-  int get orientationMode =>
-      RealmObjectBase.get<int>(this, 'orientationMode') as int;
-  @override
-  set orientationMode(int value) =>
-      RealmObjectBase.set(this, 'orientationMode', value);
-
-  @override
   Stream<RealmObjectChanges<Options>> get changes =>
       RealmObjectBase.getChanges<Options>(this);
 
@@ -146,7 +137,6 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
       'inactiveDaysThreshold': inactiveDaysThreshold.toEJson(),
       'randomPoolSize': randomPoolSize.toEJson(),
       'keepScreenOn': keepScreenOn.toEJson(),
-      'orientationMode': orientationMode.toEJson(),
     };
   }
 
@@ -166,7 +156,6 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
         'inactiveDaysThreshold': EJsonValue inactiveDaysThreshold,
         'randomPoolSize': EJsonValue randomPoolSize,
         'keepScreenOn': EJsonValue keepScreenOn,
-        'orientationMode': EJsonValue orientationMode,
       } =>
         Options(
           fromEJson(id),
@@ -180,7 +169,6 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
           fromEJson(inactiveDaysThreshold),
           fromEJson(randomPoolSize),
           fromEJson(keepScreenOn),
-          fromEJson(orientationMode),
         ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -201,7 +189,6 @@ class Options extends _Options with RealmEntity, RealmObjectBase, RealmObject {
       SchemaProperty('inactiveDaysThreshold', RealmPropertyType.int),
       SchemaProperty('randomPoolSize', RealmPropertyType.int),
       SchemaProperty('keepScreenOn', RealmPropertyType.bool),
-      SchemaProperty('orientationMode', RealmPropertyType.int),
     ]);
   }();
 

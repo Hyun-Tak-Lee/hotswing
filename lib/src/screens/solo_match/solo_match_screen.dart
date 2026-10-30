@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned/court_sections_view.dart';
+import 'package:hotswing/src/common/widgets/courts/court_fullscreen_control_bar.dart';
 import 'package:hotswing/src/common/widgets/courts/standby/standby_court_sections_view.dart';
 import 'package:hotswing/src/models/ui/player_drag_data.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
@@ -75,6 +76,10 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
         });
       },
       isLandscape: isLandscape,
+      // 모바일 세로 전체화면: 선택기 옆에 종료 버튼 표시 (가로 모드는 코트 목록 맨 앞 컨트롤 바 사용)
+      onExitFullScreen: isMobileSize && widget.isFullScreen
+          ? widget.onExitFullScreen
+          : null,
     );
 
     final courtSectionWidget = isLandscape
@@ -141,7 +146,28 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
                 VerticalDivider(width: 1.0, color: courtColors.homeDivider),
                 Expanded(
                   flex: 1,
-                  child: RepaintBoundary(child: waitingPlayersPanelWidget),
+                  child: Column(
+                    children: [
+                      // 태블릿 세로 전체화면: 대기 패널 위에 종료 컨트롤 바 표시
+                      if (widget.isFullScreen &&
+                          widget.onExitFullScreen != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5.0,
+                          ),
+                          child: CourtFullscreenControlBar(
+                            isLandscape: false,
+                            isTablet: isTablet,
+                            onExitFullScreen: widget.onExitFullScreen!,
+                          ),
+                        ),
+                      Expanded(
+                        child: RepaintBoundary(
+                          child: waitingPlayersPanelWidget,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

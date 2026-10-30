@@ -325,12 +325,6 @@ class StandbyCourtSectionsView extends StatelessWidget {
                     )
                   : Column(
                       children: [
-                        if (isFullScreen && onExitFullScreen != null)
-                          CourtFullscreenControlBar(
-                            isLandscape: false,
-                            isTablet: isTablet,
-                            onExitFullScreen: onExitFullScreen!,
-                          ),
                         ...sectionData.asMap().entries.map((entry) {
                           int sectionIndex = entry.key;
                           List<Player?> item = entry.value;

@@ -1,0 +1,8 @@
+targets:
+  $default:
+    builders:
+      # Realm 생성기는 @RealmModel 파일에만 실행합니다.
+      # 전체 파일에 실행하면 analyzer 7.x가 의존성(win32 → ffi_leak_tracker)의 Dart 3.10 dot shorthand 문법을 해석하지 못해 빌드가 멈춥니다.
+      realm:realm_generator:
+        generate_for:
+          - lib/src/models/**.dart

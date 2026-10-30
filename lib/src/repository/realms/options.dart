@@ -33,7 +33,6 @@ class OptionsRepository {
             OptionConstants.defaultInactiveDays,
             OptionConstants.defaultRandomPoolSize,
             OptionConstants.defaultKeepScreenOn,
-            OptionConstants.defaultOrientationMode,
           ),
         );
       });

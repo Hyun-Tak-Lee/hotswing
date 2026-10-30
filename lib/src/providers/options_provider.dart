@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hotswing/src/common/constants/option_constants.dart';
-import 'package:hotswing/src/enums/widget_feature.dart';
 import 'package:hotswing/src/models/options/option.dart';
 import 'package:hotswing/src/repository/realms/options.dart';
 import 'package:hotswing/src/services/system/native_device_service.dart';
@@ -46,10 +44,6 @@ class OptionsProvider with ChangeNotifier {
 
   /// 화면 상시 켜짐(Wakelock) 유지 여부.
   bool get keepScreenOn => _options.keepScreenOn;
-
-  /// 화면 방향 고정/자동 회전 모드.
-  ScreenOrientationMode get orientationMode =>
-      ScreenOrientationMode.fromValue(_options.orientationMode);
 
   /// 진행 코트 수를 변경합니다.
   void setNumberOfSections(int newNumberOfSections) {
@@ -156,39 +150,12 @@ class OptionsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// 화면 방향 모드를 변경합니다.
-  void setOrientationMode(ScreenOrientationMode mode) {
-    _realm.write(() {
-      _options.orientationMode = mode.value;
-    });
-    _applyOrientation(mode);
-    notifyListeners();
-  }
-
   void _loadOptions() {
     OptionsRepository optionsRepository = OptionsRepository.instance;
     _realm = optionsRepository.realm;
     _options = optionsRepository.getOptions();
 
     NativeDeviceService.instance.setKeepScreenOn(enable: _options.keepScreenOn);
-    _applyOrientation(orientationMode);
     notifyListeners();
-  }
-
-  void _applyOrientation(ScreenOrientationMode mode) {
-    switch (mode) {
-      case ScreenOrientationMode.portrait:
-        SystemChrome.setPreferredOrientations(const [
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]);
-      case ScreenOrientationMode.landscape:
-        SystemChrome.setPreferredOrientations(const [
-          DeviceOrientation.landscapeLeft,
-          DeviceOrientation.landscapeRight,
-        ]);
-      case ScreenOrientationMode.auto:
-        SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-    }
   }
 }

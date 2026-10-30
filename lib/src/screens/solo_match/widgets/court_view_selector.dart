@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
+import 'package:hotswing/src/common/widgets/courts/court_fullscreen_exit_button.dart';
 import 'package:hotswing/src/enums/widget_feature.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 
@@ -14,12 +15,16 @@ class CourtViewSelector extends StatelessWidget {
   /// 가로 모드 여부.
   final bool isLandscape;
 
+  /// 전체화면 종료 콜백. 세로 모드에서 지정되면 선택기 오른쪽에 종료 버튼을 표시합니다.
+  final VoidCallback? onExitFullScreen;
+
   /// [CourtViewSelector] 생성자.
   const CourtViewSelector({
     super.key,
     required this.selectedView,
     required this.onSelectionChanged,
     this.isLandscape = false,
+    this.onExitFullScreen,
   });
 
   @override
@@ -49,7 +54,7 @@ class CourtViewSelector extends StatelessWidget {
         ? const SizedBox(height: 12.0)
         : const SizedBox(width: 0);
 
-    return Container(
+    final selector = Container(
       width: isLandscape ? (isTablet ? 110.0 : 80.0) : double.infinity,
       padding: isLandscape
           ? const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0)
@@ -82,6 +87,20 @@ class CourtViewSelector extends StatelessWidget {
                 Expanded(child: standby),
               ],
             ),
+    );
+
+    if (isLandscape || onExitFullScreen == null) {
+      return selector;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 10.0),
+      child: Row(
+        children: [
+          Expanded(child: selector),
+          CourtFullscreenExitButton(onExitFullScreen: onExitFullScreen!),
+        ],
+      ),
     );
   }
 }
