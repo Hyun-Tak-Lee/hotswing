@@ -24,6 +24,7 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
 
   _AuthMode _currentMode = _AuthMode.verifyManager;
   bool _isLoading = true;
+  bool _isVerifying = false;
   String? _errorMessage;
 
   @override
@@ -150,6 +151,7 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
                 controller: _passwordController,
                 obscureText: true,
                 autofocus: true,
+                readOnly: _isVerifying,
                 style: TextStyle(color: baseColors.textPrimary),
                 decoration: InputDecoration(
                   labelText: '비밀번호',
@@ -187,7 +189,7 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
                 width: double.infinity,
                 height: isLandscape ? 42 : 50,
                 child: ElevatedButton(
-                  onPressed: _handleSubmit,
+                  onPressed: _isVerifying ? null : _handleSubmit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: baseColors.primaryAccent,
                     foregroundColor: baseColors.sliderIndicatorText,
@@ -195,10 +197,22 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    '확인',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  child: _isVerifying
+                      ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: baseColors.primaryAccent,
+                          ),
+                        )
+                      : const Text(
+                          '확인',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
 
@@ -224,24 +238,38 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
               if (_currentMode != _AuthMode.verifyManager) ...[
                 SizedBox(height: isLandscape ? 8 : 16),
                 TextButton(
-                  onPressed: () {
-                    if (_currentMode == _AuthMode.setNewManagerPassword) {
-                      // 이미 마스터 비밀번호 검증이 완료된 상태
-                      Navigator.of(context).pop(true);
-                    } else {
-                      // 현재 마스터 비밀번호 입력창인 경우, 여기서 바로 검증 후 진입 시도
-                      final password = _passwordController.text;
-                      if (password.isEmpty) {
-                        setState(() => _errorMessage = '활성화 비밀번호를 입력하세요.');
-                        return;
-                      }
-                      if (_authService.verifyActivationPassword(password)) {
-                        Navigator.of(context).pop(true);
-                      } else {
-                        setState(() => _errorMessage = '활성화 비밀번호가 일치하지 않습니다.');
-                      }
-                    }
-                  },
+                  onPressed: _isVerifying
+                      ? null
+                      : () async {
+                          if (_currentMode == _AuthMode.setNewManagerPassword) {
+                            // 이미 마스터 비밀번호 검증이 완료된 상태
+                            Navigator.of(context).pop(true);
+                          } else {
+                            // 현재 마스터 비밀번호 입력창인 경우, 여기서 바로 검증 후 진입 시도
+                            final password = _passwordController.text;
+                            if (password.isEmpty) {
+                              setState(
+                                () => _errorMessage = '활성화 비밀번호를 입력하세요.',
+                              );
+                              return;
+                            }
+                            setState(() {
+                              _isVerifying = true;
+                              _errorMessage = null;
+                            });
+                            final isValid = await _authService
+                                .verifyActivationPassword(password);
+                            if (!context.mounted) return;
+                            setState(() => _isVerifying = false);
+                            if (isValid) {
+                              Navigator.of(context).pop(true);
+                            } else {
+                              setState(
+                                () => _errorMessage = '활성화 비밀번호가 일치하지 않습니다.',
+                              );
+                            }
+                          }
+                        },
                   child: Text(
                     _currentMode == _AuthMode.setNewManagerPassword
                         ? '비밀번호 변경 없이 진입하기'
@@ -273,14 +301,21 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
   }
 
   Future<void> _handleSubmit() async {
-    if (_passwordController.text.isEmpty) return;
+    if (_isVerifying || _passwordController.text.isEmpty) return;
 
     setState(() {
+      _isVerifying = true;
       _errorMessage = null;
     });
 
-    final password = _passwordController.text;
+    try {
+      await _submitPassword(_passwordController.text);
+    } finally {
+      if (mounted) setState(() => _isVerifying = false);
+    }
+  }
 
+  Future<void> _submitPassword(String password) async {
     switch (_currentMode) {
       case _AuthMode.verifyManager:
         final isValid = await _authService.verifyManagerPassword(password);
@@ -297,7 +332,8 @@ class _ManagerAuthOverlayState extends State<ManagerAuthOverlay> {
 
       case _AuthMode.verifyActivationForInit:
       case _AuthMode.verifyActivationForReset:
-        final isValid = _authService.verifyActivationPassword(password);
+        final isValid = await _authService.verifyActivationPassword(password);
+        if (!mounted) return;
         if (isValid) {
           setState(() {
             _currentMode = _AuthMode.setNewManagerPassword;

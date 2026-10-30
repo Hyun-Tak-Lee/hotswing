@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 import 'package:hotswing/src/common/utils/security/crypto_utils.dart';
@@ -17,6 +18,10 @@ class ActivationService {
   static const String _keyEncryptedDeviceId = 'encrypted_device_id';
   static const String _keyIsActivated = 'is_activated';
   static const String _keyActivationTimestamp = 'activation_timestamp';
+
+  // .env 키
+  static const String _envPasswordSalt = 'MASTER_PASSWORD_SALT';
+  static const String _envPasswordHash = 'MASTER_PASSWORD_HASH';
 
   ActivationService._internal();
 
@@ -69,31 +74,20 @@ class ActivationService {
   /// 반환: 활성화 성공 시 true, 실패 시 false
   Future<bool> activateWithPassword(String password) async {
     try {
-      // .env에서 마스터 비밀번호와 시크릿 키 가져오기
-      final masterPassword = dotenv.env['MASTER_PASSWORD'];
-      final secretKey = dotenv.env['SECRET_KEY'];
+      // 입력한 비밀번호의 해시와 .env의 마스터 비밀번호 해시 비교
+      if (await verifyMasterPassword(password)) {
+        final passwordHash = dotenv.env[_envPasswordHash]!.toLowerCase();
 
-      if (masterPassword == null) {
-        return false;
-      }
-
-      if (secretKey == null) {
-        return false;
-      }
-
-      // 입력한 비밀번호와 마스터 비밀번호 비교
-      if (password.trim() == masterPassword) {
         // 현재 기기 ID 가져오기
         final deviceId = await getDeviceId();
         if (deviceId == null) {
           return false;
         }
 
-        // 기기 ID + 비밀번호 함께 암호화
-        final encryptedDeviceId = CryptoUtils.encryptDeviceId(
-          deviceId,
-          masterPassword, // 비밀번호 포함
-          secretKey,
+        // 기기 ID를 마스터 비밀번호 해시로 서명하여 결합
+        final encryptedDeviceId = CryptoUtils.bindDeviceId(
+          deviceId: deviceId,
+          passwordHash: passwordHash,
         );
 
         // 활성화 처리 - 암호화된 기기 ID 저장
@@ -117,16 +111,39 @@ class ActivationService {
     }
   }
 
+  /// 입력한 [password]가 마스터 비밀번호와 일치하는지 확인
+  ///
+  /// `.env`의 salt로 PBKDF2 해시를 계산하여 저장된 해시와 비교합니다.
+  /// 계산 비용이 커서 UI가 멈추지 않도록 별도 Isolate에서 수행합니다.
+  Future<bool> verifyMasterPassword(String password) async {
+    final salt = dotenv.env[_envPasswordSalt];
+    final passwordHash = dotenv.env[_envPasswordHash];
+    if (salt == null || salt.isEmpty) return false;
+    if (passwordHash == null || passwordHash.isEmpty) return false;
+
+    final input = password.trim();
+    try {
+      final inputHash = await Isolate.run(
+        () => CryptoUtils.pbkdf2Sha256(password: input, saltHex: salt),
+      );
+      return inputHash == passwordHash.toLowerCase();
+    } catch (e) {
+      // salt 형식 오류 등 .env 설정 문제는 검증 실패로 처리
+      return false;
+    }
+  }
+
   /// 기기 검증 (복제 방지)
   ///
-  /// 저장된 암호화된 값과 현재 기기 ID + 비밀번호가 일치하는지 확인
+  /// 저장된 결합 값과 현재 기기 ID + 마스터 비밀번호 해시가 일치하는지 확인
   ///
   /// 반환: 일치하면 true (정상), 불일치하면 false (다른 기기로 복제됨)
   ///
   /// 예시:
-  /// - Android 기기 A에서 활성화 → encrypt(deviceId, password) 저장
-  /// - 기기 A에서 실행 → verify(deviceId, password) 일치 ✓ 앱 실행
+  /// - Android 기기 A에서 활성화 → bind(deviceId, passwordHash) 저장
+  /// - 기기 A에서 실행 → verify(deviceId, passwordHash) 일치 ✓ 앱 실행
   /// - 기기 B로 SharedPreferences 복사 → verify 불일치 ✗ 재활성화 요구
+  /// - 이전 방식(평문 비밀번호)으로 저장된 값 → 불일치 ✗ 1회 재활성화 요구
   Future<bool> verifyDevice() async {
     try {
       // 활성화되었는지 확인
@@ -151,20 +168,17 @@ class ActivationService {
         return false;
       }
 
-      // .env에서 마스터 비밀번호와 시크릿 키 가져오기
-      final masterPassword = dotenv.env['MASTER_PASSWORD'];
-      final secretKey = dotenv.env['SECRET_KEY'];
-
-      if (masterPassword == null || secretKey == null) {
+      // .env에서 마스터 비밀번호 해시 가져오기
+      final passwordHash = dotenv.env[_envPasswordHash];
+      if (passwordHash == null || passwordHash.isEmpty) {
         return false;
       }
 
-      // 검증 (기기 ID + 비밀번호 함께 검증)
-      final isValid = CryptoUtils.verifyDeviceId(
-        currentDeviceId,
-        masterPassword, // 비밀번호 포함
-        encryptedDeviceId,
-        secretKey,
+      // 검증 (기기 ID + 마스터 비밀번호 해시 함께 검증)
+      final isValid = CryptoUtils.verifyDeviceBinding(
+        deviceId: currentDeviceId,
+        passwordHash: passwordHash.toLowerCase(),
+        savedBinding: encryptedDeviceId,
       );
 
       if (isValid) {

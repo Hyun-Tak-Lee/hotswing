@@ -1,6 +1,6 @@
 import 'package:hotswing/src/repository/shared_preferences/shared_preferences.dart';
 import 'package:hotswing/src/common/utils/security/crypto_utils.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hotswing/src/services/system/activation_service.dart';
 
 /// 관리자 인증 서비스
 ///
@@ -10,6 +10,7 @@ class ManagerAuthService {
   final SharedProvider _sharedProvider = SharedProvider();
 
   static const String _keyManagerPasswordHash = 'manager_password_hash';
+  static const String _keyManagerPasswordSalt = 'manager_password_salt';
 
   ManagerAuthService._internal();
 
@@ -29,20 +30,30 @@ class ManagerAuthService {
     if (savedHash == null || savedHash.isEmpty) {
       return false;
     }
-    final inputHash = CryptoUtils.generateHash(password);
-    return savedHash == inputHash;
+
+    final salt = await _sharedProvider.getString(_keyManagerPasswordSalt);
+    if (salt == null || salt.isEmpty) {
+      // salt 도입 이전에 저장된 해시: 일치하면 salt 적용 해시로 재저장
+      if (savedHash != CryptoUtils.generateHash(password)) return false;
+      await setManagerPassword(password);
+      return true;
+    }
+
+    return savedHash == CryptoUtils.generateSaltedHash(password, salt);
   }
 
   /// 활성화(마스터) 비밀번호와 일치하는지 확인 (초기화, 재설정 용도)
-  bool verifyActivationPassword(String password) {
-    final masterPassword = dotenv.env['MASTER_PASSWORD'];
-    if (masterPassword == null) return false;
-    return password.trim() == masterPassword;
+  Future<bool> verifyActivationPassword(String password) {
+    return ActivationService().verifyMasterPassword(password);
   }
 
   /// 관리자 비밀번호 설정
+  ///
+  /// 설정할 때마다 새 salt를 생성하여 해시와 함께 저장합니다.
   Future<void> setManagerPassword(String newPassword) async {
-    final hash = CryptoUtils.generateHash(newPassword);
+    final salt = CryptoUtils.generateSalt();
+    final hash = CryptoUtils.generateSaltedHash(newPassword, salt);
+    await _sharedProvider.saveString(_keyManagerPasswordSalt, salt);
     await _sharedProvider.saveString(_keyManagerPasswordHash, hash);
   }
 }
