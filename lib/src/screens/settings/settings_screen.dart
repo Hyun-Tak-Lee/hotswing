@@ -7,8 +7,10 @@ import 'package:hotswing/src/providers/theme_provider.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/screens/settings/widgets/setting_int_slider_card.dart';
+import 'package:hotswing/src/screens/settings/widgets/setting_orientation_tile.dart';
 import 'package:hotswing/src/screens/settings/widgets/setting_section_header.dart';
 import 'package:hotswing/src/screens/settings/widgets/setting_slider_card.dart';
+import 'package:hotswing/src/screens/settings/widgets/setting_switch_tile.dart';
 
 /// 테마 모드, 코트 수, 매칭 알고리즘 가중치 및 비활동 멤버 정리 등 환경설정을 관리하는 화면 위젯.
 class SettingsScreen extends StatefulWidget {
@@ -29,7 +31,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     final optionsProvider = context.watch<OptionsProvider>();
-    final playersProvider = context.read<PlayersProvider>();
 
     final baseColors = context.baseColors;
     final colorScheme = context.colorScheme;
@@ -128,12 +129,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 selected: <ThemeMode>{themeProvider.themeMode},
                                 onSelectionChanged:
                                     (Set<ThemeMode> newSelection) {
-                                      themeProvider.setThemeMode(
+                                      context.read<ThemeProvider>().setThemeMode(
                                         newSelection.first,
                                       );
                                     },
                                 showSelectedIcon: false,
                               ),
+                            ),
+                            const SizedBox(height: 16),
+                            const Divider(height: 32.0),
+                            SettingSwitchTile(
+                              title: '화면 항상 켜기',
+                              subtitle: '경기 운영 중 화면이 꺼지지 않도록 유지합니다',
+                              value: optionsProvider.keepScreenOn,
+                              onChanged: (bool value) {
+                                context.read<OptionsProvider>().setKeepScreenOn(value);
+                              },
+                              iconAndFontSize: iconAndFontSize,
+                            ),
+                            const Divider(height: 32.0),
+                            SettingOrientationTile(
+                              selectedMode: optionsProvider.orientationMode,
+                              onChanged: (mode) {
+                                context.read<OptionsProvider>().setOrientationMode(mode);
+                              },
+                              iconAndFontSize: iconAndFontSize,
                             ),
                           ],
                         ),
@@ -248,10 +268,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     .toString(),
                                 onChanged: (double value) {
                                   int newNumberOfSections = value.round();
-                                  optionsProvider.setNumberOfSections(
-                                    newNumberOfSections,
-                                  );
-                                  playersProvider
+                                  context
+                                      .read<OptionsProvider>()
+                                      .setNumberOfSections(newNumberOfSections);
+                                  context
+                                      .read<PlayersProvider>()
                                       .updateAssignedPlayersListCount(
                                         newNumberOfSections,
                                       );
@@ -311,26 +332,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 horizontal: 20.0,
                                 vertical: 16.0,
                               ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    '운영진 대기 (교류전 제외)',
-                                    style: TextStyle(
-                                      fontSize: iconAndFontSize,
-                                      fontWeight: FontWeight.bold,
-                                      color: dynamicText,
-                                    ),
-                                  ),
-                                  Switch.adaptive(
-                                    value: optionsProvider.reserveManager,
-                                    activeTrackColor: dynamicPrimary,
-                                    onChanged: (bool value) {
-                                      optionsProvider.setReserveManager(value);
-                                    },
-                                  ),
-                                ],
+                              child: SettingSwitchTile(
+                                title: '운영진 대기 (교류전 제외)',
+                                value: optionsProvider.reserveManager,
+                                onChanged: (bool value) {
+                                  context.read<OptionsProvider>().setReserveManager(value);
+                                },
+                                iconAndFontSize: iconAndFontSize,
                               ),
                             ),
                           ),
@@ -339,8 +347,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             leftText: '2명씩 균등',
                             rightText: '4인 균등',
                             value: optionsProvider.skillWeight,
-                            onChanged: (double value) =>
-                                optionsProvider.setSkillWeight(value),
+                            onChanged: (double value) => context
+                                .read<OptionsProvider>()
+                                .setSkillWeight(value),
                             iconAndFontSize: iconAndFontSize,
                           ),
                           SettingSliderCard(
@@ -348,8 +357,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             leftText: '남2여2 혼성',
                             rightText: '단일 성별 위주',
                             value: optionsProvider.genderWeight,
-                            onChanged: (double value) =>
-                                optionsProvider.setGenderWeight(value),
+                            onChanged: (double value) => context
+                                .read<OptionsProvider>()
+                                .setGenderWeight(value),
                             iconAndFontSize: iconAndFontSize,
                           ),
                           SettingSliderCard(
@@ -357,8 +367,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             leftText: '조합 우선',
                             rightText: '대기 긴 사람 우선',
                             value: optionsProvider.waitedWeight,
-                            onChanged: (double value) =>
-                                optionsProvider.setWaitedWeight(value),
+                            onChanged: (double value) => context
+                                .read<OptionsProvider>()
+                                .setWaitedWeight(value),
                             iconAndFontSize: iconAndFontSize,
                           ),
                           SettingSliderCard(
@@ -366,8 +377,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             leftText: '무시',
                             rightText: '균등한 경기 수 반영',
                             value: optionsProvider.playedWeight,
-                            onChanged: (double value) =>
-                                optionsProvider.setPlayedWeight(value),
+                            onChanged: (double value) => context
+                                .read<OptionsProvider>()
+                                .setPlayedWeight(value),
                             iconAndFontSize: iconAndFontSize,
                           ),
                           SettingSliderCard(
@@ -375,8 +387,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             leftText: '무시',
                             rightText: '다양한 사람과 매칭',
                             value: optionsProvider.playedWithWeight,
-                            onChanged: (double value) =>
-                                optionsProvider.setPlayedWithWeight(value),
+                            onChanged: (double value) => context
+                                .read<OptionsProvider>()
+                                .setPlayedWithWeight(value),
                             iconAndFontSize: iconAndFontSize,
                           ),
                           SettingIntSliderCard(
@@ -390,8 +403,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 OptionConstants.maxRandomPoolSize -
                                 OptionConstants.minRandomPoolSize,
                             unit: '',
-                            onChanged: (int value) =>
-                                optionsProvider.setRandomPoolSize(value),
+                            onChanged: (int value) => context
+                                .read<OptionsProvider>()
+                                .setRandomPoolSize(value),
                             iconAndFontSize: iconAndFontSize,
                           ),
                         ],
@@ -435,8 +449,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 OptionConstants.minInactiveDays) ~/
                             OptionConstants.inactiveDaysStep,
                         unit: '일',
-                        onChanged: (int value) =>
-                            optionsProvider.setInactiveDaysThreshold(value),
+                        onChanged: (int value) => context
+                            .read<OptionsProvider>()
+                            .setInactiveDaysThreshold(value),
                         iconAndFontSize: iconAndFontSize,
                       ),
                     ),

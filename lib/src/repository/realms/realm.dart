@@ -13,7 +13,7 @@ class RealmProvider {
   RealmProvider._() {
     final config = Configuration.local(
       [Player.schema, Options.schema],
-      schemaVersion: 7,
+      schemaVersion: 9,
       migrationCallback: (migration, oldSchemaVersion) {
         if (oldSchemaVersion < 1) {
           for (final obj in migration.newRealm.all<Options>()) {
@@ -48,6 +48,16 @@ class RealmProvider {
         if (oldSchemaVersion < 7) {
           for (final obj in migration.newRealm.all<Player>()) {
             obj.description = '';
+          }
+        }
+        if (oldSchemaVersion < 8) {
+          for (final obj in migration.newRealm.all<Options>()) {
+            obj.keepScreenOn = true;
+          }
+        }
+        if (oldSchemaVersion < 9) {
+          for (final obj in migration.newRealm.all<Options>()) {
+            obj.orientationMode = 0;
           }
         }
       },

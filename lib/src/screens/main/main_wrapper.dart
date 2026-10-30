@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
@@ -25,6 +26,21 @@ class MainWrapper extends StatefulWidget {
 class _MainWrapperState extends State<MainWrapper> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
+  bool _isFullScreen = false;
+
+  /// 전체화면 전환 시 화면 트리 위치가 바뀌어도 탭 화면의 State(선택된 뷰 등)를 보존하기 위한 키.
+  final GlobalKey _tabStackKey = GlobalKey();
+
+  @override
+  void dispose() {
+    if (_isFullScreen) {
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: SystemUiOverlay.values,
+      );
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +59,21 @@ class _MainWrapperState extends State<MainWrapper> {
 
     // 다크모드 여부에 따른 메뉴 아이콘 색상
     final iconColor = baseColors.menuIcon;
+
+    final bool isCourtScreen = _selectedIndex == 0 || _selectedIndex == 1;
+
+    if (_isFullScreen && isCourtScreen) {
+      return _FullScreenScaffold(
+        backgroundColor: contentBgColor,
+        onExitFullScreen: () => _setFullScreen(false),
+        child: _MainTabStack(
+          key: _tabStackKey,
+          selectedIndex: _selectedIndex,
+          isFullScreen: true,
+          onExitFullScreen: () => _setFullScreen(false),
+        ),
+      );
+    }
 
     if (useNavigationRail) {
       final double headerButtonWidth = isTablet ? 72.0 : 56.0;
@@ -78,6 +109,14 @@ class _MainWrapperState extends State<MainWrapper> {
               ),
               automaticallyImplyLeading: false,
               actions: [
+                if (isCourtScreen)
+                  IconButton(
+                    tooltip: '전체 화면',
+                    icon: const Icon(Icons.fullscreen_rounded),
+                    iconSize: headerIconSize,
+                    color: iconColor,
+                    onPressed: () => _setFullScreen(true),
+                  ),
                 SizedBox(
                   width: headerButtonWidth,
                   child: IconButton(
@@ -114,7 +153,10 @@ class _MainWrapperState extends State<MainWrapper> {
                       ),
                     ),
                     clipBehavior: Clip.antiAlias, // 둥근 모서리에 맞춰 내용 자르기
-                    child: _MainTabStack(selectedIndex: _selectedIndex),
+                    child: _MainTabStack(
+                      key: _tabStackKey,
+                      selectedIndex: _selectedIndex,
+                    ),
                   ),
                 ),
               ],
@@ -147,6 +189,14 @@ class _MainWrapperState extends State<MainWrapper> {
             },
           ),
           actions: [
+            if (isCourtScreen)
+              IconButton(
+                tooltip: '전체 화면',
+                icon: const Icon(Icons.fullscreen_rounded),
+                iconSize: 28.0,
+                color: iconColor,
+                onPressed: () => _setFullScreen(true),
+              ),
             IconButton(
               icon: const Icon(Icons.menu_rounded),
               iconSize: 28.0,
@@ -165,7 +215,10 @@ class _MainWrapperState extends State<MainWrapper> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           clipBehavior: Clip.antiAlias,
-          child: _MainTabStack(selectedIndex: _selectedIndex),
+          child: _MainTabStack(
+            key: _tabStackKey,
+            selectedIndex: _selectedIndex,
+          ),
         ),
         bottomNavigationBar: MainNavigationBar(
           selectedIndex: _selectedIndex,
@@ -174,10 +227,6 @@ class _MainWrapperState extends State<MainWrapper> {
       ),
     );
   }
-
-  // ==========================================
-  // Private Helper Methods
-  // ==========================================
 
   void _onDestinationSelected(int index) async {
     if (_selectedIndex == index) return;
@@ -206,6 +255,11 @@ class _MainWrapperState extends State<MainWrapper> {
         return;
       }
     }
+
+    if (index != 0 && index != 1) {
+      _setFullScreen(false);
+    }
+
     setState(() {
       _selectedIndex = index;
     });
@@ -246,21 +300,82 @@ class _MainWrapperState extends State<MainWrapper> {
       },
     );
   }
+
+  void _setFullScreen(bool value) {
+    if (_isFullScreen == value) return;
+    setState(() {
+      _isFullScreen = value;
+    });
+    if (value) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    } else {
+      // 앱 기본 상태(상태바/네비게이션바 표시)로 복원합니다.
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: SystemUiOverlay.values,
+      );
+    }
+  }
+}
+
+/// 전체화면 모드 전용 Scaffold. 노치/제스처 영역을 피하고, 뒤로가기 시 앱 종료 대신 전체화면을 해제합니다.
+class _FullScreenScaffold extends StatelessWidget {
+  const _FullScreenScaffold({
+    required this.backgroundColor,
+    required this.onExitFullScreen,
+    required this.child,
+  });
+
+  final Color backgroundColor;
+  final VoidCallback onExitFullScreen;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          onExitFullScreen();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: backgroundColor,
+        body: SafeArea(child: child),
+      ),
+    );
+  }
 }
 
 class _MainTabStack extends StatelessWidget {
-  const _MainTabStack({required this.selectedIndex});
+  const _MainTabStack({
+    super.key,
+    required this.selectedIndex,
+    this.isFullScreen = false,
+    this.onExitFullScreen,
+  });
 
   final int selectedIndex;
+  final bool isFullScreen;
+  final VoidCallback? onExitFullScreen;
 
   @override
   Widget build(BuildContext context) {
     return switch (selectedIndex) {
-      0 => const SoloMatchScreen(),
-      1 => const GroupMatchScreen(),
+      0 => SoloMatchScreen(
+        isFullScreen: isFullScreen,
+        onExitFullScreen: onExitFullScreen,
+      ),
+      1 => GroupMatchScreen(
+        isFullScreen: isFullScreen,
+        onExitFullScreen: onExitFullScreen,
+      ),
       2 => const PlayersScreen(),
       3 => const SettingsScreen(),
-      _ => const SoloMatchScreen(),
+      _ => SoloMatchScreen(
+        isFullScreen: isFullScreen,
+        onExitFullScreen: onExitFullScreen,
+      ),
     };
   }
 }

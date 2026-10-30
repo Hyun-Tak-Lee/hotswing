@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/dialogs/game_played_dialog.dart';
@@ -370,6 +371,7 @@ class DraggablePlayerItem extends StatelessWidget {
             // 드래그 중에는 순수 UI만 표시 (탭 기능 없음)
             childWhenDragging: Opacity(opacity: 0.5, child: playerItemDisplay),
             onDragStarted: () {
+              HapticFeedback.lightImpact();
               if (sectionIndex != -1 && onDragStarted != null) {
                 onDragStarted!();
               }

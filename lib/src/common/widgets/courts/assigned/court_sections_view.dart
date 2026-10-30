@@ -10,6 +10,8 @@ import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned/assigned_gradient_button.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned/auto_match_split_button.dart';
+import 'package:hotswing/src/common/widgets/courts/court_fullscreen_control_bar.dart';
+import 'package:hotswing/src/common/widgets/courts/assigned/court_finish_timer_button.dart';
 import 'package:hotswing/src/common/widgets/waiting/waiting_players_bottom_sheet.dart';
 import 'package:hotswing/src/domain/court/court_speaker.dart';
 
@@ -28,6 +30,8 @@ class CourtSectionsView extends StatelessWidget {
   final VoidCallback onCourtPlayerDragStarted;
   final VoidCallback onCourtPlayerDragEnded;
   final bool isClubMatch;
+  final bool isFullScreen;
+  final VoidCallback? onExitFullScreen;
 
   const CourtSectionsView({
     super.key,
@@ -35,6 +39,8 @@ class CourtSectionsView extends StatelessWidget {
     required this.onCourtPlayerDragStarted,
     required this.onCourtPlayerDragEnded,
     this.isClubMatch = false,
+    this.isFullScreen = false,
+    this.onExitFullScreen,
   });
 
   @override
@@ -70,8 +76,15 @@ class CourtSectionsView extends StatelessWidget {
               child: isLandscape
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      children:
-                          sectionData.asMap().entries.map((entry) {
+                      children: [
+                        if (isFullScreen && onExitFullScreen != null)
+                          CourtFullscreenControlBar(
+                            isLandscape: true,
+                            isTablet: isTablet,
+                            maxHeight: maxHeight,
+                            onExitFullScreen: onExitFullScreen!,
+                          ),
+                        ...sectionData.asMap().entries.map((entry) {
                             int sectionIndex = entry.key;
                             List<Player?> item = entry.value;
                             final playerCount = item
@@ -145,27 +158,15 @@ class CourtSectionsView extends StatelessWidget {
                                       isClubMatch: isClubMatch,
                                     )
                                   else
-                                    AssignedGradientButton(
-                                      width: isTablet ? 150.0 : 90.0,
-                                      height: isTablet ? 45.0 : 30.0,
-                                      colors: [
-                                        courtColors.btnFinishStart,
-                                        courtColors.btnFinishEnd,
-                                      ],
+                                    CourtFinishTimerButton(
+                                      sectionIndex: sectionIndex,
+                                      isTablet: isTablet,
                                       isLoading: isFinishing,
                                       onTap: () => context
                                           .read<PlayersProvider>()
                                           .finishCourtMatch(
                                             sectionIndex: sectionIndex,
                                           ),
-                                      child: Text(
-                                        '경기 종료',
-                                        style: TextStyle(
-                                          fontSize: isTablet ? 20.0 : 12.0,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
                                     ),
                                   PopupMenuButton<int>(
                                     tooltip: '코트 이동/교환',
@@ -273,13 +274,20 @@ class CourtSectionsView extends StatelessWidget {
                                 ],
                               ),
                             );
-                          }).toList()..addAll([
-                            if (sectionData.isNotEmpty)
-                              SizedBox(width: isTablet ? 120.0 : 80.0),
-                          ]),
+                          }),
+                        if (sectionData.isNotEmpty)
+                          SizedBox(width: isTablet ? 120.0 : 80.0),
+                      ],
                     )
                   : Column(
-                      children: sectionData.asMap().entries.map((entry) {
+                      children: [
+                        if (isFullScreen && onExitFullScreen != null)
+                          CourtFullscreenControlBar(
+                            isLandscape: false,
+                            isTablet: isTablet,
+                            onExitFullScreen: onExitFullScreen!,
+                          ),
+                        ...sectionData.asMap().entries.map((entry) {
                         int sectionIndex = entry.key;
                         List<Player?> item = entry.value;
                         final playerCount = item.where((p) => p != null).length;
@@ -348,27 +356,15 @@ class CourtSectionsView extends StatelessWidget {
                                   isClubMatch: isClubMatch,
                                 )
                               else
-                                AssignedGradientButton(
-                                  width: isTablet ? 150.0 : 90.0,
-                                  height: isTablet ? 45.0 : 30.0,
-                                  colors: [
-                                    courtColors.btnFinishStart,
-                                    courtColors.btnFinishEnd,
-                                  ],
+                                CourtFinishTimerButton(
+                                  sectionIndex: sectionIndex,
+                                  isTablet: isTablet,
                                   isLoading: isFinishing,
                                   onTap: () => context
                                       .read<PlayersProvider>()
                                       .finishCourtMatch(
                                         sectionIndex: sectionIndex,
                                       ),
-                                  child: Text(
-                                    '경기 종료',
-                                    style: TextStyle(
-                                      fontSize: isTablet ? 20.0 : 12.0,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
                                 ),
                               PopupMenuButton<int>(
                                 tooltip: '코트 이동/교환',
@@ -464,7 +460,8 @@ class CourtSectionsView extends StatelessWidget {
                             ],
                           ),
                         );
-                      }).toList(),
+                      }),
+                      ],
                     ),
             ),
           ),
@@ -472,10 +469,6 @@ class CourtSectionsView extends StatelessWidget {
       },
     );
   }
-
-  // ==========================================
-  // Private Helper Methods
-  // ==========================================
 
   Future<void> _handleEmptySlotTap({
     required BuildContext context,

@@ -44,4 +44,10 @@ abstract final class OptionConstants {
 
   /// 매칭 후보 무작위 풀 크기 최대값
   static const int maxRandomPoolSize = 5;
+
+  /// 화면 상시 켜짐(Wakelock) 유지 기본값
+  static const bool defaultKeepScreenOn = true;
+
+  /// 화면 방향 모드 기본값 (0: 자동 회전, 1: 세로 고정, 2: 가로 고정)
+  static const int defaultOrientationMode = 0;
 }

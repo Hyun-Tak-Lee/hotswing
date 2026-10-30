@@ -25,7 +25,10 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => PlayersProvider()),
-        ChangeNotifierProvider(create: (_) => OptionsProvider()),
+        ChangeNotifierProvider(
+          create: (_) => OptionsProvider(),
+          lazy: false,
+        ),
         ChangeNotifierProvider(
           create: (_) => ActivationProvider(isActivated: isActivated),
         ),

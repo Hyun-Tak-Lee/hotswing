@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned/court_sections_view.dart';
@@ -13,8 +14,18 @@ import 'package:hotswing/src/common/theme/app_colors.dart';
 
 /// 개인전 매칭 및 코트 배정, 대기열 패널을 표시하는 메인 화면 위젯.
 class SoloMatchScreen extends StatefulWidget {
+  /// 전체화면 모드 활성화 여부.
+  final bool isFullScreen;
+
+  /// 전체화면 모드 종료(축소) 콜백.
+  final VoidCallback? onExitFullScreen;
+
   /// [SoloMatchScreen] 생성자.
-  const SoloMatchScreen({super.key});
+  const SoloMatchScreen({
+    super.key,
+    this.isFullScreen = false,
+    this.onExitFullScreen,
+  });
 
   @override
   State<SoloMatchScreen> createState() => _SoloMatchScreenState();
@@ -44,11 +55,15 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
         onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
         onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
         onPlayerDrop: _handlePlayerDrop,
+        isFullScreen: widget.isFullScreen,
+        onExitFullScreen: widget.onExitFullScreen,
       ),
       CourtViewSection.standbyView => StandbyCourtSectionsView(
         onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
         onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
         onPlayerDrop: _handlePlayerDrop,
+        isFullScreen: widget.isFullScreen,
+        onExitFullScreen: widget.onExitFullScreen,
       ),
     };
 
@@ -133,10 +148,6 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
     );
   }
 
-  // ==========================================
-  // Private Helper Methods
-  // ==========================================
-
   void _handlePlayerDrop(
     BuildContext context,
     PlayerDragData data,
@@ -146,6 +157,7 @@ class _SoloMatchScreenState extends State<SoloMatchScreen> {
     int targetSectionIndex,
     int targetSubIndex,
   ) {
+    HapticFeedback.selectionClick();
     context.read<PlayersProvider>().moveOrSwapPlayer(
       data: data,
       targetSectionKind: targetSectionKind,

@@ -8,6 +8,7 @@ import 'package:hotswing/src/providers/players_provider.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
 import 'package:hotswing/src/common/theme/app_colors.dart';
 import 'package:hotswing/src/common/widgets/courts/standby/animated_court_entry.dart';
+import 'package:hotswing/src/common/widgets/courts/court_fullscreen_control_bar.dart';
 import 'package:hotswing/src/common/widgets/courts/standby/standby_gradient_button.dart';
 import 'package:hotswing/src/common/widgets/waiting/waiting_players_bottom_sheet.dart';
 
@@ -26,6 +27,8 @@ class StandbyCourtSectionsView extends StatelessWidget {
   final VoidCallback onCourtPlayerDragStarted;
   final VoidCallback onCourtPlayerDragEnded;
   final bool isClubMatch;
+  final bool isFullScreen;
+  final VoidCallback? onExitFullScreen;
 
   const StandbyCourtSectionsView({
     super.key,
@@ -33,6 +36,8 @@ class StandbyCourtSectionsView extends StatelessWidget {
     required this.onCourtPlayerDragStarted,
     required this.onCourtPlayerDragEnded,
     this.isClubMatch = false,
+    this.isFullScreen = false,
+    this.onExitFullScreen,
   });
 
   @override
@@ -74,6 +79,13 @@ class StandbyCourtSectionsView extends StatelessWidget {
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        if (isFullScreen && onExitFullScreen != null)
+                          CourtFullscreenControlBar(
+                            isLandscape: true,
+                            isTablet: isTablet,
+                            maxHeight: maxHeight,
+                            onExitFullScreen: onExitFullScreen!,
+                          ),
                         ...sectionData.asMap().entries.map((entry) {
                           int sectionIndex = entry.key;
                           List<Player?> item = entry.value;
@@ -313,6 +325,12 @@ class StandbyCourtSectionsView extends StatelessWidget {
                     )
                   : Column(
                       children: [
+                        if (isFullScreen && onExitFullScreen != null)
+                          CourtFullscreenControlBar(
+                            isLandscape: false,
+                            isTablet: isTablet,
+                            onExitFullScreen: onExitFullScreen!,
+                          ),
                         ...sectionData.asMap().entries.map((entry) {
                           int sectionIndex = entry.key;
                           List<Player?> item = entry.value;
@@ -555,10 +573,6 @@ class StandbyCourtSectionsView extends StatelessWidget {
       },
     );
   }
-
-  // ==========================================
-  // Private Helper Methods
-  // ==========================================
 
   Future<void> _handleEmptySlotTap({
     required BuildContext context,

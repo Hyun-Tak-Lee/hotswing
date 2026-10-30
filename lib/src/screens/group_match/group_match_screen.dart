@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:hotswing/src/common/utils/ui/responsive_utils.dart';
 import 'package:hotswing/src/common/widgets/courts/assigned/court_sections_view.dart';
@@ -13,8 +14,18 @@ import 'package:hotswing/src/common/theme/app_colors.dart';
 
 /// 클럽/교류전 매칭 및 코트 배정, 그룹 대기열 패널을 표시하는 화면 위젯.
 class GroupMatchScreen extends StatefulWidget {
+  /// 전체화면 모드 활성화 여부.
+  final bool isFullScreen;
+
+  /// 전체화면 모드 종료(축소) 콜백.
+  final VoidCallback? onExitFullScreen;
+
   /// [GroupMatchScreen] 생성자.
-  const GroupMatchScreen({super.key});
+  const GroupMatchScreen({
+    super.key,
+    this.isFullScreen = false,
+    this.onExitFullScreen,
+  });
 
   @override
   State<GroupMatchScreen> createState() => _GroupMatchScreenState();
@@ -45,12 +56,16 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
         onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
         onPlayerDrop: _handlePlayerDrop,
         isClubMatch: true,
+        isFullScreen: widget.isFullScreen,
+        onExitFullScreen: widget.onExitFullScreen,
       ),
       CourtViewSection.standbyView => StandbyCourtSectionsView(
         onCourtPlayerDragStarted: _onCourtPlayerDragStarted,
         onCourtPlayerDragEnded: _onCourtPlayerDragEnded,
         onPlayerDrop: _handlePlayerDrop,
         isClubMatch: true,
+        isFullScreen: widget.isFullScreen,
+        onExitFullScreen: widget.onExitFullScreen,
       ),
     };
 
@@ -135,10 +150,6 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
     );
   }
 
-  // ==========================================
-  // Private Helper Methods
-  // ==========================================
-
   void _handlePlayerDrop(
     BuildContext context,
     PlayerDragData data,
@@ -148,6 +159,7 @@ class _GroupMatchScreenState extends State<GroupMatchScreen> {
     int targetSectionIndex,
     int targetSubIndex,
   ) {
+    HapticFeedback.selectionClick();
     context.read<PlayersProvider>().moveOrSwapPlayer(
       data: data,
       targetSectionKind: targetSectionKind,
