@@ -51,8 +51,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
             isTablet: isTablet,
             onClearAll: () =>
                 _showClearAllPlayersConfirmationDialog(playersProvider),
-            onAddGuest: () => _showAddPlayerDialog(playersProvider, true),
-            onAddRegular: () => _showAddPlayerDialog(playersProvider, false),
+            onAddPlayer: () => _showAddPlayerDialog(playersProvider),
           ),
           Expanded(
             child: ListView.builder(
@@ -76,7 +75,6 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
                       playersProvider.toggleIsActivate(player),
                   onEdit: () => _showAddPlayerDialog(
                     playersProvider,
-                    false,
                     existingPlayer: player,
                   ),
                   onDelete: () {
@@ -130,8 +128,7 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
   }
 
   Future<void> _showAddPlayerDialog(
-    PlayersProvider playersProvider,
-    bool isGuest, {
+    PlayersProvider playersProvider, {
     Player? existingPlayer,
   }) async {
     final result = await showDialog<Map<String, dynamic>>(
@@ -140,7 +137,6 @@ class _LeftSideMenuState extends State<LeftSideMenu> {
         return AddPlayerDialog(
           playersProvider: playersProvider,
           player: existingPlayer,
-          isGuest: isGuest,
         );
       },
     );

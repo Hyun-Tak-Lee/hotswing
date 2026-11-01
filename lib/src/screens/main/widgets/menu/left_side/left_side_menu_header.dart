@@ -9,16 +9,14 @@ class LeftSideMenuHeader extends StatelessWidget {
     required this.isMobile,
     required this.isTablet,
     required this.onClearAll,
-    required this.onAddGuest,
-    required this.onAddRegular,
+    required this.onAddPlayer,
   });
 
   final int playerCount;
   final bool isMobile;
   final bool isTablet;
   final VoidCallback onClearAll;
-  final VoidCallback onAddGuest;
-  final VoidCallback onAddRegular;
+  final VoidCallback onAddPlayer;
 
   @override
   Widget build(BuildContext context) {
@@ -63,23 +61,13 @@ class LeftSideMenuHeader extends StatelessWidget {
                 ),
                 SizedBox(width: isMobile ? 4 : 8),
                 IconButton(
-                  tooltip: '게스트 추가',
-                  icon: const Icon(Icons.person_pin),
-                  iconSize: iconSize,
-                  padding: buttonPadding,
-                  constraints: const BoxConstraints(),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: onAddGuest,
-                ),
-                SizedBox(width: isMobile ? 4 : 8),
-                IconButton(
-                  tooltip: '일반 멤버 추가',
+                  tooltip: '멤버 추가',
                   icon: const Icon(Icons.person_add),
                   iconSize: iconSize,
                   padding: buttonPadding,
                   constraints: const BoxConstraints(),
                   visualDensity: VisualDensity.compact,
-                  onPressed: onAddRegular,
+                  onPressed: onAddPlayer,
                 ),
               ],
             ),

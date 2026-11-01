@@ -7,6 +7,7 @@ import 'package:hotswing/src/common/widgets/dialogs/add_player/player_descriptio
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_gender_field.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_group_field.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_name_field.dart';
+import 'package:hotswing/src/common/widgets/dialogs/add_player/player_role_toggles.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_skill_level_field.dart';
 import 'package:hotswing/src/common/widgets/dialogs/add_player/player_stats_row.dart';
 import 'package:hotswing/src/enums/player_feature.dart';
@@ -17,18 +18,16 @@ import 'package:hotswing/src/common/theme/app_colors.dart';
 
 /// 새로운 플레이어를 추가하거나 기존 플레이어의 정보를 수정할 때 사용하는 다이얼로그 위젯입니다.
 ///
-/// 게스트 모드([isGuest]) 여부와 기존 플레이어 정보([player])를 받아
-/// 그에 맞는 UI와 로직을 제공합니다.
+/// 기존 플레이어 정보([player])를 받아 수정 모드로 동작하며,
+/// 추가 모드에서는 헤더의 게스트 · 운영진 토글로 역할을 선택합니다.
 class AddPlayerDialog extends StatefulWidget {
   final PlayersProvider playersProvider;
   final Player? player;
-  final bool isGuest;
 
   const AddPlayerDialog({
     super.key,
     required this.playersProvider,
     this.player,
-    this.isGuest = false,
   });
 
   @override
@@ -41,6 +40,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
 
   bool _isLoaded = false;
   bool _isManager = false;
+  bool _isGuest = false;
 
   Player? _player;
   ObjectId? _id;
@@ -70,6 +70,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         orElse: () => null,
       );
       _isManager = widget.player!.role == "manager";
+      _isGuest = widget.player!.role == 'guest';
       _playCount = widget.player!.played;
       _waitCount = widget.player!.waited;
       _lateCount = widget.player!.lated;
@@ -92,7 +93,6 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
     final dialogColors = context.dialogColors;
 
     final bool isEditMode = widget.player != null;
-    final bool isGuestMode = widget.isGuest || (widget.player?.role == 'guest');
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -148,41 +148,37 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${isGuestMode ? '게스트' : '회원'} ${isEditMode ? '수정' : '추가'}',
-                  style: titleStyle,
-                ),
-                if (!isGuestMode)
-                  Opacity(
-                    opacity: _isLoaded ? 0.5 : 1.0,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '운영진',
-                          style: ResponsiveUtils.getResponsiveStyle(
-                            context,
-                            textTheme.bodyMedium,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Switch(
-                          value: _isManager,
-                          activeThumbColor: Theme.of(context).primaryColor,
-                          onChanged: _isLoaded
-                              ? null
-                              : (value) {
-                                  setState(() {
-                                    _isManager = value;
-                                  });
-                                  FocusManager.instance.primaryFocus?.unfocus();
-                                  _updateRate(
-                                    _rate ?? 0,
-                                  ); // Re-clamping on role switch
-                                },
-                        ),
-                      ],
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '${_isGuest ? '게스트' : '회원'} ${isEditMode ? '수정' : '추가'}',
+                      style: titleStyle,
                     ),
+                  ),
+                ),
+                // 기존 게스트를 수정할 때는 역할 변경 불가 (기존 동작 유지)
+                if (!(isEditMode && _isGuest))
+                  PlayerRoleToggles(
+                    showGuestToggle: !isEditMode,
+                    isGuest: _isGuest,
+                    isManager: _isManager,
+                    enabled: !_isLoaded,
+                    onGuestChanged: (value) {
+                      setState(() {
+                        _isGuest = value;
+                        if (value) _isManager = false;
+                      });
+                      FocusManager.instance.primaryFocus?.unfocus();
+                    },
+                    onManagerChanged: (value) {
+                      setState(() {
+                        _isManager = value;
+                      });
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      _updateRate(_rate ?? 0); // Re-clamping on role switch
+                    },
                   ),
               ],
             ),
@@ -391,6 +387,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
         orElse: () => null,
       );
       _isManager = player.role == "manager";
+      _isGuest = player.role == 'guest';
       _groups = List<ObjectId>.from(player.groups);
     });
   }
@@ -401,7 +398,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
       _formKey.currentState!.save();
 
       String role = "user";
-      if (widget.isGuest || (widget.player?.role == 'guest')) {
+      if (_isGuest) {
         role = 'guest';
       } else if (_isManager) {
         role = "manager";
